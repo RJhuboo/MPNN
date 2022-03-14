@@ -11,11 +11,11 @@ from sklearn.metrics import r2_score
 import pickle
 
 class Trainer():
-    def __init__(self,args,my_model):
-        self.args = args
+    def __init__(self,opt,my_model):
+        self.opt = opt
         self.model = my_model
         self.NB_LABEL = 14
-        self.optimizer = Adam(model.parameters(), lr=opt.lr)
+        self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
         self.criterion = MSELoss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
@@ -44,7 +44,7 @@ class Trainer():
             train_total += labels.size(0)
             outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             labels, outputs = np.array(labels), np.array(outputs)
-            labels, outputs = labels.reshape(34,self.opt.batch_size), outputs.reshape(34,opt.batch_size)
+            labels, outputs = labels.reshape(self.NB_LABEL,self.opt.batch_size), outputs.reshape(self.NB_LABEL,self.opt.batch_size)
             r2 = r2_score(labels,outputs)
             r2_s += r2
 
@@ -59,10 +59,10 @@ class Trainer():
         print('Finished Training')
         # saving trained model
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-        torch.save(model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
 
     def test(self,testloader,epoch):
-        model.eval()
+        self.model.eval()
 
         test_loss = 0
         test_total = 0
@@ -88,7 +88,7 @@ class Trainer():
                 # statistics
                 outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
                 labels, outputs = np.array(labels), np.array(outputs)
-                labels, outputs = labels.reshape(34,1), outputs.reshape(34,1)
+                labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 r2 = r2_score(labels,outputs)
                 r2_s += r2
                 print('r2 : %.3f , MSE : %.3f' %
