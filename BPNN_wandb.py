@@ -36,8 +36,8 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/media/rehan/Seagate Expansion Drive/sainbiose/New_datasets/HR_TIF_NOAUGMENTATION/Labels_norm_aug.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "/media/rehan/Seagate Expansion Drive/sainbiose/New_datasets/HR_PNG_AUGMENTATION", help = "path to image directory")
+parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
+parser.add_argument("--image_dir", default = "./HR_trab", help = "path to image directory")
 parser.add_argument("--batch_size", default = 16, help = "number of batch")
 parser.add_argument("--nof", default = 16, help = "number of filter")
 parser.add_argument("--lr",default = 0.001, help = "learning rate")
