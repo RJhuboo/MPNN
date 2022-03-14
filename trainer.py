@@ -13,17 +13,14 @@ import pickle
 
 ''' Training function '''
 class Trainer():
-    def __init__(self,args,train_loader,test_loader,my_model,epoch):
-        self.trainloader = train_loader
-        self.testloader = test_loader
+    def __init__(self,args,my_model):
         self.args = args
         self.model = my_model
         self.NB_LABEL = 14
         self.optimizer = Adam(model.parameters(), lr=opt.lr)
         self.criterion = MSELoss()
-        self.epoch = epoch
         
-    def train(self, steps_per_epochs=20):
+    def train(self, trainloader, epoch ,steps_per_epochs=20):
         self.model.train()
         print("starting training")
         print("----------------")
@@ -31,7 +28,7 @@ class Trainer():
         train_total = 0
         running_loss = 0.0
         r2_s = 0
-        for i, data in enumerate(self.trainloader,0):
+        for i, data in enumerate(trainloader,0):
             inputs, labels = data['image'], data['label']
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
@@ -55,20 +52,20 @@ class Trainer():
 
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
-                      (self.epoch + 1, i+1, running_loss/self.opt.batch_size))
+                      (epoch + 1, i+1, running_loss/self.opt.batch_size))
                 running_loss = 0.0
         # displaying results
         r2_s = r2_s/i
-        print('Epoch [{}], Loss: {}, R square: {}'.format(self.epoch+1, train_loss/train_total, r2_s), end='')
+        print('Epoch [{}], Loss: {}, R square: {}'.format(epoch+1, train_loss/train_total, r2_s), end='')
 
         print('Finished Training')
         # saving trained model
-        check_name = "BPNN_checkpoint_" + str(self.epoch) + ".pth"
+        check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         torch.save(model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
 
     ''' Testing function '''
 
-    def test(self):
+    def test(self,testloader,epoch):
         model.eval()
 
         test_loss = 0
@@ -79,11 +76,11 @@ class Trainer():
         # Loading Checkpoint
         if self.opt.mode is "Test":
             model = self.model
-            check_name = "BPNN_checkpoint_" + str(self.epoch) + ".pth"
+            check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         # Testing
         with torch.no_grad():
-            for i, data in enumerate(self.testloader):
+            for i, data in enumerate(testloader):
                 inputs, labels = data['image'],data['label']
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
@@ -102,8 +99,8 @@ class Trainer():
                       (r2,test_loss))
                 output[i] = outputs
                 label[i] = labels
-            name_out = "./output" + str(self.epoch) + ".txt"
-            name_lab = "./label" + str(self.epoch) + ".txt"
+            name_out = "./output" + str(epoch) + ".txt"
+            name_lab = "./label" + str(epoch) + ".txt"
 
             with open(name_out,"wb") as f:
                 pickle.dump(output,f)
