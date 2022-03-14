@@ -4,12 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self,nof,NB_LABEL):
         super(Net,self).__init__()
         # initialize CNN layers
-        self.conv1 = nn.Conv2d(1,opt.nof,kernel_size = 3,stride = 1, padding = 1)
-        self.conv2 = nn.Conv2d(opt.nof,opt.nof*2, kernel_size = 3, stride = 1, padding = 1)
-        self.conv3 = nn.Conv2d(opt.nof*2,opt.nof*4, kernel_size = 3, stride = 1, padding = 1)
+        self.conv1 = nn.Conv2d(1,nof,kernel_size = 3,stride = 1, padding = 1)
+        self.conv2 = nn.Conv2d(nof,opt.nof*2, kernel_size = 3, stride = 1, padding = 1)
+        self.conv3 = nn.Conv2d(nof*2,opt.nof*4, kernel_size = 3, stride = 1, padding = 1)
         self.pool = nn.MaxPool2d(2,2)
         # initialize NN layers
         self.fc1 = nn.Linear(64*64*64,240)

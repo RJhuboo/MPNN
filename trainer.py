@@ -10,8 +10,6 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 import pickle
 
-
-''' Training function '''
 class Trainer():
     def __init__(self,args,my_model):
         self.args = args
@@ -63,8 +61,6 @@ class Trainer():
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         torch.save(model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
 
-    ''' Testing function '''
-
     def test(self,testloader,epoch):
         model.eval()
 
@@ -110,32 +106,5 @@ class Trainer():
         r2_s = r2_s/i
         print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total, r2_s))
         if self.opt.mode == "Train":
+            print("noting")
             # wandb.log({'Test Loss': test_loss/test_total, 'Test R square': r2_s})
-
-    """ Function of usage """
-
-    """def using_model(self):
-        model.eval()
-        epoch = 4
-        output = {}
-        label = {}
-        # Loading Checkpoint
-        model = Net()
-        check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-        model.load_state_dict(torch.load(os.path.join(opt.checkpoint_path,check_name)))
-        # Testing
-        with torch.no_grad():
-            for i, data in enumerate(test_loader):
-                inputs, labels = data['image']
-                # reshape
-                inputs = inputs.reshape(1,1,512,512)
-                # loss
-                outputs = model(inputs)
-                # statistics
-                outputs = outputs.cpu().detach().numpy()
-                outputs = outputs.reshape(34,1)
-
-            name_out = "./output" + str(epoch) + ".txt"
-
-            with open(name_out,"wb") as f:
-                pickle.dump(output,f)"""
