@@ -30,7 +30,7 @@ parser.add_argument("--nof", default = 16, help = "number of filter")
 parser.add_argument("--lr",default = 0.001, help = "learning rate")
 parser.add_argument("--nb_epochs", default = 5, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
-parser.add_argument("--mode", default = "Train", help = "Mode used : Training, Using or Testing")
+parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--cross_val", default = False, help = "mode training")
 parser.add_argument("--k_fold", default = 5, help = "number of splitting for k cross-validation")
 
