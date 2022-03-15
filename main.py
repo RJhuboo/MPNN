@@ -25,6 +25,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
+parser.add_argument("--output_cross", default = "./cross_validation.pickle", help = "filename of the output of the cross validation"  
 parser.add_argument("--batch_size", default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", default = 16, help = "number of filter")
@@ -69,7 +70,7 @@ if opt.mode == "Train" or opt.mode == "Test":
         for epoch in range(opt.nb_epochs):
             score_train.append(t.train(trainloader,epoch))
             score_test.append(t.test(testloader,epoch))
-    with open('cross_val.pickle','wb') as f:
+    with open(opt.output_cross,'wb') as f:
         pickle.dump(score_train, f)
         pickle.dump(score_test,f)
 
