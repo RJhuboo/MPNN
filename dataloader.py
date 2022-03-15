@@ -47,9 +47,6 @@ class Test_Datasets(Dataset):
         image_name = os.listdir(self.image_dir)
         img_name = os.path.join(self.image_dir,image_name[idx])
         image = io.imread(img_name) # Loading Image
-        base = np.zeros((RESIZE_IMAGE,RESIZE_IMAGE)) # We need a 512x512 image to be at an order 2n without upscaling^
-        base[6:506,6:506]=image # enelever les chiffres pour des variables
-        image = base # Now, image has 512x512 pixels with a zero border
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
         sample = {'image': image}
