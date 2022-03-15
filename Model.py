@@ -4,15 +4,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self,n_f,n_l):
         super(Net,self).__init__()
         # initialize CNN layers
-        self.conv1 = nn.Conv2d(1,16,kernel_size = 3,stride = 1, padding = 1)
-        self.conv2 = nn.Conv2d(16,16*2, kernel_size = 3, stride = 1, padding = 1)
-        self.conv3 = nn.Conv2d(16*2,16*4, kernel_size = 3, stride = 1, padding = 1)
+        self.conv1 = nn.Conv2d(1,n_f,kernel_size = 3,stride = 1, padding = 1)
+        self.conv2 = nn.Conv2d(n_f,n_f*2, kernel_size = 3, stride = 1, padding = 1)
+        self.conv3 = nn.Conv2d(n_f*2,n_f*4, kernel_size = 3, stride = 1, padding = 1)
         self.pool = nn.MaxPool2d(2,2)
         # initialize NN layers
-        self.fc1 = nn.Linear(64*64*64,240)
+        self.fc1 = nn.Linear(n_f*4*(512/2)*3*2,240)
         self.fc2 = nn.Linear(240,120)
         self.fc3 = nn.Linear(120,14)
         # dropout

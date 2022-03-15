@@ -36,7 +36,7 @@ parser.add_argument("--k_fold", default = 5, help = "number of splitting for k c
 
 
 opt = parser.parse_args()
-NB_LABEL = 34
+NB_LABEL = 14
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -48,7 +48,7 @@ if opt.mode == "Train" or opt.mode == "Test":
 else:
     datasets = dataloader.Datasets(image_dir = opt.image_dir)
 # defining the model
-model = Model.Net()
+model = Model.Net(opt.nof,NB_LABEL)
 
 if opt.mode == "Train" or opt.mode == "Test":
     kf = KFold(n_splits = opt.k_fold, shuffle=True)

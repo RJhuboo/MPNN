@@ -44,7 +44,6 @@ class Trainer():
             train_total += labels.size(0)
             outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             labels, outputs = np.array(labels), np.array(outputs)
-            print(np.shape(labels))
             labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             r2 = r2_score(labels,outputs)
             r2_s += r2
