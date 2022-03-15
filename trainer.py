@@ -61,6 +61,7 @@ class Trainer():
         # saving trained model
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        return r2_s 
 
     def test(self,testloader,epoch):
         self.model.eval()
@@ -102,9 +103,8 @@ class Trainer():
                 pickle.dump(output,f)
             with open(name_lab,"wb") as f:
                 pickle.dump(label,f)
+              
 
         r2_s = r2_s/i
         print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total, r2_s))
-        if self.opt.mode == "Train":
-            print("noting")
-            # wandb.log({'Test Loss': test_loss/test_total, 'Test R square': r2_s})
+        return r2_s
