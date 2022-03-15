@@ -26,6 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
 parser.add_argument("--batch_size", default = 16, help = "number of batch")
+parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", default = 16, help = "number of filter")
 parser.add_argument("--lr",default = 0.001, help = "learning rate")
 parser.add_argument("--nb_epochs", default = 5, help = "number of epochs")
@@ -50,8 +51,10 @@ if opt.mode == "Train" or opt.mode == "Test":
 else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
 # defining the model
-model = Model.Net(opt.nof,NB_LABEL)
-
+if opt.model == "ConvNet":
+  model = Model.ConvNet(opt.nof,NB_LABEL)
+else
+  model = Model.Unet(1,,1,NB_LABEL, opt.n1, opt.n2, opt.n3, opt.nof)
 if opt.mode == "Train" or opt.mode == "Test":
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)
