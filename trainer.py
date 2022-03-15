@@ -45,7 +45,7 @@ class Trainer():
             outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             labels, outputs = np.array(labels), np.array(outputs)
             print(np.shape(labels))
-            labels, outputs = labels.reshape(self.NB_LABEL,self.opt.batch_size), outputs.reshape(self.NB_LABEL,self.opt.batch_size)
+            labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             r2 = r2_score(labels,outputs)
             r2_s += r2
 
@@ -72,9 +72,8 @@ class Trainer():
         label = {}
         # Loading Checkpoint
         if self.opt.mode is "Test":
-            model = self.model
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-            model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
+            self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
@@ -83,8 +82,8 @@ class Trainer():
                 inputs = inputs.reshape(1,1,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
                 # loss
-                outputs = model(inputs)
-                test_loss += criterion(outputs,labels)
+                outputs = self.model(inputs)
+                test_loss += self.criterion(outputs,labels)
                 test_total += labels.size(0)
                 # statistics
                 outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
