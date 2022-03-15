@@ -33,12 +33,13 @@ parser.add_argument("--checkpoint_path", default = "./", help = "path to save or
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--cross_val", default = False, help = "mode training")
 parser.add_argument("--k_fold", default = 5, help = "number of splitting for k cross-validation")
-
-
-opt = parser.parse_args()
-NB_LABEL = 14
+parser.add_argument("--n1", default = 240, help = "number of neurons in the first layer of the neural network")
+parser.add_argument("--n2", default = 120, help = "number of neurons in the second layer of the neural network")
+parser.add_argument("--n3", default = 60, help = "number of neurons in the third layer of the neural network")
+                    
 PERCENTAGE_TEST = 20
-RESIZE_IMAGE = 512
+SIZE_IMAGE = 512
+NB_LABEL = 14
 
 ''' main '''
 
