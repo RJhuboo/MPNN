@@ -12,7 +12,7 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(n_f*2,n_f*4, kernel_size = 3, stride = 1, padding = 1)
         self.pool = nn.MaxPool2d(2,2)
         # initialize NN layers
-        self.fc1 = nn.Linear(n_f*4*(512/2)*3*2,240)
+        self.fc1 = nn.Linear(64**3,240)
         self.fc2 = nn.Linear(240,120)
         self.fc3 = nn.Linear(120,14)
         # dropout
