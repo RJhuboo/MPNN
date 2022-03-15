@@ -36,6 +36,7 @@ parser.add_argument("--k_fold", default = 5, help = "number of splitting for k c
 parser.add_argument("--n1", default = 240, help = "number of neurons in the first layer of the neural network")
 parser.add_argument("--n2", default = 120, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", default = 60, help = "number of neurons in the third layer of the neural network")
+parser.add_argument("--nb_workers", default = 0, help ="number of workers for datasets")
                     
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
@@ -47,7 +48,7 @@ NB_LABEL = 14
 if opt.mode == "Train" or opt.mode == "Test":
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir) # Create dataset
 else:
-    datasets = dataloader.Datasets(image_dir = opt.image_dir)
+    datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
 # defining the model
 model = Model.Net(opt.nof,NB_LABEL)
 
@@ -59,8 +60,8 @@ if opt.mode == "Train" or opt.mode == "Test":
     for train_index, test_index in kf.split(datasets):
         print("Train:", train_index[1:4],"Test:",test_index[1:4])
         nb_data = len(datasets)
-        trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = 0 )
-        testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = 0 )
+        trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = opt.nb_workers )
+        testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt.nb_workers )
         t = Trainer(opt,model)
         for epoch in range(opt.nb_epochs):
             score_train.append(t.train(trainloader,epoch))
@@ -70,4 +71,4 @@ if opt.mode == "Train" or opt.mode == "Test":
         pickle.dump(score_test,f)
 
 else:
-    testloader = DataLoader(datasets,batch_size = 1, num_workers =0)
+    testloader = DataLoader(datasets,batch_size = 1, num_workers = opt.nb_workers)
