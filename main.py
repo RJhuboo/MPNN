@@ -25,7 +25,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
-parser.add_argument("--output_cross", default = "./cross_validation.pickle", help = "filename of the output of the cross validation"  
+parser.add_argument("--output_cross", default = "./cross_validation.txt", help = "filename of the output of the cross validation")  
 parser.add_argument("--batch_size", default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", default = 16, help = "number of filter")
@@ -39,7 +39,8 @@ parser.add_argument("--n1", default = 240, help = "number of neurons in the firs
 parser.add_argument("--n2", default = 120, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", default = 60, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", default = 0, help ="number of workers for datasets")
-                    
+
+opt = parser.parse_args()
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = 14
@@ -53,9 +54,11 @@ else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
 # defining the model
 if opt.model == "ConvNet":
-  model = Model.ConvNet(opt.nof,NB_LABEL)
-else
-  model = Model.Unet(1,,1,NB_LABEL, opt.n1, opt.n2, opt.n3, opt.nof)
+    print("## Choose model : convnet ##")
+    model = Model.ConvNet(opt.nof,NB_LABEL)
+else:
+    print("## Choose model : Unet ##")
+    model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof)
 if opt.mode == "Train" or opt.mode == "Test":
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)
