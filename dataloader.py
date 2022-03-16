@@ -5,7 +5,6 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from skimage import io,transform
 from torchvision import transforms, utils
-from natsort import natsorted
 import argparse
 
 

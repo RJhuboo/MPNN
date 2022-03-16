@@ -2,7 +2,6 @@ import torch
 import os
 import numpy as np
 import pandas as pd
-from natsort import natsorted
 import argparse
 from torch.optim import Adam, SGD
 from torch.nn import MSELoss
