@@ -47,6 +47,18 @@ PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = 14
 
+'''functions'''
+
+def reset_weights(m):
+  '''
+    Try resetting model weights to avoid
+    weight leakage.
+  '''
+  for layer in m.children():
+   if hasattr(layer, 'reset_parameters'):
+    print(f'Reset trainable parameters of layer = {layer}')
+    layer.reset_parameters()
+
 ''' main '''
 
 # defining data
@@ -54,13 +66,6 @@ if opt.mode == "Train" or opt.mode == "Test":
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir) # Create dataset
 else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
-# defining the model
-if opt.model == "ConvNet":
-    print("## Choose model : convnet ##")
-    model = Model.ConvNet(opt.nof,NB_LABEL).to(device)
-else:
-    print("## Choose model : Unet ##")
-    model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
 if opt.mode == "Train" or opt.mode == "Test":
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)
@@ -72,6 +77,14 @@ if opt.mode == "Train" or opt.mode == "Test":
         nb_data = len(datasets)
         trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = opt.nb_workers )
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt.nb_workers )
+        # defining the model
+        if opt.model == "ConvNet":
+            print("## Choose model : convnet ##")
+            model = Model.ConvNet(opt.nof,NB_LABEL).to(device)
+        else:
+            print("## Choose model : Unet ##")
+            model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
+            model.apply(reset_weights)
         t = Trainer(opt,model,device)
         for epoch in range(opt.nb_epochs):
             score_train.append(t.train(trainloader,epoch))
