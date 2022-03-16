@@ -99,6 +99,9 @@ if opt.mode == "Train" or opt.mode == "Test":
         pickle.dump(score_train, f)
     with open(os.path.join(save_folder,opt.test_cross),'wb') as f:
         pickle.dump(score_test,f)
+    with open(os.path.join(save_folder,"history.txt"),'wb') as g:
+        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3)
+        pickle.dump(history,g)
 
 else:
     testloader = DataLoader(datasets,batch_size = 1, num_workers = opt.nb_workers)
