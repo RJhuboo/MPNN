@@ -16,9 +16,11 @@ import dataloader
 
 # GPU or CPU
 if torch.cuda.is_available():  
-  device = "cuda:0" 
+  device = "cuda:0"
+  print("running on gpu")
 else:  
   device = "cpu"
+  print("running on cpu")
   
 ''' Options '''
 
@@ -55,21 +57,22 @@ else:
 # defining the model
 if opt.model == "ConvNet":
     print("## Choose model : convnet ##")
-    model = Model.ConvNet(opt.nof,NB_LABEL)
+    model = Model.ConvNet(opt.nof,NB_LABEL).to(device)
 else:
     print("## Choose model : Unet ##")
-    model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof)
+    model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
 if opt.mode == "Train" or opt.mode == "Test":
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)
     score_train = []
     score_test = []
+    print("start cross validation")
     for train_index, test_index in kf.split(datasets):
         print("Train:", train_index[1:4],"Test:",test_index[1:4])
         nb_data = len(datasets)
         trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = opt.nb_workers )
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt.nb_workers )
-        t = Trainer(opt,model)
+        t = Trainer(opt,model,device)
         for epoch in range(opt.nb_epochs):
             score_train.append(t.train(trainloader,epoch))
             score_test.append(t.test(testloader,epoch))

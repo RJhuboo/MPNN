@@ -10,7 +10,8 @@ from sklearn.metrics import r2_score
 import pickle
 
 class Trainer():
-    def __init__(self,opt,my_model):
+    def __init__(self,opt,my_model,device):
+        self.device = device
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = 14
@@ -30,6 +31,7 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
+            inputs, labels = inputs.to(self.device), labels.to(self.device)
             # zero the parameter gradients
             self.optimizer.zero_grad()
             # forward backward and optimization
@@ -70,7 +72,7 @@ class Trainer():
         output = {}
         label = {}
         # Loading Checkpoint
-        if self.opt.mode is "Test":
+        if self.opt.mode == "Test":
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         # Testing
@@ -80,6 +82,7 @@ class Trainer():
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
+                inputs, labels = inputs.to(self.device),labels.to(self.device)
                 # loss
                 outputs = self.model(inputs)
                 test_loss += self.criterion(outputs,labels)
