@@ -93,8 +93,8 @@ class Trainer():
                 labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 r2 = r2_score(labels,outputs)
                 r2_s += r2
-                print('r2 : %.3f , MSE : %.3f' %
-                      (r2,test_loss))
+                #print('r2 : %.3f , MSE : %.3f' %
+                #      (r2,test_loss))
                 output[i] = outputs
                 label[i] = labels
             name_out = "./output" + str(epoch) + ".txt"
