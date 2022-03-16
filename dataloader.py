@@ -22,9 +22,6 @@ class Datasets(Dataset):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0]))
         image = io.imread(img_name) # Loading Image
-        #base = np.zeros((RESIZE_IMAGE,RESIZE_IMAGE)) # We need a 512x512 image to be at an order 2n without upscaling^
-        #base[6:506,6:506]=image # enelever les chiffres pour des variables
-        #image = base # Now, image has 512x512 pixels with a zero border
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
         labels = self.labels.iloc[idx,1:] # Takes all corresponding labels
