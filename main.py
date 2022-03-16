@@ -27,12 +27,13 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
-parser.add_argument("--output_cross2", default = "./cross_validation.txt", help = "filename of the output of the cross validation")  
+parser.add_argument("--train_cross", default = "./cross_validation.txt", help = "filename of the output of the cross validation")
+parser.add_argument("--test_cross",default = "./cross_train.txt")
 parser.add_argument("--batch_size", default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", default = 8, help = "number of filter")
 parser.add_argument("--lr",default = 0.001, help = "learning rate")
-parser.add_argument("--nb_epochs", default = 5, help = "number of epochs")
+parser.add_argument("--nb_epochs",type = int ,default = 5, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--cross_val", default = False, help = "mode training")
@@ -60,6 +61,11 @@ def reset_weights(m):
     layer.reset_parameters()
 
 ''' main '''
+# Create the folder where to save results and checkpoints
+while os.path.isdir("./result/"+str(i) == True:
+    if os.path.isdir("./result/"+str(i) == False:
+        save_folder = "./result/"+str(i)
+        os.mkdir(save_folder)
 
 # defining data
 if opt.mode == "Train" or opt.mode == "Test":
@@ -85,12 +91,13 @@ if opt.mode == "Train" or opt.mode == "Test":
             print("## Choose model : Unet ##")
             model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
             model.apply(reset_weights)
-        t = Trainer(opt,model,device)
+        t = Trainer(opt,model,device,save_folder)
         for epoch in range(opt.nb_epochs):
             score_train.append(t.train(trainloader,epoch))
             score_test.append(t.test(testloader,epoch))
-    with open(opt.output_cross,'wb') as f:
+    with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(score_train, f)
+    with open(os.path.join(save_folder,opt.test_cross),'wb') as f:
         pickle.dump(score_test,f)
 
 else:

@@ -10,7 +10,8 @@ from sklearn.metrics import r2_score
 import pickle
 
 class Trainer():
-    def __init__(self,opt,my_model,device):
+    def __init__(self,opt,my_model,device,save_fold):
+        self.save_fold = save_fold
         self.device = device
         self.opt = opt
         self.model = my_model
@@ -59,8 +60,8 @@ class Trainer():
 
         print('Finished Training')
         # saving trained model
-        check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-        torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        # check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
+        # torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return r2_s 
 
     def test(self,testloader,epoch):
@@ -100,9 +101,9 @@ class Trainer():
             name_out = "./output" + str(epoch) + ".txt"
             name_lab = "./label" + str(epoch) + ".txt"
 
-            with open(name_out,"wb") as f:
+            with open(os.path.join(self.save_fold,name_out),"wb") as f:
                 pickle.dump(output,f)
-            with open(name_lab,"wb") as f:
+            with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 pickle.dump(label,f)
               
 
