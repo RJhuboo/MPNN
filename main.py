@@ -29,18 +29,18 @@ parser.add_argument("--label_dir", default = "./Label.csv", help = "path to labe
 parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_validation.txt", help = "filename of the output of the cross validation")
 parser.add_argument("--test_cross",default = "./cross_train.txt")
-parser.add_argument("--batch_size", default = 16, help = "number of batch")
+parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
-parser.add_argument("--nof", default = 8, help = "number of filter")
-parser.add_argument("--lr",default = 0.001, help = "learning rate")
-parser.add_argument("--nb_epochs",type = int ,default = 5, help = "number of epochs")
+parser.add_argument("--nof", type=int, default = 8, help = "number of filter")
+parser.add_argument("--lr", type=int, default = 0.001, help = "learning rate")
+parser.add_argument("--nb_epochs", type=int, default = 5, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--cross_val", default = False, help = "mode training")
-parser.add_argument("--k_fold", default = 5, help = "number of splitting for k cross-validation")
-parser.add_argument("--n1", default = 240, help = "number of neurons in the first layer of the neural network")
-parser.add_argument("--n2", default = 120, help = "number of neurons in the second layer of the neural network")
-parser.add_argument("--n3", default = 60, help = "number of neurons in the third layer of the neural network")
+parser.add_argument("--k_fold", type=int, default = 5, help = "number of splitting for k cross-validation")
+parser.add_argument("--n1", type=int, default = 240, help = "number of neurons in the first layer of the neural network")
+parser.add_argument("--n2", type=int, default = 120, help = "number of neurons in the second layer of the neural network")
+parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", default = 0, help ="number of workers for datasets")
 
 opt = parser.parse_args()
@@ -62,10 +62,16 @@ def reset_weights(m):
 
 ''' main '''
 # Create the folder where to save results and checkpoints
-while os.path.isdir("./result/"+str(i) == True:
-    if os.path.isdir("./result/"+str(i) == False:
+i=1
+if os.path.isdir("./result/"+str(i)) == False:
+    save_folder = "./result/"+str(i)
+    os.mkdir(save_folder)
+while True:
+    i += 1
+    if os.path.isdir("./result/"+str(i)) == False:
         save_folder = "./result/"+str(i)
         os.mkdir(save_folder)
+        break
 
 # defining data
 if opt.mode == "Train" or opt.mode == "Test":
@@ -86,7 +92,7 @@ if opt.mode == "Train" or opt.mode == "Test":
         # defining the model
         if opt.model == "ConvNet":
             print("## Choose model : convnet ##")
-            model = Model.ConvNet(opt.nof,NB_LABEL).to(device)
+            model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,k1 = 3,k2 = 3,k3= 3).to(device)
         else:
             print("## Choose model : Unet ##")
             model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
@@ -100,7 +106,7 @@ if opt.mode == "Train" or opt.mode == "Test":
     with open(os.path.join(save_folder,opt.test_cross),'wb') as f:
         pickle.dump(score_test,f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3)
+        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3)
         pickle.dump(history,g)
 
 else:
