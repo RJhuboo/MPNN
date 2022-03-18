@@ -93,6 +93,12 @@ if opt.mode == "Train" or opt.mode == "Test":
         if opt.model == "ConvNet":
             print("## Choose model : convnet ##")
             model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,k1 = 3,k2 = 3,k3= 3).to(device)
+        elif opt.model == "resnet50":
+            print("## Choose model : resnet50 ##")
+            model = Model.ResNet50(14,1).to(device)
+        elif opt.model == "restnet101":
+            print("## Choose model : resnet101 ##")
+            model = Model.ResNet101(14,1).to(device)
         else:
             print("## Choose model : Unet ##")
             model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
