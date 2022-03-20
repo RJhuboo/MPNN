@@ -27,7 +27,7 @@ class Datasets(Dataset):
         if self.opt.norm_method== "L2":
             lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
         elif self.opt.norm_method == "L1":
-            lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='L1',axis=0)
+            lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
         elif self.opt.norm_method == "max":
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='max',axis=0)
         lab = pd.DataFrame(lab)
