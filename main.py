@@ -42,6 +42,7 @@ parser.add_argument("--n1", type=int, default = 240, help = "number of neurons i
 parser.add_argument("--n2", type=int, default = 120, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", default = 0, help ="number of workers for datasets")
+parser.add_argument("--norm_method", type=str, default = "L2", help = "choose how to normalize bio parameters")
 
 opt = parser.parse_args()
 PERCENTAGE_TEST = 20
@@ -75,7 +76,7 @@ while True:
 
 # defining data
 if opt.mode == "Train" or opt.mode == "Test":
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir) # Create dataset
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
 else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
 if opt.mode == "Train" or opt.mode == "Test":
@@ -114,7 +115,7 @@ if opt.mode == "Train" or opt.mode == "Test":
     with open(os.path.join(save_folder,opt.test_cross),'wb') as f:
         pickle.dump(score_test,f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3)
+        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
         pickle.dump(history,g)
 
 else:
