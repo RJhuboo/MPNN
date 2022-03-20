@@ -8,7 +8,7 @@ from sklearn.model_selection import KFold
 from torch.utils.data import Dataset, DataLoader
 import random
 import pickle
-from sklearn.preprocessiong import StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 import Model
 from trainer import Trainer
@@ -78,8 +78,6 @@ if opt.mode == "Train" or opt.mode == "Test":
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir) # Create dataset
 else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
-Scaler = StandardScaler.fit(datasets)
-datasets = Scaler.transform(datasets)
 if opt.mode == "Train" or opt.mode == "Test":
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)

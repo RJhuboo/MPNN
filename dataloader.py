@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from skimage import io,transform
 from torchvision import transforms, utils
 import argparse
-
+from sklearn import preprocessing
 
 
 class Datasets(Dataset):
@@ -23,7 +23,11 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
-        labels = self.labels.iloc[idx,1:] # Takes all corresponding labels
+        lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
+        lab = pd.DataFrame(lab)
+        lab.insert(0,"File name", self.labels.iloc[:,0], True)
+        lab.columns = self.labels.columns
+        #labels = self.labels.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
         labels = labels.astype('float32')
         sample = {'image': image, 'label': labels}
