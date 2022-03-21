@@ -104,7 +104,7 @@ if opt.mode == "Train" or opt.mode == "Test":
             model = Model.ResNet101(14,1).to(device)
         else:
             print("## Choose model : Unet ##")
-            model = Model.Unet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
+            model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
             model.apply(reset_weights)
         t = Trainer(opt,model,device,save_folder)
         for epoch in range(opt.nb_epochs):
