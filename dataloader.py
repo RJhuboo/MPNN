@@ -30,6 +30,9 @@ class Datasets(Dataset):
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
         elif self.opt.norm_method == "max":
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='max',axis=0)
+        elif self.opt.norm_method == "standardiazation":
+            scaler = preprocessing.StandardScaler()
+            lab = scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
         lab.columns = self.labels.columns
@@ -39,7 +42,7 @@ class Datasets(Dataset):
         sample = {'image': image, 'label': labels}
         if self.transform:
             sample = self.transform(sample)
-        return sample
+        return sample,scaler
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
