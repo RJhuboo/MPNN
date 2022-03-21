@@ -76,7 +76,7 @@ while True:
 
 # defining data
 if opt.mode == "Train" or opt.mode == "Test":
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
+    datasets,scaler = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
 else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
 if opt.mode == "Train" or opt.mode == "Test":
