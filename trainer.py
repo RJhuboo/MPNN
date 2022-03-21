@@ -8,9 +8,11 @@ from torch.nn import MSELoss
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 import pickle
+from sklean.preprocessing import StandardScaler
 
 class Trainer():
-    def __init__(self,opt,my_model,device,save_fold):
+    def __init__(self,opt,my_model,device,save_fold,scaler):
+        self.scaler = scaler
         self.save_fold = save_fold
         self.device = device
         self.opt = opt
@@ -96,6 +98,9 @@ class Trainer():
                 r2_s += r2
                 #print('r2 : %.3f , MSE : %.3f' %
                 #      (r2,test_loss))
+                outputs,labels=outputs.reshape(1,self.NB_LABEL), labels.reshape(1,self.NB_LABEL)
+                if self.opt.norm_method == "standardization":
+                    outputs,labels = self.scaler.inverse_transform(outputs), self.scaler.inverse_transform(labels)
                 output[i] = outputs
                 label[i] = labels
             name_out = "./output" + str(epoch) + ".txt"
