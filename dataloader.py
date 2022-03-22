@@ -30,7 +30,7 @@ class Datasets(Dataset):
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
         elif self.opt.norm_method == "max":
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='max',axis=0)
-        elif self.opt.norm_method == "standardiazation":
+        elif self.opt.norm_method == "standardization":
             scaler = preprocessing.StandardScaler()
             lab = scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
