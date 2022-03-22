@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 import random
 import pickle
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.model_selection import train_test_split
 import Model
 from trainer import Trainer
 import dataloader
