@@ -8,7 +8,7 @@ from torch.nn import MSELoss
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 import pickle
-from sklean.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 class Trainer():
     def __init__(self,opt,my_model,device,save_fold,scaler):
