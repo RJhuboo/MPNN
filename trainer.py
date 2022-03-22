@@ -64,7 +64,7 @@ class Trainer():
         # saving trained model
         # check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         # torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
-        return r2_s 
+        return r2_s, train_loss/train_total
 
     def test(self,testloader,epoch):
         self.model.eval()
@@ -114,4 +114,4 @@ class Trainer():
 
         r2_s = r2_s/i
         print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total, r2_s))
-        return r2_s
+        return r2_s, test_loss/test_total
