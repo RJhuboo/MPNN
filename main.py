@@ -27,8 +27,8 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
-parser.add_argument("--train_cross", default = "./cross_validation.txt", help = "filename of the output of the cross validation")
-parser.add_argument("--test_cross",default = "./cross_train.txt")
+parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
+#parser.add_argument("--test_cross",default = "./cross_validation.pkl")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 8, help = "number of filter")
@@ -84,6 +84,8 @@ if opt.mode == "Train" or opt.mode == "Test":
     kf.get_n_splits(datasets)
     score_train = []
     score_test = []
+    score_mse_t = []
+    score_mse_v = []
     print("start cross validation")
     for train_index, test_index in kf.split(datasets):
         print("Train:", train_index[1:4],"Test:",test_index[1:4])
@@ -108,12 +110,19 @@ if opt.mode == "Train" or opt.mode == "Test":
             model.apply(reset_weights)
         t = Trainer(opt,model,device,save_folder)
         for epoch in range(opt.nb_epochs):
-            score_train.append(t.train(trainloader,epoch))
-            score_test.append(t.test(testloader,epoch))
+            r2_train,mse_train = t.train(trainloader,epoch)
+            r2_test,mse_test = t.test(testloader,epoch)
+            score_train.append(r2_train)
+            score_test.append(r2_test)
+            score_mse_t.append(mse_train)
+            score_mse_v.append(mse_test)
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(score_train, f)
-    with open(os.path.join(save_folder,opt.test_cross),'wb') as f:
-        pickle.dump(score_test,f)
+        pickle.dump(score_test, f)
+        pickle.dump(score_mse_t, f)
+        pickle.dump(sscore_mse_v, f)
+    #with open(os.path.join(save_folder,opt.test_cross),'wb') as f:
+    #    pickle.dump(score_test,f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
         history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
         pickle.dump(history,g)
