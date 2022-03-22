@@ -8,6 +8,11 @@ from torchvision import transforms, utils
 import argparse
 from sklearn import preprocessing
 
+def standardization(csv_file):
+    Data = pd.read_csv(csv_file)
+    scaler = preprocessing.StandardScaler()
+    scaler.fit(Data.iloc[:,1:])
+    return scaler
 
 class Datasets(Dataset):
     def __init__(self, csv_file, image_dir, opt, transform=None):
@@ -32,6 +37,7 @@ class Datasets(Dataset):
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='max',axis=0)
         elif self.opt.norm_method == "standardization":
             scaler = preprocessing.StandardScaler()
+            scaler.fit(self.labels.iloc[:,1:])
             lab = scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
@@ -42,7 +48,7 @@ class Datasets(Dataset):
         sample = {'image': image, 'label': labels}
         if self.transform:
             sample = self.transform(sample)
-        return sample,scaler
+        return sample
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):

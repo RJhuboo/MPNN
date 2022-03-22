@@ -76,10 +76,12 @@ while True:
 
 # defining data
 if opt.mode == "Train" or opt.mode == "Test":
-    datasets,scaler = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
 else:
     datasets = dataloader.Test_Datasets(image_dir = opt.image_dir)
 if opt.mode == "Train" or opt.mode == "Test":
+    if opt.norm_method == "standardization":
+        scaler = dataloader.standardization(opt.label_dir)
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)
     score_train = []
@@ -92,7 +94,6 @@ if opt.mode == "Train" or opt.mode == "Test":
         nb_data = len(datasets)
         trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = opt.nb_workers )
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt.nb_workers )
-        # normalization
         
         # defining the model
         if opt.model == "ConvNet":
@@ -108,10 +109,10 @@ if opt.mode == "Train" or opt.mode == "Test":
             print("## Choose model : Unet ##")
             model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
             model.apply(reset_weights)
-        t = Trainer(opt,model,device,save_folder)
+        t = Trainer(opt,model,device,save_folder,scaler)
         for epoch in range(opt.nb_epochs):
-            r2_train,mse_train = t.train(trainloader,epoch)
-            r2_test,mse_test = t.test(testloader,epoch)
+            [r2_train,mse_train] = t.train(trainloader,epoch)
+            [r2_test,mse_test] = t.test(testloader,epoch)
             score_train.append(r2_train)
             score_test.append(r2_test)
             score_mse_t.append(mse_train)
