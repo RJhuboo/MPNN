@@ -172,7 +172,7 @@ def train():
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(resultat, f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
+        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method) + " + normalization image"
         pickle.dump(history,g)
       
 
