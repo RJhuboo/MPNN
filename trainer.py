@@ -10,6 +10,12 @@ from sklearn.metrics import r2_score
 import pickle
 from sklearn.preprocessing import StandardScaler
 
+def MSE(y_predicted,y):
+    squared_error = (y_predicted - y) **2
+    sum_squared_error = np.sum(squared_error)
+    mse = sum_squared_error / y.size
+    return mse
+
 class Trainer():
     def __init__(self,opt,my_model,device,save_fold,scaler):
         self.scaler = scaler
@@ -29,6 +35,7 @@ class Trainer():
         train_total = 0
         running_loss = 0.0
         r2_s = 0
+        mse_score = 0.0
         for i, data in enumerate(trainloader,0):
             inputs, labels = data['image'], data['label']
             # reshape
@@ -51,12 +58,13 @@ class Trainer():
             labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             r2 = r2_score(labels,outputs)
             r2_s += r2
-
+            mse_score += MSE(outputs,labels)
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
                 running_loss = 0.0
         # displaying results
+        mse = mse_score / i
         r2_s = r2_s/i
         print('Epoch [{}], Loss: {}, R square: {}'.format(epoch+1, train_loss/train_total, r2_s), end='')
 
@@ -64,7 +72,7 @@ class Trainer():
         # saving trained model
         # check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         # torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
-        return r2_s, train_loss/train_total
+        return r2_s, mse
 
     def test(self,testloader,epoch):
         self.model.eval()
@@ -72,6 +80,7 @@ class Trainer():
         test_loss = 0
         test_total = 0
         r2_s = 0
+        mse_score = 0.0
         output = {}
         label = {}
         # Loading Checkpoint
@@ -96,8 +105,9 @@ class Trainer():
                 labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 r2 = r2_score(labels,outputs)
                 r2_s += r2
-                #print('r2 : %.3f , MSE : %.3f' %
-                #      (r2,test_loss))
+
+                mse_score += MSE(outputs,labels)
+
                 outputs,labels=outputs.reshape(1,self.NB_LABEL), labels.reshape(1,self.NB_LABEL)
                 if self.opt.norm_method == "standardization":
                     outputs,labels = self.scaler.inverse_transform(outputs), self.scaler.inverse_transform(labels)
@@ -105,7 +115,7 @@ class Trainer():
                 label[i] = labels
             name_out = "./output" + str(epoch) + ".txt"
             name_lab = "./label" + str(epoch) + ".txt"
-
+            mse = mse_score/i
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
                 pickle.dump(output,f)
             with open(os.path.join(self.save_fold,name_lab),"wb") as f:
@@ -114,4 +124,4 @@ class Trainer():
 
         r2_s = r2_s/i
         print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total, r2_s))
-        return r2_s, test_loss/test_total
+        return r2_s, mse
