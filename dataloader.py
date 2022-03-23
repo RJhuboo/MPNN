@@ -29,6 +29,8 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
+        norm = transforms.Normalize((0.00618),(0.03251))
+        image = norm(image)
         if self.opt.norm_method== "L2":
             lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
         elif self.opt.norm_method == "L1":
