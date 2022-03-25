@@ -42,8 +42,8 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
-            norm = transforms.Normalize((0.006187),(0.03251))
-            inputs = norm(inputs)
+            #norm = transforms.Normalize((0.006187),(0.03251))
+            #inputs = norm(inputs)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             # zero the parameter gradients
             self.optimizer.zero_grad()
@@ -96,8 +96,8 @@ class Trainer():
                 inputs, labels = data['image'],data['label']
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
-                norm = transforms.Normalize((0.006187),(0.03251))
-                inputs = norm(inputs)
+                #norm = transforms.Normalize((0.006187),(0.03251))
+                #inputs = norm(inputs)
                 labels = labels.reshape(1,self.NB_LABEL)
                 inputs, labels = inputs.to(self.device),labels.to(self.device)
                 # loss

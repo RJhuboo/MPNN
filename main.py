@@ -37,7 +37,7 @@ parser.add_argument("--nb_epochs", type=int, default = 5, help = "number of epoc
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--cross_val", default = False, help = "mode training")
-parser.add_argument("--k_fold", type=int, default = 5, help = "number of splitting for k cross-validation")
+parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitting for k cross-validation")
 parser.add_argument("--n1", type=int, default = 240, help = "number of neurons in the first layer of the neural network")
 parser.add_argument("--n2", type=int, default = 120, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
@@ -48,7 +48,6 @@ opt = parser.parse_args()
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = 14
-
 '''functions'''
 
 ## RESET WEIGHT FOR CROSS VALIDATION
@@ -172,7 +171,7 @@ def train():
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(resultat, f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method) + " + normalization image"
+        history = "nof: " + str(opt.nof) + " nbbatch:"+ opt.batch_size + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method) 
         pickle.dump(history,g)
       
 
