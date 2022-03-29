@@ -114,7 +114,7 @@ class Trainer():
                 mse_score += MSE(outputs,labels)
 
                 outputs,labels=outputs.reshape(1,self.NB_LABEL), labels.reshape(1,self.NB_LABEL)
-                if self.opt.norm_method == "standardization":
+                if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs,labels = self.scaler.inverse_transform(outputs), self.scaler.inverse_transform(labels)
                 output[i] = outputs
                 label[i] = labels
