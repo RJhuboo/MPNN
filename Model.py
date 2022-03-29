@@ -11,7 +11,7 @@ class NeuralNet(nn.Module):
         self.fc1 = nn.Linear(64*64*64,n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
-        #self.fc5 = nn.Linear(n3,n3/2)
+        #self.fc5 = nn.Linear(n3,20)
         self.fc4 = nn.Linear(n3,out_channels)
     def forward(self,x):
         x = torch.flatten(x,1)
@@ -154,7 +154,7 @@ def ResNet152(num_classes, channels=1):
  
 ## 3 CNN model ##
 class ConvNet(nn.Module):
-    def __init__(self,features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
+    def __init__(self,features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=1):
         super(ConvNet,self).__init__()
         # initialize CNN layers 
         self.conv1 = nn.Conv2d(1,features,kernel_size = k1,stride = 1, padding = 1)
@@ -211,9 +211,17 @@ class UNet(nn.Module):
         )
         self.decoder1 = UNet._block(features * 2, features, name="dec1")
 
-        self.conv = nn.Conv2d(
-            in_channels=features, out_channels=out_channels, kernel_size=1
-        )
+
+        #self.conv = nn.Conv2d(
+        #    in_channels=features, out_channels=out_channels, kernel_size=1
+        #)
+
+        self.conv = nn.Conv2d(in_channels=features, out_channels=features*3, kernel_size=3,stride=1,padding=1)
+        self.pool5 = nn.MaxPool2d(kernel_size=2,stride=2)
+        self.conv2 = nn.Conv2d(in_channels=features*3, out_channels=features*2,kernel_size=3,stride=1,padding=1)
+        self.pool6 = nn.MaxPool2d(kernel_size=2,stride=2)
+        self.conv3 = nn.Conv2d(features*2,64,kernel_size=3,stride=1,padding=1)
+        self.pool7 = nn.MaxPool2d(kernel_size=2,stride=2)
         
         self.neural = NeuralNet(n1,n2,n3,nb_label)
         
@@ -237,7 +245,10 @@ class UNet(nn.Module):
         dec1 = self.upconv1(dec2)
         dec1 = torch.cat((dec1, enc1), dim=1)
         dec1 = self.decoder1(dec1)
-        return self.neural(dec1)
+        x = self.pool5(F.relu(self.conv(dec1)))
+        x = self.pool6(F.relu(self.conv2(x)))
+        x = self.pool7(F.relu(self.conv3(x)))
+        return self.neural(x)
 
     @staticmethod
     def _block(in_channels, features, name):

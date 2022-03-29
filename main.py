@@ -26,13 +26,13 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./data/HR_trab", help = "path to image directory")
+parser.add_argument("--image_dir", default = "./data/ROI_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 #parser.add_argument("--test_cross",default = "./cross_validation.pkl")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 8, help = "number of filter")
-parser.add_argument("--lr", type=int, default = 0.001, help = "learning rate")
+parser.add_argument("--lr", type=float, default = 0.001, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 5, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
@@ -41,7 +41,7 @@ parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitti
 parser.add_argument("--n1", type=int, default = 240, help = "number of neurons in the first layer of the neural network")
 parser.add_argument("--n2", type=int, default = 120, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
-parser.add_argument("--nb_workers", default = 0, help ="number of workers for datasets")
+parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "L2", help = "choose how to normalize bio parameters")
 
 opt = parser.parse_args()
@@ -82,6 +82,8 @@ def cross_validation():
     datasets = split[0]
     if opt.norm_method == "standardization":
         scaler = dataloader.standardization(opt.label_dir)
+    else:
+        scaler = None
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
     kf.get_n_splits(datasets)
     score_train = []
