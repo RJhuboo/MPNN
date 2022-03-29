@@ -8,9 +8,12 @@ from torchvision import transforms, utils
 import argparse
 from sklearn import preprocessing
 
-def standardization(csv_file):
+def normalization(csv_file,mode):
     Data = pd.read_csv(csv_file)
-    scaler = preprocessing.StandardScaler()
+    if mode == "standardization":
+        scaler = preprocessing.StandardScaler()
+    elif mode == "minmax":
+        scaler = preprocessing.MinMaxScaler()
     scaler.fit(Data.iloc[:,1:])
     return scaler
 
