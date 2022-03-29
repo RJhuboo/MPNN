@@ -9,6 +9,8 @@ from torch.utils.data import Dataset, DataLoader
 import random
 import pickle
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+
 from sklearn.model_selection import train_test_split
 import Model
 from trainer import Trainer
@@ -80,8 +82,8 @@ def cross_validation():
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
     split = train_test_split(datasets,test_size = 0.2,random_state =1)
     datasets = split[0]
-    if opt.norm_method == "standardization":
-        scaler = dataloader.standardization(opt.label_dir)
+    if opt.norm_method == "standardization" or opt.norm_method == "minmax":
+        scaler = dataloader.normalization(opt.label_dir,opt.norm_method)
     else:
         scaler = None
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
