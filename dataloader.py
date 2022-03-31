@@ -21,7 +21,7 @@ class Datasets(Dataset):
     def __init__(self, csv_file, image_dir, opt, transform=None):
         self.opt = opt
         self.image_dir = image_dir
-        self.labels = csv_file
+        self.labels = pd.read_csv(csv_file)
         self.transform = transform
     def __len__(self):
         return len(self.labels)
