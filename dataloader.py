@@ -53,7 +53,7 @@ class Datasets(Dataset):
         #sample = {'image': image, 'label': labels}
         #if self.transform:
             #sample = self.transform(sample)
-        return image, labels
+        return {"images":image,"labels":labels}
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
