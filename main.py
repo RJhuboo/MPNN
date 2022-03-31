@@ -76,22 +76,23 @@ def cross_validation():
             os.mkdir(save_folder)
             break
     
-    csv_file = pd.read_csv(opt.label_dir)
     split = train_test_split(csv_file,test_size = 0.2,random_state=1)
-    datasets = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
-    if opt.norm_method == "standardization" or opt.norm_method == "minmax":
-        scaler = dataloader.normalization(split[0],opt.norm_method)
-    else:
-        scaler = None
+    x_train, y_train = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
-    kf.get_n_splits(datasets)
+    kf.get_n_splits(y_train)
     score_train = []
     score_test = []
     score_mse_t = []
     score_mse_v = []
     print("start cross validation")
-    for train_index, test_index in kf.split(datasets):
+    for train_index, test_index in kf.split(y_train):
         print("Train:", train_index[1:4],"Test:",test_index[1:4])
+        if opt.norm_method == "standardization" or opt.norm_method == "minmax":
+          scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
+        else:
+          scaler = None
+        y_train = scaler.transform(y_train)
+        datasets = {"image":x_train,"label":y_train}
         trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = opt.nb_workers )
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt.nb_workers )
 
