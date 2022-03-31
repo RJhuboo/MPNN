@@ -144,16 +144,15 @@ def train():
             break
 
     # defining data
-    csv_file = pd.read_csv(opt.label_dir)
-    split = train_test_split(data,test_size=0.2,random_state=1)
-    testdatasets = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir) # Create dataset
-    traindatasets = dataloader.Datasets(csv_file = split[1], image_dir = opt.image_dir) # Create dataset
+    index = range(NB_DATA)
+    split = train_test_split(index,test_size = 0.2,random_state=1)
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
     print("start training")
-    trainloader = DataLoader(traindatasets, batch_size = opt.batch_size, num_workers = opt.nb_workers )
-    testloader =DataLoader(testdatasets, batch_size = 1, num_workers = opt.nb_workers )
+    trainloader = DataLoader(traindatasets, batch_size = opt.batch_size, sampler = split[0] num_workers = opt.nb_workers )
+    testloader =DataLoader(testdatasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
 
     if opt.norm_method == "standardization" or opt.norm_method == "minmax":
-        scaler = dataloader.normalization(split[0],opt.norm_method)
+        scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
     else:
         scaler = None
     # defining the model
@@ -182,7 +181,7 @@ def train():
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(resultat, f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " nbbatch:"+ opt.batch_size + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method) 
+        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
         pickle.dump(history,g)
       
 
