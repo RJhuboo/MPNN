@@ -78,12 +78,12 @@ def cross_validation():
             save_folder = "./result/cross"+str(i)
             os.mkdir(save_folder)
             break
-
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt) # Create dataset
-    split = train_test_split(datasets,test_size = 0.2,random_state =1)
-    datasets = split[0]
+    
+    csv_file = pd.read_csv(opt.label)
+    split = train_test_split(csv_file,test_size = 0.2,random_state=1)
+    datasets = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
     if opt.norm_method == "standardization" or opt.norm_method == "minmax":
-        scaler = dataloader.normalization(opt.label_dir,opt.norm_method)
+        scaler = dataloader.normalization(split[0],opt.norm_method)
     else:
         scaler = None
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
@@ -144,11 +144,18 @@ def train():
             break
 
     # defining data
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir) # Create dataset
-    split = train_test_split(data,test_size = 0.2,random_state =1)
+    csv_file = pd.read_csv(opt.label_dir)
+    split = train_test_split(data,test_size=0.2,random_state=1)
+    testdatasets = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir) # Create dataset
+    traindatasets = dataloader.Datasets(csv_file = split[1], image_dir = opt.image_dir) # Create dataset
     print("start training")
-    trainloader = DataLoader(split[0], batch_size = opt.batch_size, num_workers = opt.nb_workers )
-    testloader =DataLoader(split[1], batch_size = 1, num_workers = opt.nb_workers )
+    trainloader = DataLoader(traindatasets, batch_size = opt.batch_size, num_workers = opt.nb_workers )
+    testloader =DataLoader(testdatasets, batch_size = 1, num_workers = opt.nb_workers )
+
+    if opt.norm_method == "standardization" or opt.norm_method == "minmax":
+        scaler = dataloader.normalization(split[0],opt.norm_method)
+    else:
+        scaler = None
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
