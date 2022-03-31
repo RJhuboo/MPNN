@@ -154,7 +154,7 @@ def ResNet152(num_classes, channels=1):
  
 ## 3 CNN model ##
 class ConvNet(nn.Module):
-    def __init__(self,features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=1):
+    def __init__(self,features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
         super(ConvNet,self).__init__()
         # initialize CNN layers 
         self.conv1 = nn.Conv2d(1,features,kernel_size = k1,stride = 1, padding = 1)

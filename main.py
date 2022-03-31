@@ -68,10 +68,7 @@ def reset_weights(m):
 
 def cross_validation():
     # Create the folder where to save results and checkpoints
-    i=1
-    if os.path.isdir("./result/cross"+str(i)) == False:
-        save_folder = "./result/cross"+str(i)
-        os.mkdir(save_folder)
+    i=0
     while True:
         i += 1
         if os.path.isdir("./result/cross"+str(i)) == False:
@@ -79,7 +76,7 @@ def cross_validation():
             os.mkdir(save_folder)
             break
     
-    csv_file = pd.read_csv(opt.label)
+    csv_file = pd.read_csv(opt.label_dir)
     split = train_test_split(csv_file,test_size = 0.2,random_state=1)
     datasets = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
     if opt.norm_method == "standardization" or opt.norm_method == "minmax":

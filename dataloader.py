@@ -9,7 +9,7 @@ import argparse
 from sklearn import preprocessing
 
 def normalization(csv_file,mode):
-    Data = cvs_file
+    Data = csv_file
     if mode == "standardization":
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
