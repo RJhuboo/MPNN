@@ -75,7 +75,8 @@ def cross_validation():
             save_folder = "./result/cross"+str(i)
             os.mkdir(save_folder)
             break
-    
+            
+    csv_file = pd.read_csv(opt.label_dir)
     split = train_test_split(csv_file,test_size = 0.2,random_state=1)
     x_train, y_train = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
