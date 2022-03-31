@@ -8,8 +8,7 @@ from torchvision import transforms, utils
 import argparse
 from sklearn import preprocessing
 
-def normalization(csv_file,mode):
-    Data = csv_file
+def normalization(Data,mode):
     if mode == "standardization":
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
@@ -32,28 +31,28 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
-        if self.opt.norm_method== "L2":
-            lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
-        elif self.opt.norm_method == "L1":
-            lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
-        elif self.opt.norm_method == "minmax":
-            scaler = preprocessing.MinMaxScaler()
-            scaler.fit(self.labels.iloc[:,1:])
-            lab = scaler.transform(self.labels.iloc[:,1:])
-        elif self.opt.norm_method == "standardization":
-            scaler = preprocessing.StandardScaler()
-            scaler.fit(self.labels.iloc[:,1:])
-            lab = scaler.transform(self.labels.iloc[:,1:])
+        #if self.opt.norm_method== "L2":
+        #    lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
+        #elif self.opt.norm_method == "L1":
+        #    lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
+        #elif self.opt.norm_method == "minmax":
+        #    scaler = preprocessing.MinMaxScaler()
+        #    scaler.fit(self.labels.iloc[:,1:])
+        #    lab = scaler.transform(self.labels.iloc[:,1:])
+        #elif self.opt.norm_method == "standardization":
+        #    scaler = preprocessing.StandardScaler()
+        #    scaler.fit(self.labels.iloc[:,1:])
+        #    lab = scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
         lab.columns = self.labels.columns
         labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
         labels = labels.astype('float32')
-        sample = {'image': image, 'label': labels}
-        if self.transform:
-            sample = self.transform(sample)
-        return sample
+        #sample = {'image': image, 'label': labels}
+        #if self.transform:
+            #sample = self.transform(sample)
+        return image, labels
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
@@ -69,7 +68,7 @@ class Test_Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
-        sample = {'image': image}
-        if self.transform:
-            sample = self.transform(sample)
-        return sample
+        #sample = {'image': image}
+        #if self.transform:
+        #    sample = self.transform(sample)
+        return image
