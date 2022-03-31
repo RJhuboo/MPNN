@@ -45,7 +45,7 @@ class Datasets(Dataset):
             scaler = preprocessing.StandardScaler()
             scaler.fit(self.labels.iloc[self.indices,1:])
             lab = scaler.transform(self.labels.iloc[:,1:])
-        lab = pd.DataFrame(self.labels)
+        lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
         lab.columns = self.labels.columns
         labels = lab.iloc[idx,1:] # Takes all corresponding labels
