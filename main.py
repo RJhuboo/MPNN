@@ -47,6 +47,7 @@ parser.add_argument("--nb_workers", type=int, default = 0, help ="number of work
 parser.add_argument("--norm_method", type=str, default = "L2", help = "choose how to normalize bio parameters")
 
 opt = parser.parse_args()
+NB_DATA = 3991
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = 14
@@ -76,24 +77,24 @@ def cross_validation():
             os.mkdir(save_folder)
             break
             
-    csv_file = pd.read_csv(opt.label_dir)
-    split = train_test_split(csv_file,test_size = 0.2,random_state=1)
-    x_train, y_train = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
+    index = range(NB_DATA)
+    split = train_test_split(index,test_size = 0.2,random_state=1)
+    #datasets = dataloader.Datasets(csv_file = split[0], image_dir = opt.image_dir, opt=opt) # Create dataset
     kf = KFold(n_splits = opt.k_fold, shuffle=True)
-    kf.get_n_splits(y_train)
+    kf.get_n_splits(split[0])
     score_train = []
     score_test = []
     score_mse_t = []
     score_mse_v = []
     print("start cross validation")
-    for train_index, test_index in kf.split(y_train):
+    for train_index, test_index in kf.split(split[0]):
         print("Train:", train_index[1:4],"Test:",test_index[1:4])
         if opt.norm_method == "standardization" or opt.norm_method == "minmax":
           scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
         else:
           scaler = None
-        y_train = scaler.transform(y_train)
-        datasets = {"image":x_train,"label":y_train}
+          
+        datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, train_index) # Create dataset
         trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = train_index,  num_workers = opt.nb_workers )
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt.nb_workers )
 
