@@ -14,7 +14,7 @@ def normalization(csv_file,mode,indices):
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
         scaler = preprocessing.MinMaxScaler()
-    scaler.fit(Data.iloc[indices])
+    scaler.fit(Data.iloc[indices,1:])
     return scaler
 
 class Datasets(Dataset):
@@ -39,11 +39,11 @@ class Datasets(Dataset):
             lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
         elif self.opt.norm_method == "minmax":
             scaler = preprocessing.MinMaxScaler()
-            scaler.fit(self.labels.iloc[self.indices])
+            scaler.fit(self.labels.iloc[self.indices,1:])
             lab = scaler.transform(self.labels.iloc[:,1:])
         elif self.opt.norm_method == "standardization":
             scaler = preprocessing.StandardScaler()
-            scaler.fit(self.labels.iloc[self.indices])
+            scaler.fit(self.labels.iloc[self.indices,1:])
             lab = scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(self.labels)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
