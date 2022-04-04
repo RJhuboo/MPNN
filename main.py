@@ -27,7 +27,7 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Label.csv", help = "path to label csv file")
+parser.add_argument("--label_dir", default = "./Label_5p.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/ROI_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 #parser.add_argument("--test_cross",default = "./cross_validation.pkl")
@@ -142,14 +142,17 @@ def train():
             save_folder = "./result/train"+str(i)
             os.mkdir(save_folder)
             break
-
+    score_train = []
+    score_test = []
+    score_mse_t = []
+    score_mse_v = []
     # defining data
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
     print("start training")
-    trainloader = DataLoader(traindatasets, batch_size = opt.batch_size, sampler = split[0], num_workers = opt.nb_workers )
-    testloader =DataLoader(testdatasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = split[0], num_workers = opt.nb_workers )
+    testloader =DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
 
     if opt.norm_method == "standardization" or opt.norm_method == "minmax":
         scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
