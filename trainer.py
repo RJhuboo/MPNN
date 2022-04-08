@@ -24,7 +24,7 @@ class Trainer():
         self.device = device
         self.opt = opt
         self.model = my_model
-        self.NB_LABEL = 14
+        self.NB_LABEL = opt.NB_LABEL
         self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
         self.criterion = MSELoss()
         

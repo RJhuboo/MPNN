@@ -45,12 +45,12 @@ parser.add_argument("--n2", type=int, default = 120, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "L2", help = "choose how to normalize bio parameters")
-
+parser.add_argument("--NB_LABEL", type=int, default = 5, help = "specify the number of labels")
 opt = parser.parse_args()
 NB_DATA = 3991
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
-NB_LABEL = 14
+NB_LABEL = opt.NB_LABEL
 '''functions'''
 
 ## RESET WEIGHT FOR CROSS VALIDATION
