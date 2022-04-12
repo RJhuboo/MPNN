@@ -91,10 +91,11 @@ def reset_weights(m):
         weight leakage.
     '''
     for layer in m.children():
-    if hasattr(layer, 'reset_parameters'):
-        print(f'Reset trainable parameters of layer = {layer}')
-        layer.reset_parameters()
-def train(model,trainloader, optimizer, epoch ,steps_per_epochs=20):
+        if hasattr(layer, 'reset_parameters'):
+            print(f'Reset trainable parameters of layer = {layer}')
+            layer.reset_parameters()
+
+def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     model.train()
     print("starting training")
     print("----------------")
@@ -113,8 +114,6 @@ def train(model,trainloader, optimizer, epoch ,steps_per_epochs=20):
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs)
-        print(outputs.shape)
-        print(labels.shape)
         Loss = MSELoss()
         loss = Loss(outputs,labels)
         loss.backward()
@@ -126,8 +125,6 @@ def train(model,trainloader, optimizer, epoch ,steps_per_epochs=20):
         outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
         labels, outputs = np.array(labels), np.array(outputs)
         labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
-        r2 = r2_score(labels,outputs)
-        r2_s += r2
         #Loss = MSELoss()
         mse_score += loss
         if i % opt['batch_size'] == opt['batch_size']-1:
@@ -136,13 +133,12 @@ def train(model,trainloader, optimizer, epoch ,steps_per_epochs=20):
             running_loss = 0.0
     # displaying results
     mse = mse_score / i
-    r2_s = r2_s/i
-    print('Epoch [{}], Loss: {}, R square: {}'.format(epoch+1, train_loss/train_total, r2_s), end='')
+    print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
     print('Finished Training')
 
     return mse
 
-def test(model,testloader,epoch):
+def test(model,testloader,epoch,opt):
     model.eval()
 
     test_loss = 0
@@ -172,10 +168,8 @@ def test(model,testloader,epoch):
             outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             labels, outputs = np.array(labels), np.array(outputs)
             labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
-            r2 = r2_score(labels,outputs)
-            r2_s += r2
             #Loss = MSELoss()
-            mse_score += loss
+            mse_score += test_loss
 
             outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
             output[i] = outputs
@@ -185,8 +179,8 @@ def test(model,testloader,epoch):
         mse = mse_score/i
 
 
-    r2_s = r2_s/i
-    print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total, r2_s))
+
+    print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total))
     return mse
 
 def objective(trial):
@@ -225,8 +219,8 @@ def objective(trial):
     model.apply(reset_weights)
     optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
     for epoch in range(opt['nb_epochs']):
-        mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch))
-        mse_test.append(test(model=model,testloader=testloader,epoch=epoch))
+        mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
+        mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
     return max(mse_test)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
