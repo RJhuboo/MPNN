@@ -19,6 +19,8 @@ from sklearn.model_selection import train_test_split
 import torch.nn as nn
 import torch.nn.functional as F
 import optuna
+import joblib
+from math import isnan
 
 NB_DATA = 3991
 NB_LABEL = 5
@@ -116,6 +118,10 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         outputs = model(inputs)
         Loss = MSELoss()
         loss = Loss(outputs,labels)
+        if isnan(loss) == True:
+            print(outputs)
+            print(labels)
+
         loss.backward()
         optimizer.step()
         # statistics
@@ -180,7 +186,7 @@ def test(model,testloader,epoch,opt):
 
 
 
-    print(' Test_loss: {}, Test_R_square: {}'.format(test_loss/test_total))
+    print(' Test_loss: {}'.format(test_loss/test_total))
     return mse
 
 def objective(trial):
@@ -193,7 +199,7 @@ def objective(trial):
            'batch_size' : 8,
            'model' : "ConvNet",
            'nof' : 8,
-           'lr': trial.suggest_loguniform('lr',1e-3,1e-2),
+           'lr': trial.suggest_loguniform('lr',1e-4,1e-3),
            'nb_epochs' : 5,
            'checkpoint_path' : "./",
            'mode': "Train",
@@ -204,7 +210,7 @@ def objective(trial):
            'n3' : 60,
            'nb_workers' : 0,
            'norm_method':"standardization",
-           'optimizer' :  trial.suggest_categorical('optimizer',[SGD, Adam])
+           'optimizer' :  Adam
 
           }
     
@@ -216,7 +222,7 @@ def objective(trial):
     trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = split[0], num_workers = opt['nb_workers'] )
     testloader =DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt['nb_workers'] )
     model = ConvNet(features =opt['nof'],out_channels=NB_LABEL,k1 = 3,k2 = 3,k3= 3).to(device)
-    model.apply(reset_weights)
+    #model.apply(reset_weights)
     optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
     for epoch in range(opt['nb_epochs']):
         mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
@@ -225,14 +231,14 @@ def objective(trial):
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
 
-if torch.cuda.is_available():  
-  device = "cuda:0"
-  print("running on gpu")
+if torch.cuda.is_available():
+    device = "cuda:0"
+    print("running on gpu")
 else:  
-  device = "cpu"
-  print("running on cpu")
+    device = "cpu"
+    print("running on cpu")
     
-study.optimize(objective,n_trials=20)
-joblid.dump(study,'./train_optuna.pkl')
-
+study.optimize(objective,n_trials=4)
+with open("./train_optuna.pkl","wb") as f:
+    pickle.dump(study,f)
 
