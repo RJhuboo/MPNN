@@ -234,7 +234,7 @@ def objective(trial):
            'nb_workers' : 0,
            'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
-           'activation' : trial.suggest_categorical("activation", [F.relu, nn.Sigmoid])
+           'activation' : trial.suggest_categorical("activation", [F.relu])
                                                     
           }
     
