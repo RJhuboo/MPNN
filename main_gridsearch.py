@@ -29,6 +29,15 @@ RESIZE_IMAGE = 512
 
 study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
 
+def normalization(csv_file,mode,indices):
+    Data = pd.read_csv(csv_file)
+    if mode == "standardization":
+        scaler = preprocessing.StandardScaler()
+    elif mode == "minmax":
+        scaler = preprocessing.MinMaxScaler()
+    scaler.fit(Data.iloc[indices,1:])
+    return scaler
+
 class Datasets(Dataset):
     def __init__(self, csv_file, image_dir, opt, indices,transform=None):
         self.opt = opt
@@ -45,48 +54,62 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
-        labels = self.labels.iloc[idx,1:] # Takes all corresponding labels
+        if self.opt.norm_method== "L2":
+            lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
+        elif self.opt.norm_method == "L1":
+            lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
+        elif self.opt.norm_method == "minmax":
+            scaler = preprocessing.MinMaxScaler()
+            scaler.fit(self.labels.iloc[self.indices,1:])
+            lab = scaler.transform(self.labels.iloc[:,1:])
+        elif self.opt.norm_method == "standardization":
+            scaler = preprocessing.StandardScaler()
+            scaler.fit(self.labels.iloc[self.indices,1:])
+            lab = scaler.transform(self.labels.iloc[:,1:])
+        lab = pd.DataFrame(lab)
+        lab.insert(0,"File name", self.labels.iloc[:,0], True)
+        lab.columns = self.labels.columns
+        labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
         labels = labels.astype('float32')
-        return {"image":image,"label":labels}
+        if self.transform:
+            sample = self.transform(sample)
+        return {'image': image, 'label': labels}
+    
 class NeuralNet(nn.Module):
-    def __init__(self,n1,n2,n3,out_channels):
+    def __init__(self,activation,n1,n2,n3,out_channels):
         super().__init__()
         self.fc1 = nn.Linear(64*64*64,n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
-        #self.fc5 = nn.Linear(n3,20)
         self.fc4 = nn.Linear(n3,out_channels)
+        self.activation = activation
     def forward(self,x):
         x = torch.flatten(x,1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        #x = F.relu(self.fc5(x))
+        x = self.activation(self.fc1(x))
+        x = self.activation(self.fc2(x))
+        x = self.activation(self.fc3(x))
         x = self.fc4(x)
         return x
 class ConvNet(nn.Module):
-    def __init__(self,features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
+    def __init__(self,activation, features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
         super(ConvNet,self).__init__()
         # initialize CNN layers 
         self.conv1 = nn.Conv2d(1,features,kernel_size = k1,stride = 1, padding = 1)
         self.conv2 = nn.Conv2d(features,features*2, kernel_size = k2, stride = 1, padding = 1)
         self.conv3 = nn.Conv2d(features*2,64, kernel_size = k3, stride = 1, padding = 1)
         self.pool = nn.MaxPool2d(2,2)
+        self.activation = activation
         # initialize NN layers
-        #self.fc1 = nn.Linear(64**3,n1)
-        #self.fc2 = nn.Linear(n1,n2)
-        #self.fc3 = nn.Linear(n2,14)
-        self.neural = NeuralNet(n1,n2,n3,out_channels)
-        # dropout
-        # self.dropout = nn.Dropout(0.25)
+        self.neural = NeuralNet(activation,n1,n2,n3,out_channels)
+        
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
+        x = self.pool(self.activation(self.conv1(x)))
+        x = self.pool(self.activation(self.conv2(x)))
+        x = self.pool(self.activation(self.conv3(x)))
         x = self.neural(x)
-        #x = torch.flatten(x,1)
         return x 
+    
 def reset_weights(m):
     '''
         Try resetting model weights to avoid
@@ -196,38 +219,46 @@ def objective(trial):
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
-           'batch_size' : 8,
+           'batch_size' : trial.suggest_int('batch_size',8,32,step=8),
            'model' : "ConvNet",
-           'nof' : 8,
-           'lr': trial.suggest_loguniform('lr',1e-4,1e-3),
-           'nb_epochs' : 5,
+           'nof' : trial.suggest_int('nof',8,64),
+           'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
+           'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : 240,
-           'n2' : 120,
-           'n3' : 60,
+           'n1' : trial.suggest_int('n1', 100,300),
+           'n2' : trial.suggest_int('n2',100,300),
+           'n3' : trial.suggest_int('n2',100,300),
            'nb_workers' : 0,
-           'norm_method':"standardization",
-           'optimizer' :  Adam
-
+           'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
+           'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
+           'activation' : trial.suggest_categorical("activation", [F.relu, nn.Sigmoid])
+                                                    
           }
     
     # defining data
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
-    datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = split[0]) # Create dataset
+    kf = KFold(n_splits = opt(['k_fold'], shuffle=True))
+    kf.get_n_splits(split[0])
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = split[0], num_workers = opt['nb_workers'] )
-    testloader =DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt['nb_workers'] )
-    model = ConvNet(features =opt['nof'],out_channels=NB_LABEL,k1 = 3,k2 = 3,k3= 3).to(device)
-    #model.apply(reset_weights)
-    optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
-    for epoch in range(opt['nb_epochs']):
-        mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-        mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
-    return max(mse_test)
+    for train_index, test_index in kf.split(split[0]):
+        if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
+            scaler = dataloader.normalization(opt['label_dir'],opt['norm_method'],train_index)
+        else:
+            scaler = None
+        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index) # Create dataset
+        trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
+        testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
+        model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
+        model.apply(reset_weights)
+        optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
+        for epoch in range(opt['nb_epochs']):
+            mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
+            mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
+    return min(mse_test)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
 
@@ -238,7 +269,7 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=4)
+study.optimize(objective,n_trials=30)
 with open("./train_optuna.pkl","wb") as f:
     pickle.dump(study,f)
 
