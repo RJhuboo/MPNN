@@ -111,7 +111,7 @@ def cross_validation():
         else:
             print("## Choose model : Unet ##")
             model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
-            model.apply(reset_weights)
+        model.apply(reset_weights)
         t = Trainer(opt,model,device,save_folder,scaler)
         for epoch in range(opt.nb_epochs):
             [r2_train,mse_train] = t.train(trainloader,epoch)
@@ -171,7 +171,7 @@ def train():
     else:
         print("## Choose model : Unet ##")
         model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
-        model.apply(reset_weights)
+    model.apply(reset_weights)
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
         [r2_train,mse_train] = t.train(trainloader,epoch)
