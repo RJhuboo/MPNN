@@ -241,7 +241,7 @@ def objective(trial):
     # defining data
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
-    kf = KFold(n_splits = opt(['k_fold'], shuffle=True))
+    kf = KFold(n_splits = opt['k_fold'], shuffle=True)
     kf.get_n_splits(split[0])
     print("start training")
     for train_index, test_index in kf.split(split[0]):
