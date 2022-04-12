@@ -51,10 +51,9 @@ class Datasets(Dataset):
         labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
         labels = labels.astype('float32')
-        #sample = {'image': image, 'label': labels}
-        #if self.transform:
-            #sample = self.transform(sample)
-        return X=image,y=labels
+        if self.transform:
+            sample = self.transform(sample)
+        return {'image': image, 'label': labels}
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
