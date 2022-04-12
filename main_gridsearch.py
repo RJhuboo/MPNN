@@ -58,18 +58,21 @@ else:
 net = NeuralNetClassifier(
     Model.ConvNet(features = opt.nof,out_channels=NB_LABEL),
     max_epochs = 10,
-    iterator_train__num_workers=0,
-    iterator_valid__num_workers=0,
+    iterator_train__num_workers=4,
+    iterator_valid__num_workers=4,
     lr=0.001,
     batch_size=8,
     optimizer=optim.Adam,
-    criterion=torch.nn.MSELoss
+    criterion=torch.nn.MSELoss,
+    device=device
 )
 
 index = range(NB_DATA)
 split = train_test_split(index,test_size = 0.2,random_state=1)
 scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
 datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices =split[0]) # Create dataset
-y_train = np.array([data['label'] for i,data in enumerate(datasets)])
-x_train = np.array([x for x, y in iter(trainloader)])
-net.fit(x_train,y=y_train)
+trainloader = DataLoader(datasets, num_workers = 4)
+#y_train = np.array([data['label'] for i,data in enumerate(datasets)])
+#y_train = np.resize(y_train,[3991,5])
+#x_train = np.array([data['image'] for i,data in enumerate(datasets)])
+net.fit(datasets)
