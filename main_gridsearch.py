@@ -246,7 +246,7 @@ def objective(trial):
     print("start training")
     for train_index, test_index in kf.split(split[0]):
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
-            scaler = dataloader.normalization(opt['label_dir'],opt['norm_method'],train_index)
+            scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
             scaler = None
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index) # Create dataset
