@@ -291,5 +291,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=30)
-with open("./train_optuna.pkl","wb") as f:
+with open("./train_multitasking.pkl","wb") as f:
     pickle.dump(study,f)
