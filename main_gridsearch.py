@@ -167,11 +167,11 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         train_loss += loss.item()
         running_loss += loss.item()
         train_total += labels.size(0)
-        outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-        labels, outputs = np.array(labels), np.array(outputs)
-        labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
+        #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+        #labels, outputs = np.array(labels), np.array(outputs)
+        #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
         #Loss = MSELoss()
-        mse_score += loss
+        mse_score += train_loss
         if i % opt['batch_size'] == opt['batch_size']-1:
             print('[%d %5d], loss: %.3f' %
                   (epoch + 1, i+1, running_loss/opt['batch_size']))
@@ -210,17 +210,22 @@ def test(model,testloader,epoch,opt):
             test_loss += Loss(outputs,labels)
             test_total += labels.size(0)
             # statistics
-            outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            labels, outputs = np.array(labels), np.array(outputs)
-            labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
-            #Loss = MSELoss()
-            mse_score += test_loss
+            #outputs[0], labels[0] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[1], labels[1] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[2], labels[2] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[3], labels[3] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[4], labels[4] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
 
-            outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
-            output[i] = outputs
-            label[i] = labels
-        name_out = "./output" + str(epoch) + ".txt"
-        name_lab = "./label" + str(epoch) + ".txt"
+            #labels, outputs = np.array(labels), np.array(outputs)
+            #labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
+            #Loss = MSELoss()
+            mse_score += loss.item()
+
+            #outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
+            #output[i] = outputs
+            #label[i] = labels
+        #name_out = "./output" + str(epoch) + ".txt"
+        #name_lab = "./label" + str(epoch) + ".txt"
         mse = mse_score/i
 
 
