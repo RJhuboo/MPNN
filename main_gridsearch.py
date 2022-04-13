@@ -108,7 +108,8 @@ class ConvNet(nn.Module):
         x = self.pool(self.activation(self.conv2(x)))
         x = self.pool(self.activation(self.conv3(x)))
         x = self.neural(x)
-        return x 
+        return x
+
     
 def reset_weights(m):
     '''
@@ -129,6 +130,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     running_loss = 0.0
     r2_s = 0
     mse_score = 0.0
+
     for i, data in enumerate(trainloader,0):
         inputs, labels = data['image'], data['label']
         # reshape
@@ -140,6 +142,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # forward backward and optimization
         outputs = model(inputs)
         Loss = MSELoss()
+
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
             print(outputs)
@@ -231,7 +234,7 @@ def objective(trial):
            'n1' : trial.suggest_int('n1', 100,300),
            'n2' : trial.suggest_int('n2',100,300),
            'n3' : trial.suggest_int('n2',100,300),
-           'nb_workers' : 0,
+           'nb_workers' : 4,
            'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu])
