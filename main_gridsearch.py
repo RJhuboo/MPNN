@@ -101,14 +101,21 @@ class ConvNet(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.activation = activation
         # initialize NN layers
-        self.neural = NeuralNet(activation,n1,n2,n3,out_channels)
-        
+        self.neural_p1 = NeuralNet(activation,n1,n2,n3,out_channels)
+        self.neural_p2 = NeuralNet(activation,n1,n2,n3,out_channels)
+        self.neural_p3 = NeuralNet(activation,n1,n2,n3,out_channels)
+        self.neural_p4 = NeuralNet(activation,n1,n2,n3,out_channels)
+        self.neural_p5 = NeuralNet(activation,n1,n2,n3,out_channels)
     def forward(self, x):
         x = self.pool(self.activation(self.conv1(x)))
         x = self.pool(self.activation(self.conv2(x)))
         x = self.pool(self.activation(self.conv3(x)))
-        x = self.neural(x)
-        return x 
+        p1 = self.neural(x)
+        p2 = self.neural(x)
+        p3 = self.neural(x)
+        p4 = self.neural(x)
+        p5 = self.neural(x)
+        return [p1,p2,p3,p4,p5]
     
 def reset_weights(m):
     '''
@@ -129,6 +136,12 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     running_loss = 0.0
     r2_s = 0
     mse_score = 0.0
+    alpha1 = trial.suggest_float("alpha1", 0, 2)
+    alpha2 = trial.suggest_float("alpha2", 0, 2)
+    alpha3 = trial.suggest_float("alpha3", 0, 2)
+    alpha4 = trial.suggest_float("alpha4", 0, 2)
+    alpha5 = trial.suggest_float("alpha5", 0, 2)
+    
     for i, data in enumerate(trainloader,0):
         inputs, labels = data['image'], data['label']
         # reshape
@@ -140,7 +153,14 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # forward backward and optimization
         outputs = model(inputs)
         Loss = MSELoss()
-        loss = Loss(outputs,labels)
+        loss1 = Loss(outputs[0],labels[0])
+        loss2 = Loss(outputs[1],labels[1])
+        loss3 = Loss(outputs[2],labels[2])
+        loss4 = Loss(outputs[3],labels[3])
+        loss5 = Loss(outputs[4],labels[4])
+        loss = (alpha1*loss1) + (alpha2*loss2) + (alpha3*loss3) + (alpha4*loss4) + (alpha5*loss5)
+        
+
         if isnan(loss) == True:
             print(outputs)
             print(labels)
@@ -234,7 +254,8 @@ def objective(trial):
            'nb_workers' : 4,
            'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
-           'activation' : trial.suggest_categorical("activation", [F.relu])
+           'activation' : trial.suggest_categorical("activation", [F.relu]),
+           
                                                     
           }
     
