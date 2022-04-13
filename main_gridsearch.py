@@ -208,6 +208,13 @@ def test(model,testloader,epoch,opt):
             # loss
             outputs = model(inputs)
             Loss = MSELoss()
+            labels = torch.transpose(labels,0,1)
+            loss1 = Loss(outputs[0],torch.reshape(labels[0],1,1]))
+            loss2 = Loss(outputs[1],torch.reshape(labels[1],1,1]))
+            loss3 = Loss(outputs[2],torch.reshape(labels[2],1,1]))
+            loss4 = Loss(outputs[3],torch.reshape(labels[3],1,1]))
+            loss5 = Loss(outputs[4],torch.reshape(labels[4],1,1]))
+            loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
             test_loss += Loss(outputs,labels)
             test_total += labels.size(0)
             # statistics
