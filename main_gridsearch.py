@@ -251,10 +251,10 @@ def objective(trial):
            'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),
-           'alpha1' : trial.suggest_float("alpha1", 0, 2)
-           'alpha2' : trial.suggest_float("alpha2", 0, 2)
-           'alpha3' : trial.suggest_float("alpha3", 0, 2)
-           'alpha4' : trial.suggest_float("alpha4", 0, 2)
+           'alpha1' : trial.suggest_float("alpha1", 0, 2),
+           'alpha2' : trial.suggest_float("alpha2", 0, 2),
+           'alpha3' : trial.suggest_float("alpha3", 0, 2),
+           'alpha4' : trial.suggest_float("alpha4", 0, 2),
            'alpha5' : trial.suggest_float("alpha5", 0, 2)
            
                                                     
