@@ -136,11 +136,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     running_loss = 0.0
     r2_s = 0
     mse_score = 0.0
-    alpha1 = trial.suggest_float("alpha1", 0, 2)
-    alpha2 = trial.suggest_float("alpha2", 0, 2)
-    alpha3 = trial.suggest_float("alpha3", 0, 2)
-    alpha4 = trial.suggest_float("alpha4", 0, 2)
-    alpha5 = trial.suggest_float("alpha5", 0, 2)
+
     
     for i, data in enumerate(trainloader,0):
         inputs, labels = data['image'], data['label']
@@ -158,7 +154,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         loss3 = Loss(outputs[2],labels[2])
         loss4 = Loss(outputs[3],labels[3])
         loss5 = Loss(outputs[4],labels[4])
-        loss = (alpha1*loss1) + (alpha2*loss2) + (alpha3*loss3) + (alpha4*loss4) + (alpha5*loss5)
+        loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
         
 
         if isnan(loss) == True:
@@ -255,6 +251,11 @@ def objective(trial):
            'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),
+           'alpha1' : trial.suggest_float("alpha1", 0, 2)
+           'alpha2' : trial.suggest_float("alpha2", 0, 2)
+           'alpha3' : trial.suggest_float("alpha3", 0, 2)
+           'alpha4' : trial.suggest_float("alpha4", 0, 2)
+           'alpha5' : trial.suggest_float("alpha5", 0, 2)
            
                                                     
           }
