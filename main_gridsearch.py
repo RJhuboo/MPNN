@@ -110,11 +110,11 @@ class ConvNet(nn.Module):
         x = self.pool(self.activation(self.conv1(x)))
         x = self.pool(self.activation(self.conv2(x)))
         x = self.pool(self.activation(self.conv3(x)))
-        p1 = self.neural(x)
-        p2 = self.neural(x)
-        p3 = self.neural(x)
-        p4 = self.neural(x)
-        p5 = self.neural(x)
+        p1 = self.neural_p1(x)
+        p2 = self.neural_p2(x)
+        p3 = self.neural_p3(x)
+        p4 = self.neural_p4(x)
+        p5 = self.neural_p5(x)
         return [p1,p2,p3,p4,p5]
     
 def reset_weights(m):
