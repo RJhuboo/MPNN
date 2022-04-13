@@ -101,11 +101,11 @@ class ConvNet(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.activation = activation
         # initialize NN layers
-        self.neural_p1 = NeuralNet(activation,n1,n2,n3,out_channels)
-        self.neural_p2 = NeuralNet(activation,n1,n2,n3,out_channels)
-        self.neural_p3 = NeuralNet(activation,n1,n2,n3,out_channels)
-        self.neural_p4 = NeuralNet(activation,n1,n2,n3,out_channels)
-        self.neural_p5 = NeuralNet(activation,n1,n2,n3,out_channels)
+        self.neural_p1 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p2 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p3 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p4 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p5 = NeuralNet(activation,n1,n2,n3,1)
     def forward(self, x):
         x = self.pool(self.activation(self.conv1(x)))
         x = self.pool(self.activation(self.conv2(x)))
@@ -149,11 +149,12 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # forward backward and optimization
         outputs = model(inputs)
         Loss = MSELoss()
-        loss1 = Loss(outputs[0],labels[0])
-        loss2 = Loss(outputs[1],labels[1])
-        loss3 = Loss(outputs[2],labels[2])
-        loss4 = Loss(outputs[3],labels[3])
-        loss5 = Loss(outputs[4],labels[4])
+        labels = torch.transpose(labels,0,1)
+        loss1 = Loss(outputs[0],torch.reshape(labels[0],[opt['batch_size'],1]))
+        loss2 = Loss(outputs[1],torch.reshape(labels[1],[opt['batch_size'],1]))
+        loss3 = Loss(outputs[2],torch.reshape(labels[2],[opt['batch_size'],1]))
+        loss4 = Loss(outputs[3],torch.reshape(labels[3],[opt['batch_size'],1]))
+        loss5 = Loss(outputs[4],torch.reshape(labels[4],[opt['batch_size'],1]))
         loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
         
 
