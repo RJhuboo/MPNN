@@ -298,7 +298,8 @@ def objective(trial):
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    with open("./best_epoch.pkl","wb") as f:
+    
+    with open("./result/best_epoch_trial.pkl","wb") as f:
         pickle.dump(i_min[0][0],f)
     return np.min(mse_mean)
 
