@@ -242,6 +242,13 @@ def test(model,testloader,epoch,opt):
     return mse
 
 def objective(trial):
+    i=0
+    while True:
+        i += 1
+        if os.path.isdir("./result/cross"+str(i)) == False:
+            save_folder = "./result/cross"+str(i)
+            os.mkdir(save_folder)
+            break
     # Create the folder where to save results and checkpoints
     mse_train = []
     mse_test = []
@@ -299,8 +306,8 @@ def objective(trial):
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
     
-    with open("./result/best_epoch_trial.pkl","wb") as f:
-        pickle.dump(i_min[0][0],f)
+    with open(os.path.join(save_folder,"best_epoch.pkl"),"wb") as f:
+        pickle.dump(i_min[0][0]+1,f)
     return np.min(mse_mean)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
