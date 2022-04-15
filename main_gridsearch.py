@@ -214,8 +214,15 @@ def test(model,testloader,epoch,opt):
 
 def objective(trial):
     # Create the folder where to save results and checkpoints
+    i=0
+    while True:
+        i += 1
+        if os.path.isdir("./result/cross"+str(i)) == False:
+            save_folder = "./result/cross"+str(i)
+            os.mkdir(save_folder)
+            break
     mse_train = []
-    mse_test = []*
+    mse_test = []
     mse_total = np.zeros(opt['nb_epochs'])
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
@@ -263,7 +270,7 @@ def objective(trial):
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    with open("./best_epoch.pkl","wb") as f:
+    with open(os.path.join(save_folder,"best_epoch.pkl"),"wb") as f:
         pickle.dump(i_min[0][0],f)
     return np.min(mse_mean)
 
