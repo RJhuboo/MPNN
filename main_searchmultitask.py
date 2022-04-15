@@ -245,8 +245,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross"+str(i)) == False:
-            save_folder = "./result/cross"+str(i)
+        if os.path.isdir("./result/multi"+str(i)) == False:
+            save_folder = "./result/multi"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
