@@ -232,16 +232,16 @@ def objective(trial):
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,32,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,64),
+           'nof' : trial.suggest_int('nof',8,200),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,300),
-           'n2' : trial.suggest_int('n2',100,300),
-           'n3' : trial.suggest_int('n2',100,300),
+           'n1' : trial.suggest_int('n1', 100,500),
+           'n2' : trial.suggest_int('n2',100,500),
+           'n3' : trial.suggest_int('n2',100,500),
            'nb_workers' : 4,
            'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
@@ -273,8 +273,9 @@ def objective(trial):
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    with open(os.path.join(save_folder,"best_epoch.pkl"),"wb") as f:
-        pickle.dump(i_min[0][0]+1,f)
+    result_display = {"train mse":mse_train,"val mse":mse_test, "best epoch":i_min[0][0]+1}
+    with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
+        pickle.dump(result_display,f)
     return np.min(mse_mean)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
