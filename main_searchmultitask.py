@@ -252,7 +252,6 @@ def objective(trial):
     # Create the folder where to save results and checkpoints
     mse_train = []
     mse_test = []
-    mse_total = np.zeros(opt['nb_epochs'])
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
@@ -280,7 +279,7 @@ def objective(trial):
            
                                                     
           }
-    
+    mse_total = np.zeros(opt['nb_epochs'])
     # defining data
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
@@ -319,6 +318,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=30)
+study.optimize(objective,n_trials=2)
 with open("./train_multitasking.pkl","wb") as f:
     pickle.dump(study,f)
