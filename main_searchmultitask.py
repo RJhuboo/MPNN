@@ -21,7 +21,7 @@ import torch.nn.functional as F
 import optuna
 import joblib
 from math import isnan
-
+import time
 NB_DATA = 3991
 NB_LABEL = 5
 PERCENTAGE_TEST = 20
@@ -172,13 +172,13 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         #labels, outputs = np.array(labels), np.array(outputs)
         #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
         #Loss = MSELoss()
-        mse_score += train_loss
         if i % opt['batch_size'] == opt['batch_size']-1:
             print('[%d %5d], loss: %.3f' %
                   (epoch + 1, i+1, running_loss/opt['batch_size']))
             running_loss = 0.0
+        
     # displaying results
-    mse = mse_score / i
+    mse = train_loss/train_total
     print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
     print('Finished Training')
 
@@ -234,41 +234,39 @@ def test(model,testloader,epoch,opt):
             #label[i] = labels
         #name_out = "./output" + str(epoch) + ".txt"
         #name_lab = "./label" + str(epoch) + ".txt"
-        mse = test_loss/i
 
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
-    return mse
+    return test_loss/test_total
 
 def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/multi"+str(i)) == False:
-            save_folder = "./result/multi"+str(i)
+        if os.path.isdir("./result/multi_stand"+str(i)) == False:
+            save_folder = "./result/multi_stand"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    mse_train = []
-    mse_test = []
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,32,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,200),
+           'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'nb_epochs' : 50,
+           'nb_epochs' : 5,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,500),
-           'n2' : trial.suggest_int('n2',100,500),
-           'n3' : trial.suggest_int('n2',100,500),
-           'nb_workers' : 4,
-           'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
+           'n1' : trial.suggest_int('n1', 100,400),
+           'n2' : trial.suggest_int('n2',100,400),
+           'n3' : trial.suggest_int('n2',100,400),
+           'nb_workers' : 8,
+           #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
+           'norm_method': "standardization",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),
            'alpha1' : trial.suggest_float("alpha1", 0, 2),
@@ -287,6 +285,8 @@ def objective(trial):
     kf.get_n_splits(split[0])
     print("start training")
     for train_index, test_index in kf.split(split[0]):
+        mse_train = []
+        mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
@@ -300,7 +300,9 @@ def objective(trial):
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
+            print(np.shape(np.array(mse_train)))
         mse_total = np.array(mse_test) + mse_total
+       
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
@@ -318,6 +320,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=2)
-with open("./train_multitasking.pkl","wb") as f:
+study.optimize(objective,n_trials=20)
+with open("./train_multitasking_stand.pkl","wb") as f:
     pickle.dump(study,f)
