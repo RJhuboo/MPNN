@@ -155,13 +155,12 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         labels, outputs = np.array(labels), np.array(outputs)
         labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
         #Loss = MSELoss()
-        mse_score += loss
         if i % opt['batch_size'] == opt['batch_size']-1:
             print('[%d %5d], loss: %.3f' %
                   (epoch + 1, i+1, running_loss/opt['batch_size']))
             running_loss = 0.0
     # displaying results
-    mse = mse_score / i
+    mse = train_loss/train_total   
     print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
     print('Finished Training')
 
@@ -198,19 +197,17 @@ def test(model,testloader,epoch,opt):
             labels, outputs = np.array(labels), np.array(outputs)
             labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
             #Loss = MSELoss()
-            mse_score += test_loss
 
             outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
             output[i] = outputs
             label[i] = labels
         name_out = "./output" + str(epoch) + ".txt"
         name_lab = "./label" + str(epoch) + ".txt"
-        mse = mse_score/i
 
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
-    return mse
+    return test_loss/test_total
 
 def objective(trial):
     # Create the folder where to save results and checkpoints
@@ -221,9 +218,7 @@ def objective(trial):
             save_folder = "./result/cross"+str(i)
             os.mkdir(save_folder)
             break
-    mse_train = []
-    mse_test = []
-    mse_total = np.zeros(opt['nb_epochs'])
+    
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
@@ -252,7 +247,11 @@ def objective(trial):
     kf = KFold(n_splits = opt['k_fold'], shuffle=True)
     kf.get_n_splits(split[0])
     print("start training")
+    mse_total = np.zeros(opt['nb_epochs'])
+
     for train_index, test_index in kf.split(split[0]):
+        mse_train = []
+        mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
