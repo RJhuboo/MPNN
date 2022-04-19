@@ -278,6 +278,7 @@ def objective(trial):
                                                     
           }
     mse_total = np.zeros(opt['nb_epochs'])
+    mse_train = []
     # defining data
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
@@ -285,7 +286,6 @@ def objective(trial):
     kf.get_n_splits(split[0])
     print("start training")
     for train_index, test_index in kf.split(split[0]):
-        mse_train = []
         mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
@@ -306,7 +306,7 @@ def objective(trial):
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_test, "best epoch":i_min[0][0]+1}
+    result_display = {"train mse":mse_train,"val mse":mse_mean, "best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
     return np.min(mse_mean)
