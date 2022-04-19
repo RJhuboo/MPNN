@@ -244,8 +244,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/multi_stand"+str(i)) == False:
-            save_folder = "./result/multi_stand"+str(i)
+        if os.path.isdir("./result/multi_minmax"+str(i)) == False:
+            save_folder = "./result/multi_minmax"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
@@ -261,12 +261,12 @@ def objective(trial):
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,400),
-           'n2' : trial.suggest_int('n2',100,400),
-           'n3' : trial.suggest_int('n2',100,400),
+           'n1' : trial.suggest_int('n1', 100,300),
+           'n2' : trial.suggest_int('n2',100,300),
+           'n3' : trial.suggest_int('n2',100,300),
            'nb_workers' : 8,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "standardization",
+           'norm_method': "minmax",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),
            'alpha1' : trial.suggest_float("alpha1", 0, 2),
@@ -321,5 +321,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=20)
-with open("./train_multitasking_standard.pkl","wb") as f:
+with open("./train_multitasking_minmax.pkl","wb") as f:
     pickle.dump(study,f)
