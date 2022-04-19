@@ -217,8 +217,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross"+str(i)) == False:
-            save_folder = "./result/cross"+str(i)
+        if os.path.isdir("./result/cross_standard"+str(i)) == False:
+            save_folder = "./result/cross_standard"+str(i)
             os.mkdir(save_folder)
             break
     
@@ -227,18 +227,19 @@ def objective(trial):
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,32,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,200),
+           'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,500),
-           'n2' : trial.suggest_int('n2',100,500),
-           'n3' : trial.suggest_int('n2',100,500),
-           'nb_workers' : 4,
-           'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
+           'n1' : trial.suggest_int('n1', 100,300),
+           'n2' : trial.suggest_int('n2',100,300),
+           'n3' : trial.suggest_int('n2',100,300),
+           'nb_workers' : 8,
+           #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
+           'norm_method': "standardization",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu])
                                                     
@@ -286,7 +287,7 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=30)
-with open("./train_optuna.pkl","wb") as f:
+study.optimize(objective,n_trials=15)
+with open("./train_cross_standard.pkl","wb") as f:
     pickle.dump(study,f)
 
