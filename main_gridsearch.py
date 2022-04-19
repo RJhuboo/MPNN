@@ -153,7 +153,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # statistics
         train_loss += loss.item()
         running_loss += loss.item()
-        train_total += labels.size(0)
+        train_total += 1
         outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
         labels, outputs = np.array(labels), np.array(outputs)
         labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
@@ -163,6 +163,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
                   (epoch + 1, i+1, running_loss/opt['batch_size']))
             running_loss = 0.0
     # displaying results
+    print("nb", train_total)
     mse = train_loss/train_total   
     print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
     print('Finished Training')
@@ -194,7 +195,7 @@ def test(model,testloader,epoch,opt):
             outputs = model(inputs)
             Loss = MSELoss()
             test_loss += Loss(outputs,labels)
-            test_total += labels.size(0)
+            test_total += 1
             # statistics
             outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             labels, outputs = np.array(labels), np.array(outputs)
@@ -210,7 +211,7 @@ def test(model,testloader,epoch,opt):
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
-    return test_loss/test_total
+    return (test_loss/test_total).cpu().numpy()
 
 def objective(trial):
     # Create the folder where to save results and checkpoints
@@ -229,7 +230,7 @@ def objective(trial):
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'nb_epochs' : 80,
+           'nb_epochs' : 4,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
@@ -269,11 +270,12 @@ def objective(trial):
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
-        mse_total = mse_total + np.array(mse_test)
+        mse_total = mse_total +np.array(mse_test)
     mse_mean = mse_total / opt['k_fold']
+    print("mse_mean :", mse_mean)
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_test, "best epoch":i_min[0][0]+1}
+    result_display = {"train mse":mse_train,"val mse":mse_mean}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
     return np.min(mse_mean)
