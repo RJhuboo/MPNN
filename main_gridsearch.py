@@ -270,12 +270,12 @@ def objective(trial):
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
-        mse_total = mse_total +np.array(mse_test)
+        mse_total = mse_total + np.array(mse_test)
     mse_mean = mse_total / opt['k_fold']
     print("mse_mean :", mse_mean)
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_mean}
+    result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
     return np.min(mse_mean)
