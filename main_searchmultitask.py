@@ -167,7 +167,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # statistics
         train_loss += loss.item()
         running_loss += loss.item()
-        train_total += labels.size(0)
+        train_total += 1
         #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
         #labels, outputs = np.array(labels), np.array(outputs)
         #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
@@ -216,7 +216,7 @@ def test(model,testloader,epoch,opt):
             loss5 = Loss(outputs[4],torch.reshape(labels[4],[1,1]))
             loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
             test_loss += loss.item()
-            test_total += labels.size(0)
+            test_total += 1
             # statistics
             #outputs[0], labels[0] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             #outputs[1], labels[1] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
@@ -238,7 +238,7 @@ def test(model,testloader,epoch,opt):
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
-    return test_loss/test_total
+    return (test_loss/test_total).cpu().numpy()
 
 def objective(trial):
     i=0
@@ -278,6 +278,7 @@ def objective(trial):
                                                     
           }
     mse_total = np.zeros(opt['nb_epochs'])
+    mse_train = []
     # defining data
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
@@ -285,7 +286,6 @@ def objective(trial):
     kf.get_n_splits(split[0])
     print("start training")
     for train_index, test_index in kf.split(split[0]):
-        mse_train = []
         mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
@@ -306,7 +306,7 @@ def objective(trial):
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_test, "best epoch":i_min[0][0]+1}
+    result_display = {"train mse":mse_train,"val mse":mse_mean, "best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
     return np.min(mse_mean)
