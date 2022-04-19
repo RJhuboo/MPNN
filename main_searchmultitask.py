@@ -256,7 +256,7 @@ def objective(trial):
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'nb_epochs' : 5,
+           'nb_epochs' : 60,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
@@ -321,5 +321,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=20)
-with open("./train_multitasking_stand.pkl","wb") as f:
+with open("./train_multitasking_standard.pkl","wb") as f:
     pickle.dump(study,f)
