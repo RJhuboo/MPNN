@@ -247,6 +247,7 @@ def objective(trial):
           }
     
     # defining data
+    mse_train = []
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
     kf = KFold(n_splits = opt['k_fold'], shuffle=True)
@@ -255,7 +256,6 @@ def objective(trial):
     mse_total = np.zeros(opt['nb_epochs'])
 
     for train_index, test_index in kf.split(split[0]):
-        mse_train = []
         mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
