@@ -230,7 +230,7 @@ def objective(trial):
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'nb_epochs' : 4,
+           'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
