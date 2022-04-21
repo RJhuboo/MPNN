@@ -238,21 +238,21 @@ def test(model,testloader,epoch,opt):
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
-    return (test_loss/test_total).cpu().numpy()
+    return (test_loss/test_total)
 
 def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/multi_minmax"+str(i)) == False:
-            save_folder = "./result/multi_minmax"+str(i)
+        if os.path.isdir("./result/multi_stand"+str(i)) == False:
+            save_folder = "./result/multi_stand"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
-           'batch_size' : trial.suggest_int('batch_size',8,32,step=8),
+           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
@@ -266,7 +266,7 @@ def objective(trial):
            'n3' : trial.suggest_int('n2',100,300),
            'nb_workers' : 8,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "minmax",
+           'norm_method': "standardization",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),
            'alpha1' : trial.suggest_float("alpha1", 0, 2),
@@ -321,5 +321,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=20)
-with open("./train_multitasking_minmax.pkl","wb") as f:
+with open("./train_multitasking_stand.pkl","wb") as f:
     pickle.dump(study,f)
