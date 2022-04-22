@@ -218,29 +218,29 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_standard"+str(i)) == False:
-            save_folder = "./result/cross_standard"+str(i)
+        if os.path.isdir("./result/cross_minmax"+str(i)) == False:
+            save_folder = "./result/cross_minmax"+str(i)
             os.mkdir(save_folder)
             break
     
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
-           'batch_size' : trial.suggest_int('batch_size',8,32,step=8),
+           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,100),
+           'nof' : trial.suggest_int('nof',8,64),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,300),
-           'n2' : trial.suggest_int('n2',100,300),
-           'n3' : trial.suggest_int('n2',100,300),
+           'n1' : trial.suggest_int('n1', 100,250),
+           'n2' : trial.suggest_int('n2',100,250),
+           'n3' : trial.suggest_int('n3',100,200),
            'nb_workers' : 8,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "standardization",
+           'norm_method': "minmax",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu])
                                                     
@@ -289,7 +289,7 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=15)
-with open("./train_cross_standard.pkl","wb") as f:
+study.optimize(objective,n_trials=25)
+with open("./train_cross_minmax.pkl","wb") as f:
     pickle.dump(study,f)
 
