@@ -21,7 +21,7 @@ import torch.nn.functional as F
 import optuna
 import joblib
 from math import isnan
-
+import time
 NB_DATA = 3991
 NB_LABEL = 5
 PERCENTAGE_TEST = 20
@@ -101,15 +101,27 @@ class ConvNet(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.activation = activation
         # initialize NN layers
-        self.neural = NeuralNet(activation,n1,n2,n3,out_channels)
-        
+        self.neural_p1 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p2 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p3 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p4 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural_p5 = NeuralNet(activation,n1,n2,n3,1)
     def forward(self, x):
         x = self.pool(self.activation(self.conv1(x)))
         x = self.pool(self.activation(self.conv2(x)))
         x = self.pool(self.activation(self.conv3(x)))
+<<<<<<< HEAD:main_gridsearch.py
         x = self.neural(x)
         return x
 
+=======
+        p1 = self.neural_p1(x)
+        p2 = self.neural_p2(x)
+        p3 = self.neural_p3(x)
+        p4 = self.neural_p4(x)
+        p5 = self.neural_p5(x)
+        return [p1,p2,p3,p4,p5]
+>>>>>>> multitasking:main_searchmultitask.py
     
 def reset_weights(m):
     '''
@@ -131,6 +143,10 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     r2_s = 0
     mse_score = 0.0
 
+<<<<<<< HEAD:main_gridsearch.py
+=======
+    
+>>>>>>> multitasking:main_searchmultitask.py
     for i, data in enumerate(trainloader,0):
         inputs, labels = data['image'], data['label']
         # reshape
@@ -142,8 +158,20 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # forward backward and optimization
         outputs = model(inputs)
         Loss = MSELoss()
+<<<<<<< HEAD:main_gridsearch.py
 
         loss = Loss(outputs,labels)
+=======
+        labels = torch.transpose(labels,0,1)
+        loss1 = Loss(outputs[0],torch.reshape(labels[0],[len(outputs[0]),1]))
+        loss2 = Loss(outputs[1],torch.reshape(labels[1],[len(outputs[1]),1]))
+        loss3 = Loss(outputs[2],torch.reshape(labels[2],[len(outputs[2]),1]))
+        loss4 = Loss(outputs[3],torch.reshape(labels[3],[len(outputs[3]),1]))
+        loss5 = Loss(outputs[4],torch.reshape(labels[4],[len(outputs[4]),1]))
+        loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
+        
+
+>>>>>>> multitasking:main_searchmultitask.py
         if isnan(loss) == True:
             print(outputs)
             print(labels)
@@ -154,17 +182,28 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         train_loss += loss.item()
         running_loss += loss.item()
         train_total += 1
+<<<<<<< HEAD:main_gridsearch.py
         outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
         labels, outputs = np.array(labels), np.array(outputs)
         labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
+=======
+        #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+        #labels, outputs = np.array(labels), np.array(outputs)
+        #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
+>>>>>>> multitasking:main_searchmultitask.py
         #Loss = MSELoss()
         if i % opt['batch_size'] == opt['batch_size']-1:
             print('[%d %5d], loss: %.3f' %
                   (epoch + 1, i+1, running_loss/opt['batch_size']))
             running_loss = 0.0
+        
     # displaying results
+<<<<<<< HEAD:main_gridsearch.py
     print("nb", train_total)
     mse = train_loss/train_total   
+=======
+    mse = train_loss/train_total
+>>>>>>> multitasking:main_searchmultitask.py
     print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
     print('Finished Training')
 
@@ -194,27 +233,65 @@ def test(model,testloader,epoch,opt):
             # loss
             outputs = model(inputs)
             Loss = MSELoss()
+<<<<<<< HEAD:main_gridsearch.py
             test_loss += Loss(outputs,labels)
+=======
+            labels = torch.transpose(labels,0,1)
+            loss1 = Loss(outputs[0],torch.reshape(labels[0],[1,1]))
+            loss2 = Loss(outputs[1],torch.reshape(labels[1],[1,1]))
+            loss3 = Loss(outputs[2],torch.reshape(labels[2],[1,1]))
+            loss4 = Loss(outputs[3],torch.reshape(labels[3],[1,1]))
+            loss5 = Loss(outputs[4],torch.reshape(labels[4],[1,1]))
+            loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
+            test_loss += loss.item()
+>>>>>>> multitasking:main_searchmultitask.py
             test_total += 1
             # statistics
-            outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            labels, outputs = np.array(labels), np.array(outputs)
-            labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
+            #outputs[0], labels[0] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[1], labels[1] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[2], labels[2] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[3], labels[3] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            #outputs[4], labels[4] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+
+            #labels, outputs = np.array(labels), np.array(outputs)
+            #labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
             #Loss = MSELoss()
+<<<<<<< HEAD:main_gridsearch.py
 
             outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
             output[i] = outputs
             label[i] = labels
         name_out = "./output" + str(epoch) + ".txt"
         name_lab = "./label" + str(epoch) + ".txt"
+=======
+            
+
+            #outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
+            #output[i] = outputs
+            #label[i] = labels
+        #name_out = "./output" + str(epoch) + ".txt"
+        #name_lab = "./label" + str(epoch) + ".txt"
+>>>>>>> multitasking:main_searchmultitask.py
 
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
+<<<<<<< HEAD:main_gridsearch.py
     return (test_loss/test_total).cpu().numpy()
+=======
+    return (test_loss/test_total)
+>>>>>>> multitasking:main_searchmultitask.py
 
 def objective(trial):
+    i=0
+    while True:
+        i += 1
+        if os.path.isdir("./result/multi_stand"+str(i)) == False:
+            save_folder = "./result/multi_stand"+str(i)
+            os.mkdir(save_folder)
+            break
     # Create the folder where to save results and checkpoints
+<<<<<<< HEAD:main_gridsearch.py
     i=0
     while True:
         i += 1
@@ -223,29 +300,47 @@ def objective(trial):
             os.mkdir(save_folder)
             break
     
+=======
+>>>>>>> multitasking:main_searchmultitask.py
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "./data/ROI_trab",
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,64),
+           'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'nb_epochs' : 80,
+           'nb_epochs' : 60,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
+<<<<<<< HEAD:main_gridsearch.py
            'n1' : trial.suggest_int('n1', 100,250),
            'n2' : trial.suggest_int('n2',100,250),
            'n3' : trial.suggest_int('n3',100,200),
            'nb_workers' : 8,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "minmax",
+=======
+           'n1' : trial.suggest_int('n1', 100,300),
+           'n2' : trial.suggest_int('n2',100,300),
+           'n3' : trial.suggest_int('n3',100,300),
+           'nb_workers' : 8,
+           #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
+           'norm_method': "standardization",
+>>>>>>> multitasking:main_searchmultitask.py
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
-           'activation' : trial.suggest_categorical("activation", [F.relu])
+           'activation' : trial.suggest_categorical("activation", [F.relu]),
+           'alpha1' : trial.suggest_float("alpha1", 0, 2),
+           'alpha2' : trial.suggest_float("alpha2", 0, 2),
+           'alpha3' : trial.suggest_float("alpha3", 0, 2),
+           'alpha4' : trial.suggest_float("alpha4", 0, 2),
+           'alpha5' : trial.suggest_float("alpha5", 0, 2)
+           
                                                     
           }
-    
+    mse_total = np.zeros(opt['nb_epochs'])
+    mse_train = []
     # defining data
     mse_train = []
     index = range(NB_DATA)
@@ -270,12 +365,22 @@ def objective(trial):
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
+<<<<<<< HEAD:main_gridsearch.py
         mse_total = mse_total + np.array(mse_test)
     mse_mean = mse_total / opt['k_fold']
     print("mse_mean :", mse_mean)
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
     result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
+=======
+            print(np.shape(np.array(mse_train)))
+        mse_total = np.array(mse_test) + mse_total
+       
+    mse_mean = mse_total / opt['k_fold']
+    i_min = np.where(mse_mean == np.min(mse_mean))
+    print('best epoch :', i_min[0][0]+1)
+    result_display = {"train mse":mse_train,"val mse":mse_mean, "best epoch":i_min[0][0]+1}
+>>>>>>> multitasking:main_searchmultitask.py
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
     return np.min(mse_mean)
@@ -290,6 +395,9 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=25)
+<<<<<<< HEAD:main_gridsearch.py
 with open("./train_cross_minmax.pkl","wb") as f:
+=======
+with open("./train_multitasking_stand.pkl","wb") as f:
+>>>>>>> multitasking:main_searchmultitask.py
     pickle.dump(study,f)
-
