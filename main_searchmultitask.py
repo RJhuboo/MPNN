@@ -149,8 +149,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         outputs = model(inputs)
         Loss = MSELoss()
         labels = torch.transpose(labels,0,1)
-        print("labels[0]:",labels[0])
-        print("outputs[0]:",outputs[0])
+
         loss1 = Loss(outputs[0],torch.reshape(labels[0],[len(outputs[0]),1]))
         loss2 = Loss(outputs[1],torch.reshape(labels[1],[len(outputs[1]),1]))
         loss3 = Loss(outputs[2],torch.reshape(labels[2],[len(outputs[2]),1]))
@@ -212,8 +211,6 @@ def test(model,testloader,epoch,opt):
             outputs = model(inputs)
             Loss = MSELoss()
             labels = torch.transpose(labels,0,1)
-            print("labels[0]:",torch.reshape(labels[0],[1,1]))
-            print("outputs[0]:",outputs[0])
             loss1 = Loss(outputs[0],torch.reshape(labels[0],[1,1]))
             loss2 = Loss(outputs[1],torch.reshape(labels[1],[1,1]))
             loss3 = Loss(outputs[2],torch.reshape(labels[2],[1,1]))
