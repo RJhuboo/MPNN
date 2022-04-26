@@ -122,14 +122,11 @@ class Trainer():
                 test_total += 1
                 
                 # statistics
-                #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-                #labels, outputs = np.array(labels), np.array(outputs)
+                labels = labels.cpu().detach().numpy()
+                labels, outputs = np.array(labels), np.array(outputs)
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
-                #outputs,labels=outputs.reshape(1,self.NB_LABEL), labels.reshape(1,self.NB_LABEL)
+                labels=labels.reshape(1,self.NB_LABEL)
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
-                    print("ouputs shape:",len(outputs))
-                    print("outputs[0] shape:", outputs[0].size())
-                    print("labels shape:", labels.size())
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
                 output[i] = outputs
