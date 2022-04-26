@@ -127,6 +127,9 @@ class Trainer():
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 #outputs,labels=outputs.reshape(1,self.NB_LABEL), labels.reshape(1,self.NB_LABEL)
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
+                    print("ouputs shape:",outputs.size())
+                    print("outputs[0] shape:", outputs[0].size())
+                    print("labels shape:", labels.size())
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
                 output[i] = outputs
