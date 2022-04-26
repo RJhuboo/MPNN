@@ -49,8 +49,8 @@ class Trainer():
             
             # forward backward and optimization
             outputs = self.model(inputs)
-            print("labels shape", labels.size())
-            print("output shape",outputs[0].size())
+            print("labels shape", labels[0])
+            print("output shape",outputs[0])
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[1],[len(outputs[1]),1]))
