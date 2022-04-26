@@ -175,6 +175,32 @@ class ConvNet(nn.Module):
         x = self.neural(x)
         #x = torch.flatten(x,1)
         return x 
+       
+## Multitasking ##
+class MultiNet(nn.Module):
+    def __init__(self, features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
+        super(MultiNet,self).__init__()
+        # initialize CNN layers 
+        self.conv1 = nn.Conv2d(1,features,kernel_size = k1,stride = 1, padding = 1)
+        self.conv2 = nn.Conv2d(features,features*2, kernel_size = k2, stride = 1, padding = 1)
+        self.conv3 = nn.Conv2d(features*2,64, kernel_size = k3, stride = 1, padding = 1)
+        self.pool = nn.MaxPool2d(2,2)
+        # initialize NN layers
+        self.neural_p1 = NeuralNet(n1,n2,n3,1)
+        self.neural_p2 = NeuralNet(n1,n2,n3,1)
+        self.neural_p3 = NeuralNet(n1,n2,n3,1)
+        self.neural_p4 = NeuralNet(n1,n2,n3,1)
+        self.neural_p5 = NeuralNet(n1,n2,n3,1)
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv3(x)))
+        p1 = self.neural_p1(x)
+        p2 = self.neural_p2(x)
+        p3 = self.neural_p3(x)
+        p4 = self.neural_p4(x)
+        p5 = self.neural_p5(x)
+        return [p1,p2,p3,p4,p5]
     
 ## UNET model ##
 class UNet(nn.Module):
