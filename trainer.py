@@ -41,7 +41,6 @@ class Trainer():
             
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
-            print("original labels shape:", labels.size())
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
@@ -50,14 +49,12 @@ class Trainer():
             
             # forward backward and optimization
             outputs = self.model(inputs)
-            print("labels shape", labels[0])
-            print("output shape",outputs[0])
             if self.opt.model == "MultiNet":
-                loss1 = self.criterion(outputs[0],torch.reshape(labels[0],[len(outputs[0]),1]))
-                loss2 = self.criterion(outputs[1],torch.reshape(labels[1],[len(outputs[1]),1]))
-                loss3 = self.criterion(outputs[2],torch.reshape(labels[2],[len(outputs[2]),1]))
-                loss4 = self.criterion(outputs[3],torch.reshape(labels[3],[len(outputs[3]),1]))
-                loss5 = self.criterion(outputs[4],torch.reshape(labels[4],[len(outputs[4]),1]))
+                loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
+                loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
+                loss3 = self.criterion(outputs[2],torch.reshape(labels[:,2],[len(outputs[2]),1]))
+                loss4 = self.criterion(outputs[3],torch.reshape(labels[:,3],[len(outputs[3]),1]))
+                loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[len(outputs[4]),1]))
                 loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
             else:
                 loss = self.criterion(outputs,labels)
@@ -113,11 +110,11 @@ class Trainer():
                 # loss
                 outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
-                    loss1 = self.criterion(outputs[0],torch.reshape(labels[0],[1,1]))
-                    loss2 = self.criterion(outputs[1],torch.reshape(labels[1],[1,1]))
-                    loss3 = self.criterion(outputs[2],torch.reshape(labels[2],[1,1]))
-                    loss4 = self.criterion(outputs[3],torch.reshape(labels[3],[1,1]))
-                    loss5 = self.criterion(outputs[4],torch.reshape(labels[4],[1,1]))
+                    loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
+                    loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[1,1]))
+                    loss3 = self.criterion(outputs[2],torch.reshape(labels[:,2],[1,1]))
+                    loss4 = self.criterion(outputs[3],torch.reshape(labels[:,3],[1,1]))
+                    loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[1,1]))
                     loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
                 else:
                     loss = self.criterion(outputs,labels)
