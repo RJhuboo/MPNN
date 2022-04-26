@@ -41,6 +41,7 @@ class Trainer():
             
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
+            print("original labels shape:", labels.size())
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
