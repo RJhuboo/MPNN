@@ -101,8 +101,6 @@ class Trainer():
         with torch.no_grad():
             for i, data in enumerate(testloader):
                 inputs, labels, ID = data['image'],data['label'],data['ID']
-                print(ID)
-                print(ID[0])
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
@@ -137,7 +135,7 @@ class Trainer():
                     labels = self.scaler.inverse_transform(labels)
                 output[i] = outputs
                 label[i] = labels
-                IDs[i] = ID
+                IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
