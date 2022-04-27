@@ -97,7 +97,7 @@ def train():
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
-        model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,k1 = 3,k2 = 3,k3= 3).to(device)
+        model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     elif opt.model == "resnet50":
         print("## Choose model : resnet50 ##")
         model = Model.ResNet50(14,1).to(device)
@@ -109,7 +109,7 @@ def train():
         model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
-        model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,k1 = 3,k2 = 3,k3= 3).to(device)
+        model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     model.apply(reset_weights)
     
     # Start training
