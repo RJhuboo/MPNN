@@ -91,7 +91,7 @@ class Trainer():
         mse_score = 0.0
         output = {}
         label = {}
-        
+        IDs = {}
         # Loading Checkpoint
         if self.opt.mode == "Test":
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
@@ -137,11 +137,11 @@ class Trainer():
                     labels = self.scaler.inverse_transform(labels)
                 output[i] = outputs
                 label[i] = labels
-            name_out = "./output" + str(epoch) + ".txt"
-            name_lab = "./label" + str(epoch) + ".txt"
+                IDs[i] = ID
+            name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump({"output":output,"label":label,"ID":ID[0]},f)
+                pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
            
