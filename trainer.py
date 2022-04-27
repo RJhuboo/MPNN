@@ -100,8 +100,9 @@ class Trainer():
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
-                inputs, labels = data['image'],data['label']
-                
+                inputs, labels, ID = data['image'],data['label'],data['ID']
+                print(ID)
+                print(ID[0])
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
@@ -140,9 +141,9 @@ class Trainer():
             name_lab = "./label" + str(epoch) + ".txt"
             mse = test_loss/test_total
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump(output,f)
-            with open(os.path.join(self.save_fold,name_lab),"wb") as f:
-                pickle.dump(label,f)
+                pickle.dump({"output":output,"label":label,"ID",ID[0]},f)
+            #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
+                #pickle.dump(label,f)
            
         print(' Test_loss: {}'.format(test_loss/test_total))
         return mse
