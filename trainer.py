@@ -141,7 +141,7 @@ class Trainer():
             name_lab = "./label" + str(epoch) + ".txt"
             mse = test_loss/test_total
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump({"output":output,"label":label,"ID",ID[0]},f)
+                pickle.dump({"output":output,"label":label,"ID":ID[0]},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
            
