@@ -25,7 +25,7 @@ import time
 NB_DATA = 3991
 NB_LABEL = 5
 PERCENTAGE_TEST = 20
-RESIZE_IMAGE = 512
+RESIZE_IMAGE = 256
 
 study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
 
@@ -136,7 +136,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     for i, data in enumerate(trainloader,0):
         inputs, labels = data['image'], data['label']
         # reshape
-        inputs = inputs.reshape(inputs.size(0),1,512,512)
+        inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
         inputs, labels = inputs.to(device), labels.to(device)
         # zero the parameter gradients
@@ -290,4 +290,4 @@ else:
     
 study.optimize(objective,n_trials=15)
 with open("./train_LR.pkl","wb") as f:
-
+    pickle.dump(study,f)
