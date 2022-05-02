@@ -216,19 +216,19 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_stand"+str(i)) == False:
-            save_folder = "./result/cross_stand"+str(i)
+        if os.path.isdir("./result/LR_search"+str(i)) == False:
+            save_folder = "./result/LR_search"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Label_5p.csv",
-           'image_dir' : "./data/ROI_trab",
+           'image_dir' : "./data/LR_trab",
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,100),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'nb_epochs' : 60,
+           'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
@@ -238,7 +238,7 @@ def objective(trial):
            'n3' : trial.suggest_int('n3',100,200),
            'nb_workers' : 8,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "minmax",
+           'norm_method': "standardization",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),                                         
           }
@@ -288,6 +288,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=25)
-with open("./train_cross_minmax.pkl","wb") as f:
+study.optimize(objective,n_trials=15)
+with open("./train_LR.pkl","wb") as f:
 
