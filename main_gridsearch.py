@@ -101,11 +101,8 @@ class ConvNet(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.activation = activation
         # initialize NN layers
-        self.neural_p1 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p2 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p3 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p4 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p5 = NeuralNet(activation,n1,n2,n3,1)
+        self.neural = NeuralNet(activation,n1,n2,n3,out_channels)
+
     def forward(self, x):
         x = self.pool(self.activation(self.conv1(x)))
         x = self.pool(self.activation(self.conv2(x)))
