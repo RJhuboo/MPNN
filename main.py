@@ -128,6 +128,14 @@ def train():
       
 
 ''' main '''
+if opt.mode == "Train":
+  train()
+else :
+  model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+  model.load_state_dict(torch.load(opt.checkpoint_path))
+  model.eval()
+  
+  
 
-train()
+  
   
