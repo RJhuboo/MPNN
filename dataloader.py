@@ -31,6 +31,7 @@ class Datasets(Dataset):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0]))
         image = io.imread(img_name) # Loading Image
+        image = transform.resize(image, (image.shape[0]*2, image.shape[1] *2)) #When LR used
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
         if self.opt.norm_method== "L2":

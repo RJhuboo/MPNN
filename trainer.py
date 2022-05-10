@@ -25,9 +25,9 @@ class Trainer():
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
-        self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
+        self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
         self.criterion = MSELoss()
-        
+        self.size_image = 512
     def train(self, trainloader, epoch ,steps_per_epochs=20):
         self.model.train()
         print("starting training")
@@ -38,9 +38,9 @@ class Trainer():
         mse_score = 0.0
         for i, data in enumerate(trainloader,0):
             inputs, labels = data['image'], data['label']
-            
+                        
             # reshape
-            inputs = inputs.reshape(inputs.size(0),1,512,512)
+            inputs = inputs.reshape(inputs.size(0),1,self.size_image,self.size_image)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
@@ -102,7 +102,7 @@ class Trainer():
             for i, data in enumerate(testloader):
                 inputs, labels, ID = data['image'],data['label'],data['ID']
                 # reshape
-                inputs = inputs.reshape(1,1,512,512)
+                inputs = inputs.reshape(1,1,self.size_image,self.size_image)
                 labels = labels.reshape(1,self.NB_LABEL)
                 inputs, labels = inputs.to(self.device),labels.to(self.device)
                 
@@ -129,10 +129,12 @@ class Trainer():
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
                 outputs=outputs.reshape(1,self.NB_LABEL)
-
+                
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
+                print("output :",outputs)
+                print("label :",labels)
                 output[i] = outputs
                 label[i] = labels
                 IDs[i] = ID[0]
