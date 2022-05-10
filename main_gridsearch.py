@@ -22,10 +22,10 @@ import optuna
 import joblib
 from math import isnan
 import time
-NB_DATA = 4474
-NB_LABEL = 6
+NB_DATA = 3991
+NB_LABEL = 5
 PERCENTAGE_TEST = 20
-RESIZE_IMAGE = 512
+RESIZE_IMAGE = 256
 
 study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
 
@@ -187,7 +187,7 @@ def test(model,testloader,epoch,opt):
         for i, data in enumerate(testloader):
             inputs, labels = data['image'],data['label']
             # reshape
-            inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
+            inputs = inputs.reshape(1,1,512,512)
             labels = labels.reshape(1,NB_LABEL)
             inputs, labels = inputs.to(device),labels.to(device)
             # loss
@@ -213,13 +213,13 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/convnet_stand"+str(i)) == False:
-            save_folder = "./result/convnet_stand"+str(i)
+        if os.path.isdir("./result/LR_search"+str(i)) == False:
+            save_folder = "./result/LR_search"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Label_5p.csv",
-           'image_dir' : "./data/ROI_trab",
+           'image_dir' : "./data/LR_trab",
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
@@ -228,6 +228,7 @@ def objective(trial):
            'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
+           'cross_val' : False,
            'k_fold' : 5,
            'n1' : trial.suggest_int('n1', 100,250),
            'n2' : trial.suggest_int('n2',100,250),
@@ -285,5 +286,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=15)
-with open("./convnet_stand.pkl","wb") as f:
+with open("./train_LR.pkl","wb") as f:
     pickle.dump(study,f)

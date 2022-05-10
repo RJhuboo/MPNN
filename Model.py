@@ -162,12 +162,18 @@ class ConvNet(nn.Module):
         self.conv3 = nn.Conv2d(features*2,64, kernel_size = k3, stride = 1, padding = 1)
         self.pool = nn.MaxPool2d(2,2)
         # initialize NN layers
+        #self.fc1 = nn.Linear(64**3,n1)
+        #self.fc2 = nn.Linear(n1,n2)
+        #self.fc3 = nn.Linear(n2,14)
         self.neural = NeuralNet(n1,n2,n3,out_channels)
+        # dropout
+        # self.dropout = nn.Dropout(0.25)
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
         x = self.neural(x)
+        #x = torch.flatten(x,1)
         return x 
        
 ## Multitasking ##
