@@ -84,7 +84,6 @@ class Trainer():
         return mse
 
     def test(self,testloader,epoch):
-        self.model.eval()
 
         test_loss = 0
         test_total = 0
@@ -97,6 +96,8 @@ class Trainer():
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
+        self.model.eval()
+
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
@@ -147,6 +148,7 @@ class Trainer():
            
         print(' Test_loss: {}'.format(test_loss/test_total))
         return mse
+    
     def inference(infloader,epoch)
        
         output = {}
