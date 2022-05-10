@@ -43,7 +43,7 @@ parser.add_argument("--n2", type=int, default = 120, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 5, help = "specify the number of labels")
+parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
 parser.add_argument("--alpha3", type=float, default = 1)
@@ -110,8 +110,9 @@ def train():
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    model.apply(reset_weights)
-    
+    # model.apply(reset_weights)
+    torch.manual_seed(5)
+
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
