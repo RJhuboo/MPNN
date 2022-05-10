@@ -129,6 +129,21 @@ def train():
       
 
 ''' main '''
+if opt.mode == "Train":
+  train()
+else :
+  model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+  index = range(NB_DATA)
+  split = train_test_split(index,test_size = 0.2,random_state=1)
+  datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
+  testloader = DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
+  if opt.norm_method == "standardization" or opt.norm_method == "minmax":
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
+  else:
+    scaler = None
+  t = Trainer(self,opt,model,device,save_fold,scaler):
+  t.test(testloader,76)
+    
 
-train()
+  
   
