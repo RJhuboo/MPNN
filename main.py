@@ -28,7 +28,7 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label_5p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./data/ROI_trab", help = "path to image directory")
+parser.add_argument("--image_dir", default = "./data/LR_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "MultiNet", help="Choose model : Unet or ConvNet") 
@@ -130,19 +130,19 @@ def train():
 
 ''' main '''
 if opt.mode == "Train":
-  train()
+    train()
 else :
-  model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-  index = range(NB_DATA)
-  split = train_test_split(index,test_size = 0.2,random_state=1)
-  datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
-  testloader = DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
-  if opt.norm_method == "standardization" or opt.norm_method == "minmax":
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
-  else:
-    scaler = None
-  t = Trainer(self,opt,model,device,save_fold,scaler):
-  t.test(testloader,76)
+    model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+    index = range(NB_DATA)
+    split = train_test_split(index,test_size = 0.2,random_state=1)
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
+    testloader = DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
+    if opt.norm_method == "standardization" or opt.norm_method == "minmax":
+        scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
+    else:
+        scaler = None
+    t = Trainer(self,opt,model,device,save_fold,scaler):
+    t.test(testloader,75)
     
 
   
