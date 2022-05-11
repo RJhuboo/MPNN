@@ -132,6 +132,14 @@ def train():
 if opt.mode == "Train":
     train()
 else :
+    i=0
+    while True:
+        i += 1
+        if os.path.isdir("./result/train"+str(i)) == False:
+            save_folder = "./result/train"+str(i)
+            os.mkdir(save_folder)
+            break
+            
     model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
