@@ -224,16 +224,16 @@ def objective(trial):
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,100),
-           'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
+           'lr': trial.suggest_loguniform('lr',1e-4,1e-1),
            'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,250),
+           'n1' : trial.suggest_int('n1', 100,200),
            'n2' : trial.suggest_int('n2',100,250),
            'n3' : trial.suggest_int('n3',100,200),
-           'nb_workers' : 8,
+           'nb_workers' : 4,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
@@ -265,7 +265,7 @@ def objective(trial):
         optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-            mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
+            mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
         mse_total = mse_total + np.array(mse_test)
     mse_mean = mse_total / opt['k_fold']
     print("mse_mean :", mse_mean)

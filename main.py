@@ -28,7 +28,7 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label_5p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./data/LR_trab", help = "path to image directory")
+parser.add_argument("--image_dir", default = "./data/ROI_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "MultiNet", help="Choose model : Unet or ConvNet") 
@@ -129,7 +129,7 @@ def train():
       
 
 ''' main '''
-if opt.mode == "Train":
+if opt.mode == "train":
     train()
 else :
     i=0
@@ -149,7 +149,7 @@ else :
         scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
     else:
         scaler = None
-    t = Trainer(self,opt,model,device,save_fold,scaler):
+    t = Trainer(self,opt,model,device,save_fold,scaler)
     t.test(testloader,75)
     
 
