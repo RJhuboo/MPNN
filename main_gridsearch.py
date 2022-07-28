@@ -213,8 +213,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_convnet_stand"+str(i)) == False:
-            save_folder = "./result/cross_convnet_stand"+str(i)
+        if os.path.isdir("./result/cross_convnet_minmax"+str(i)) == False:
+            save_folder = "./result/cross_convnet_minmax"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
@@ -234,7 +234,7 @@ def objective(trial):
            'n3' : trial.suggest_int('n3',100,200),
            'nb_workers' : 4,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "standardization",
+           'norm_method': "minmax",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
            'activation' : trial.suggest_categorical("activation", [F.relu]),                                         
           }
@@ -285,5 +285,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=15)
-with open("./cross_convnet_stand.pkl","wb") as f:
+with open("./cross_convnet_minmax.pkl","wb") as f:
     pickle.dump(study,f)
