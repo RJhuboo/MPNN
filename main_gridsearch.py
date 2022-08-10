@@ -218,8 +218,8 @@ def objective(trial):
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Label_6p.csv",
-           'image_dir' : "./data/ROI_trab/train",
+    opt = {'label_dir' : "./Label_5p.csv",
+           'image_dir' : "../FSRCNN/data/ROI_trab/train",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,64),
