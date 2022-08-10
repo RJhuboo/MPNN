@@ -73,7 +73,7 @@ class Datasets(Dataset):
         labels = np.array([labels]) 
         labels = labels.astype('float32')
         if self.transform:
-            sample = self.transform(sample)
+            image = self.transform(image)
         return {'image': image, 'label': labels}
     
 class NeuralNet(nn.Module):
@@ -256,7 +256,9 @@ def objective(trial):
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
             scaler = None
-        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index) # Create dataset
+        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index)
+        datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, tranform=transforms.AutoAugment(transforms.AutoAugmentPolicy.CIFAR10))
+        print("comparison augmentation:",len(datasets), len(datasets_2))
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
         model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
