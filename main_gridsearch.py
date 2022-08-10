@@ -257,7 +257,7 @@ def objective(trial):
         else:
             scaler = None
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index)
-        datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, tranforms=transforms.AutoAugment(transforms.AutoAugmentPolicy.CIFAR10))
+        datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=transforms.AutoAugment(transforms.AutoAugmentPolicy.CIFAR10))
         print("comparison augmentation:",len(datasets), len(datasets_2))
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
