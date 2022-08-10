@@ -23,7 +23,7 @@ import joblib
 from math import isnan
 import time
 NB_DATA = 4474
-NB_LABEL = 12
+NB_LABEL = 6
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -218,7 +218,7 @@ def objective(trial):
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Label_12p.csv",
+    opt = {'label_dir' : "./Label_6p.csv",
            'image_dir' : "./data/ROI_trab/train",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
