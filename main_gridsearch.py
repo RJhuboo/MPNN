@@ -215,8 +215,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_12p_minmax"+str(i)) == False:
-            save_folder = "./result/cross_12p_minmax"+str(i)
+        if os.path.isdir("./result/cross_6p_transformed_minmax"+str(i)) == False:
+            save_folder = "./result/cross_6p_transformed_minmax"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
@@ -288,5 +288,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=15)
-with open("./cross_12p_minmax.pkl","wb") as f:
+with open("./cross_6p_transformed_minmax.pkl","wb") as f:
     pickle.dump(study,f)
