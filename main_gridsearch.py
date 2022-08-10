@@ -23,7 +23,7 @@ import joblib
 from math import isnan
 import time
 NB_DATA = 4474
-NB_LABEL = 6
+NB_LABEL = 12
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -213,26 +213,26 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_convnet_minmax"+str(i)) == False:
-            save_folder = "./result/cross_convnet_minmax"+str(i)
+        if os.path.isdir("./result/cross_12p_minmax"+str(i)) == False:
+            save_folder = "./result/cross_12p_minmax"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Label_5p.csv",
+    opt = {'label_dir' : "./Label_12p.csv",
            'image_dir' : "./data/ROI_trab/train",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,100),
+           'nof' : trial.suggest_int('nof',8,64),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-1),
            'nb_epochs' : 80,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 5,
-           'n1' : trial.suggest_int('n1', 100,200),
-           'n2' : trial.suggest_int('n2',100,250),
-           'n3' : trial.suggest_int('n3',100,200),
-           'nb_workers' : 4,
+           'k_fold' : 4,
+           'n1' : trial.suggest_int('n1', 90,170),
+           'n2' : trial.suggest_int('n2',100,200),
+           'n3' : trial.suggest_int('n3',100,170),
+           'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "minmax",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
@@ -285,5 +285,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=15)
-with open("./cross_convnet_minmax.pkl","wb") as f:
+with open("./cross_12p_minmax.pkl","wb") as f:
     pickle.dump(study,f)
