@@ -28,7 +28,7 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Label_5p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./data/ROI_trab/train", help = "path to image directory")
+parser.add_argument("--image_dir", default = "../FSRCNN/data/ROI_trab/train", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "MultiNet", help="Choose model : Unet or ConvNet") 
@@ -44,6 +44,7 @@ parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
+parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
 parser.add_argument("--alpha3", type=float, default = 1)
@@ -51,7 +52,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 4474 - 10
+NB_DATA = 4474
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -135,8 +136,8 @@ else :
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train"+str(i)) == False:
-            save_folder = "./result/train"+str(i)
+        if os.path.isdir("./result/test"+str(i)) == False:
+            save_folder = "./result/test"+str(i)
             os.mkdir(save_folder)
             break
             
@@ -149,8 +150,8 @@ else :
         scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
     else:
         scaler = None
-    t = Trainer(self,opt,model,device,save_fold,scaler)
-    t.test(testloader,75)
+    t = Trainer(opt,model,device,save_folder,scaler)
+    t.test(testloader,457)
     
 
   

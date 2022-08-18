@@ -215,29 +215,36 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_6p_transformed_minmax"+str(i)) == False:
-            save_folder = "./result/cross_6p_transformed_minmax"+str(i)
+        if os.path.isdir("./result/cross_6p_transformed_minmax_theone"+str(i)) == False:
+            save_folder = "./result/cross_6p_transformed_minmax_theone"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Label_5p.csv",
            'image_dir' : "../FSRCNN/data/ROI_trab/train",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           'batch_size': 8,
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,64),
-           'lr': trial.suggest_loguniform('lr',1e-4,1e-1),
-           'nb_epochs' : 80,
+           #'nof' : trial.suggest_int('nof',8,64),
+           'nof':40,
+           #'lr': trial.suggest_loguniform('lr',1e-4,1e-1),
+           'lr':0.000522,
+           'nb_epochs' : 500,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 4,
-           'n1' : trial.suggest_int('n1', 90,170),
-           'n2' : trial.suggest_int('n2',100,200),
-           'n3' : trial.suggest_int('n3',100,170),
+           'n1': 106,
+           'n2':136,
+           'n3':130,
+           #'n1' : trial.suggest_int('n1', 90,170),
+           #'n2' : trial.suggest_int('n2',100,200),
+           #'n3' : trial.suggest_int('n3',100,170),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "minmax",
-           'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
+           #'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
+           'optimizer': Adam,
            'activation' : trial.suggest_categorical("activation", [F.relu]),                                         
           }
     
@@ -287,6 +294,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=15)
-with open("./cross_6p_transformed_minmax.pkl","wb") as f:
+study.optimize(objective,n_trials=1)
+with open("./cross_6p_transformed_minmax_theone.pkl","wb") as f:
     pickle.dump(study,f)

@@ -25,7 +25,10 @@ class Trainer():
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
-        self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
+        if opt.optim == "Adam":
+            self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
+        else:
+            self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
         self.criterion = MSELoss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
@@ -79,8 +82,9 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-        torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        if epoch > 400: 
+            check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
+            torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse
 
     def test(self,testloader,epoch):
