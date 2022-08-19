@@ -215,28 +215,28 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_6p_transformed_minmax_theone"+str(i)) == False:
-            save_folder = "./result/cross_6p_transformed_minmax_theone"+str(i)
+        if os.path.isdir("./result/cross_12p_minmax_theone"+str(i)) == False:
+            save_folder = "./result/cross_6p_minmax_theone"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Label_12p.csv",
-           'image_dir' : ".data/ROI_trab/train",
+           'image_dir' : "./data/ROI_trab/train",
            #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           'batch_size': 8,
+           'batch_size': 24,
            'model' : "ConvNet",
            #'nof' : trial.suggest_int('nof',8,64),
-           'nof':40,
+           'nof':23,
            #'lr': trial.suggest_loguniform('lr',1e-4,1e-1),
-           'lr':0.000522,
-           'nb_epochs' : 500,
+           'lr':0.000642,
+           'nb_epochs' : 200,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 4,
-           'n1': 106,
-           'n2':136,
-           'n3':130,
+           'k_fold' : 2,
+           'n1': 169,
+           'n2':155,
+           'n3':154,
            #'n1' : trial.suggest_int('n1', 90,170),
            #'n2' : trial.suggest_int('n2',100,200),
            #'n3' : trial.suggest_int('n3',100,170),
@@ -268,7 +268,7 @@ def objective(trial):
         transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=transform)
         print(len(datasets))
-        datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+        datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['imagsadnesse_dir'], opt=opt, indices = train_index, transform=None)
         data_tot = ConcatDataset([datasets,datasets_2])
         print(len(data_tot))
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
@@ -299,5 +299,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=1)
-with open("./cross_12p.pkl","wb") as f:
+with open("./cross_12p_theone.pkl","wb") as f:
     pickle.dump(study,f)
