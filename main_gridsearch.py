@@ -265,11 +265,11 @@ def objective(trial):
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
             scaler = None
-        transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
-        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=transform)
-        print(len(datasets))
-        datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['imagsadnesse_dir'], opt=opt, indices = train_index, transform=None)
-        data_tot = ConcatDataset([datasets,datasets_2])
+        #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
+        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+        #print(len(datasets))
+        #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+        #data_tot = ConcatDataset([datasets,datasets_2])
         print(len(data_tot))
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
