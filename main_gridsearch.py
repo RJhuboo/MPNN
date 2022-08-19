@@ -23,8 +23,8 @@ import optuna
 import joblib
 from math import isnan
 import time
-NB_DATA = 4474
-NB_LABEL = 6
+NB_DATA = 4474-10
+NB_LABEL = 12
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -220,8 +220,8 @@ def objective(trial):
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Label_5p.csv",
-           'image_dir' : "../FSRCNN/data/ROI_trab/train",
+    opt = {'label_dir' : "./Label_12p.csv",
+           'image_dir' : ".data/ROI_trab/train",
            #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'batch_size': 8,
            'model' : "ConvNet",
@@ -299,5 +299,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=1)
-with open("./cross_6p_transformed_minmax_theone.pkl","wb") as f:
+with open("./cross_12p.pkl","wb") as f:
     pickle.dump(study,f)
