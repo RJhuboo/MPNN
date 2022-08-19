@@ -216,7 +216,7 @@ def objective(trial):
     while True:
         i += 1
         if os.path.isdir("./result/cross_12p_minmax_theone"+str(i)) == False:
-            save_folder = "./result/cross_6p_minmax_theone"+str(i)
+            save_folder = "./result/cross_12p_minmax_theone"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
