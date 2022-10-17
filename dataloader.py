@@ -64,7 +64,7 @@ class Test_Datasets(Dataset):
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
-          if torch.is_tensor(idx):
+        if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0])[:-4] + ".png")
         image = io.imread(img_name) # Loading Image
