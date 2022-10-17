@@ -58,7 +58,9 @@ class Datasets(Dataset):
 
 class Test_Datasets(Dataset):
     def __init__(self, csv_file, image_dir, opt, scaler, transform=None):
+        self.opt = opt
         self.image_dir = image_dir
+        self.labels = pd.read_csv(csv_file)
         self.transform = transform
         self.scaler = scaler
     def __len__(self):
@@ -70,7 +72,7 @@ class Test_Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
-        lab = scaler.transform(self.labels.iloc[:,1:])
+        lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
         lab.columns = self.labels.columns
