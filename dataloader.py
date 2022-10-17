@@ -68,9 +68,8 @@ class Test_Datasets(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        print(self.image_dir)
-        print(str(self.labels.iloc[idx,0]))
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0])[:-4] + ".png")
+        print(img_name)
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
