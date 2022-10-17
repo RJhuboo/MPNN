@@ -14,6 +14,7 @@ def normalization(csv_file,mode,indices):
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
         scaler = preprocessing.MinMaxScaler()
+    print(len(Data))
     scaler.fit(Data.iloc[indices,1:])
     return scaler
 
@@ -29,7 +30,7 @@ class Datasets(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0]))
+        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0])[:-4] + ".png")
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32

@@ -27,8 +27,8 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Label_5p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "../FSRCNN/data/ROI_trab/train", help = "path to image directory")
+parser.add_argument("--label_dir", default = "./Label_6p.csv", help = "path to label csv file")
+parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "MultiNet", help="Choose model : Unet or ConvNet") 
@@ -52,7 +52,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 4474
+NB_DATA = 4073
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -77,8 +77,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train"+str(i)) == False:
-            save_folder = "./result/train"+str(i)
+        if os.path.isdir("./result/train_6p"+str(i)) == False:
+            save_folder = "./result/train_6p"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []

@@ -46,7 +46,7 @@ class Trainer():
             inputs = inputs.reshape(inputs.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
-            
+            print("nb of parameters:",labels.size())
             # zero the parameter gradients
             self.optimizer.zero_grad()
             
@@ -82,7 +82,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 400: 
+        if epoch > 80: 
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse
@@ -109,6 +109,7 @@ class Trainer():
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
+                print("nb parameters labels", labels.size())
                 inputs, labels = inputs.to(self.device),labels.to(self.device)
                 
                 # loss
