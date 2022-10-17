@@ -145,7 +145,7 @@ else :
     index = range(NB_DATA)
     split = train_test_split(index,test_size = 0.2,random_state=1)
     if opt.norm_method == "standardization" or opt.norm_method == "minmax":
-        scaler = dataloader.normalization("./Label_6p.csv","/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab",split[0])
+        scaler = dataloader.normalization("./Label_6p.csv",opt.norm_method,split[0])
     else:
         scaler = None
     datasets = dataloader.Test_Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, scaler=scaler) # Create dataset
