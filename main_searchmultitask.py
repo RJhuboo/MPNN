@@ -22,8 +22,8 @@ import optuna
 import joblib
 from math import isnan
 import time
-NB_DATA = 3991
-NB_LABEL = 5
+NB_DATA = 4073
+NB_LABEL = 6
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -50,7 +50,7 @@ class Datasets(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0]))
+        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
@@ -76,46 +76,144 @@ class Datasets(Dataset):
             sample = self.transform(sample)
         return {'image': image, 'label': labels}
     
-class NeuralNet(nn.Module):
-    def __init__(self,activation,n1,n2,n3,out_channels):
+class FFNN(nn.Module):
+    """Simple FF network with multiple outputs.
+    """
+    def __init__(
+        self,
+        input_size,
+        hidden_size,
+        n_hidden,
+        n_outputs,
+        dropout_rate=.1,
+    ):
+        """
+        :param input_size: input size
+        :param hidden_size: common hidden size for all layers
+        :param n_hidden: number of hidden layers
+        :param n_outputs: number of outputs
+        :param dropout_rate: dropout rate
+        """
         super().__init__()
-        self.fc1 = nn.Linear(64*64*64,n1)
-        self.fc2 = nn.Linear(n1,n2)
-        self.fc3 = nn.Linear(n2,n3)
-        self.fc4 = nn.Linear(n3,out_channels)
-        self.activation = activation
-    def forward(self,x):
-        x = torch.flatten(x,1)
-        x = self.activation(self.fc1(x))
-        x = self.activation(self.fc2(x))
-        x = self.activation(self.fc3(x))
-        x = self.fc4(x)
-        return x
-class ConvNet(nn.Module):
-    def __init__(self,activation, features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
-        super(ConvNet,self).__init__()
-        # initialize CNN layers 
-        self.conv1 = nn.Conv2d(1,features,kernel_size = k1,stride = 1, padding = 1)
-        self.conv2 = nn.Conv2d(features,features*2, kernel_size = k2, stride = 1, padding = 1)
-        self.conv3 = nn.Conv2d(features*2,64, kernel_size = k3, stride = 1, padding = 1)
-        self.pool = nn.MaxPool2d(2,2)
-        self.activation = activation
-        # initialize NN layers
-        self.neural_p1 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p2 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p3 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p4 = NeuralNet(activation,n1,n2,n3,1)
-        self.neural_p5 = NeuralNet(activation,n1,n2,n3,1)
+        assert 0 <= dropout_rate < 1
+        self.input_size = input_size
+
+        h_sizes = [self.input_size] + [hidden_size for _ in range(n_hidden)] + [n_outputs]
+
+        self.hidden = nn.ModuleList()
+        for k in range(len(h_sizes) - 1):
+            self.hidden.append(
+                nn.Linear(
+                    h_sizes[k],
+                    h_sizes[k + 1]
+                )
+            )
+
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(p=dropout_rate)
+
     def forward(self, x):
-        x = self.pool(self.activation(self.conv1(x)))
-        x = self.pool(self.activation(self.conv2(x)))
-        x = self.pool(self.activation(self.conv3(x)))
-        p1 = self.neural_p1(x)
-        p2 = self.neural_p2(x)
-        p3 = self.neural_p3(x)
-        p4 = self.neural_p4(x)
-        p5 = self.neural_p5(x)
-        return [p1,p2,p3,p4,p5]
+
+        for layer in self.hidden[:-1]:
+            x = layer(x)
+            x = self.relu(x)
+            x = self.dropout(x)
+
+        return self.hidden[-1](x)
+    
+class TaskIndependentNets(nn.Module):
+    """Independent FFNN for each task
+    """
+
+    def __init__(
+            self,
+            input_size,
+            hidden_size,
+            n_hidden,
+            n_outputs,
+            dropout_rate=.1,
+    ):
+
+        super().__init__()
+
+        self.n_outputs = n_outputs
+        self.task_nets = nn.ModuleList()
+        for _ in range(n_outputs):
+            self.task_nets.append(
+                FFNN(
+                    input_size=input_size,
+                    hidden_size=hidden_size,
+                    n_hidden=n_hidden,
+                    n_outputs=1,
+                    dropout_rate=dropout_rate,
+                )
+            )
+
+    def forward(self, x):
+ 
+        return torch.cat(
+            tuple(task_model(x) for task_model in self.task_nets),
+            dim=1
+        )
+class HardSharing(nn.Module):
+    """FFNN with hard parameter sharing
+    """
+
+    def __init__(
+        self,
+        input_size,
+        hidden_size,
+        n_hidden,
+        n_outputs,
+        n_task_specific_layers=0,
+        task_specific_hidden_size=None,
+        dropout_rate=.1,
+    ):
+
+        super().__init__()
+        if task_specific_hidden_size is None:
+            task_specific_hidden_size = hidden_size
+
+        self.model = nn.Sequential()
+
+        self.model.add_module(
+            'hard_sharing',
+            FFNN(
+                input_size=input_size,
+                hidden_size=hidden_size,
+                n_hidden=n_hidden,
+                n_outputs=hidden_size,
+                dropout_rate=dropout_rate
+            )
+        )
+
+        if n_task_specific_layers > 0:
+            # if n_task_specific_layers == 0 than the task specific mapping is linear and
+            # constructed as the product of last layer is the 'hard_sharing' and the linear layer
+            # in 'task_specific', with no activation or dropout
+            self.model.add_module('relu', nn.ReLU())
+            self.model.add_module('dropout', nn.Dropout(p=dropout_rate))
+
+        self.model.add_module(
+            'task_specific',
+            TaskIndependentLayers(
+                input_size=hidden_size,
+                hidden_size=task_specific_hidden_size,
+                n_hidden=n_task_specific_layers,
+                n_outputs=n_outputs,
+                dropout_rate=dropout_rate
+            )
+        )
+        
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=config.initializer_range)
+            if module.bias is not None:
+                module.bias.data.zero_()
+                
+    def forward(self, x):
+        x = torch.flatten(x,1) 
+        return self.model(x)
     
 def reset_weights(m):
     '''
@@ -134,7 +232,6 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     train_loss = 0.0
     train_total = 0
     running_loss = 0.0
-    r2_s = 0
     mse_score = 0.0
 
     for i, data in enumerate(trainloader,0):
@@ -147,17 +244,14 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs)
+        print(outputs)
+        print(labels)
         Loss = MSELoss()
-        labels = torch.transpose(labels,0,1)
-
-        loss1 = Loss(outputs[0],torch.reshape(labels[0],[len(outputs[0]),1]))
-        loss2 = Loss(outputs[1],torch.reshape(labels[1],[len(outputs[1]),1]))
-        loss3 = Loss(outputs[2],torch.reshape(labels[2],[len(outputs[2]),1]))
-        loss4 = Loss(outputs[3],torch.reshape(labels[3],[len(outputs[3]),1]))
-        loss5 = Loss(outputs[4],torch.reshape(labels[4],[len(outputs[4]),1]))
-        loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
-        
-
+        #labels = torch.transpose(labels,0,1)
+        #loss_list = [Loss(outputs[k_task],torch.reshape(labels[k_task],[len(outputs[k_task]),1])) for k_task in range(NB_LABEL)]  
+        #loss = sum(loss_list)
+        loss = Loss(outputs,labels)
+        #### verify non empty loss ####
         if isnan(loss) == True:
             print(outputs)
             print(labels)
@@ -169,10 +263,6 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         running_loss += loss.item()
         train_total += 1
 
-        #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-        #labels, outputs = np.array(labels), np.array(outputs)
-        #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
-        #Loss = MSELoss()
         if i % opt['batch_size'] == opt['batch_size']-1:
             print('[%d %5d], loss: %.3f' %
                   (epoch + 1, i+1, running_loss/opt['batch_size']))
@@ -191,10 +281,7 @@ def test(model,testloader,epoch,opt):
 
     test_loss = 0
     test_total = 0
-    r2_s = 0
     mse_score = 0.0
-    output = {}
-    label = {}
     # Loading Checkpoint
     if opt['mode'] == "Test":
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
@@ -211,34 +298,11 @@ def test(model,testloader,epoch,opt):
             outputs = model(inputs)
             Loss = MSELoss()
             labels = torch.transpose(labels,0,1)
-            loss1 = Loss(outputs[0],torch.reshape(labels[0],[1,1]))
-            loss2 = Loss(outputs[1],torch.reshape(labels[1],[1,1]))
-            loss3 = Loss(outputs[2],torch.reshape(labels[2],[1,1]))
-            loss4 = Loss(outputs[3],torch.reshape(labels[3],[1,1]))
-            loss5 = Loss(outputs[4],torch.reshape(labels[4],[1,1]))
-            loss = (opt['alpha1']*loss1) + (opt['alpha2']*loss2) + (opt['alpha3']*loss3) + (opt['alpha4']*loss4) + (opt['alpha5']*loss5)
+            #loss_list = [Loss(outputs[k_task],torch.reshape(labels[k_task],[1,1])) for k_task in range(NB_LABEL)]  
+            #loss = sum(loss_list)
+            loss = Loss(outputs,labels)
             test_loss += loss.item()
             test_total += 1
-            # statistics
-            #outputs[0], labels[0] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            #outputs[1], labels[1] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            #outputs[2], labels[2] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            #outputs[3], labels[3] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            #outputs[4], labels[4] = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-
-            #labels, outputs = np.array(labels), np.array(outputs)
-            #labels, outputs = labels.reshape(NB_LABEL,1), outputs.reshape(NB_LABEL,1)
-            #Loss = MSELoss()
-            
-
-            #outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
-            #output[i] = outputs
-            #label[i] = labels
-        #name_out = "./output" + str(epoch) + ".txt"
-        #name_lab = "./label" + str(epoch) + ".txt"
-
-
-
     print(' Test_loss: {}'.format(test_loss/test_total))
     return (test_loss/test_total)
 
@@ -246,50 +310,39 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/multi_stand"+str(i)) == False:
-            save_folder = "./result/multi_stand"+str(i)
+        if os.path.isdir("./result/multi_minmax"+str(i)) == False:
+            save_folder = "./result/multi_minxmax"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Label_5p.csv",
-           'image_dir' : "./data/ROI_trab",
+    opt = {'label_dir' : "./Label_6p.csv",
+           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab",
            'train_cross' : "./cross_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,100),
+           'nb_hidden_layer' : trial.suggest_int('nb_hidden_layer',2,50),
+           'task_specific_hidden_size' : trial.suggest_int('task_specific_hidden_size',50,500),
+           'hidden_size' : trial.suggest_int('hidden_size',100,10000),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            'nb_epochs' : 70,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 5,
-
-           'n1' : trial.suggest_int('n1', 100,300),
-           'n2' : trial.suggest_int('n2',100,300),
-           'n3' : trial.suggest_int('n3',100,300),
+           'k_fold' : 4,
            'nb_workers' : 4,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "standardization",
-           'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
-           'activation' : trial.suggest_categorical("activation", [F.relu]),
-           'alpha1' : trial.suggest_float("alpha1", 0, 2),
-           'alpha2' : trial.suggest_float("alpha2", 0, 2),
-           'alpha3' : trial.suggest_float("alpha3", 0, 2),
-           'alpha4' : trial.suggest_float("alpha4", 0, 2),
-           'alpha5' : trial.suggest_float("alpha5", 0, 2)
-                                                  
+           'norm_method': "minmax",
+           'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),                                                  
           }
-    mse_total = np.zeros(opt['nb_epochs'])
-    mse_train = []
+    
     # defining data
     mse_train = []
-    index = range(NB_DATA)
-    split = train_test_split(index,test_size = 0.2,random_state=1)
-    kf = KFold(n_splits = opt['k_fold'], shuffle=True)
-    kf.get_n_splits(split[0])
-    print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
-
+    index = range(NB_DATA)
+    split = train_test_split(index,test_size = 0.2,shuffle=False)
+    kf = KFold(n_splits = opt['k_fold'], shuffle=False)
+    
+    print("start training")
     for train_index, test_index in kf.split(split[0]):
         mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
@@ -299,15 +352,12 @@ def objective(trial):
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index) # Create dataset
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
-        model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
-        model.apply(reset_weights)
+        model = HardSharing(input_size=512*512,hidden_size=opt['nb_hidden_layer'],n_hidden=opt['n_hidden'],n_outputs=NB_LABEL,task_specific_hidden_size=opt['task_specific_hidden_size']).to(device)
         optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-            mse_test.append(test(model=model,testloader=testloader,epoch=epoch,opt=opt))
-            print(np.shape(np.array(mse_train)))
-        mse_total = np.array(mse_test) + mse_total
-       
+            mse_test.append(test(model = model, testloader = testloader, epoch = epoch,opt=opt))
+        mse_total = np.array(mse_test) + mse_total    
     mse_mean = mse_total / opt['k_fold']
     i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
@@ -325,6 +375,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=20)
-with open("./train_multitasking_stand.pkl","wb") as f:
+study.optimize(objective,n_trials=6)
+with open("./cross_multitasking_minmax.pkl","wb") as f:
     pickle.dump(study,f)
