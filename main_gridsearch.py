@@ -23,8 +23,8 @@ import optuna
 import joblib
 from math import isnan
 import time
-NB_DATA = 4474-10
-NB_LABEL = 11
+NB_DATA = 4073
+NB_LABEL = 6
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -51,7 +51,7 @@ class Datasets(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0]))
+        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
@@ -188,7 +188,7 @@ def test(model,testloader,epoch,opt):
     with torch.no_grad():
         for i, data in enumerate(testloader):
             inputs, labels = data['image'],data['label']
-            # reshape
+            # reshapefsstore/
             inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
             labels = labels.reshape(1,NB_LABEL)
             inputs, labels = inputs.to(device),labels.to(device)
@@ -215,13 +215,13 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_11p_minmax"+str(i)) == False:
-            save_folder = "./result/cross_11p_minmax"+str(i)
+        if os.path.isdir("./result/cross_6p"+str(i)) == False:
+            save_folder = "./result/cross_6p"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Label_11p.csv",
-           'image_dir' : "./data/ROI_trab/train",
+    opt = {'label_dir' : "./Label_6p.csv",
+            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            #'batch_size': 24,
            'model' : "ConvNet",
@@ -253,13 +253,13 @@ def objective(trial):
     # defining data
     mse_train = []
     index = range(NB_DATA)
-    split = train_test_split(index,test_size = 0.2,random_state=1)
-    kf = KFold(n_splits = opt['k_fold'], shuffle=True)
-    kf.get_n_splits(split[0])
+    #split = train_test_split(index,test_size = 0.2,random_state=1,shuffle=False)
+    kf = KFold(n_splits = opt['k_fold'], shuffle=False)
+    #kf.get_n_splits(split[0])
     print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
 
-    for train_index, test_index in kf.split(split[0]):
+    for train_index, test_index in kf.split(index):
         mse_test = []
         if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
@@ -298,5 +298,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=15)
-with open("./cross_11p.pkl","wb") as f:
+with open("./cross_6p_new.pkl","wb") as f:
     pickle.dump(study,f)
