@@ -27,7 +27,7 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Label_5p.csv", help = "path to label csv file")
+parser.add_argument("--label_dir", default = "./Label_6p.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./data/ROI_trab", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")

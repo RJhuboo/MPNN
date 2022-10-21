@@ -25,7 +25,7 @@ class Trainer():
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
-        self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
+        self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
         self.criterion = MSELoss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
