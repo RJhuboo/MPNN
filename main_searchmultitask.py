@@ -5,7 +5,6 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import MSELoss
 from torch.optim import Adam, SGD
-from sklearn.metrics import r2_score
 from skimage import io,transform
 from torchvision import transforms, utils
 from sklearn import preprocessing
@@ -121,8 +120,8 @@ class FFNN(nn.Module):
 
         return self.hidden[-1](x)
     
-class TaskIndependentNets(nn.Module):
-    """Independent FFNN for each task
+class TaskIndependentLayers(nn.Module):
+    """NN for MTL with hard parameter sharing
     """
 
     def __init__(
@@ -317,12 +316,12 @@ def objective(trial):
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Label_6p.csv",
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab",
-           'train_cross' : "./cross_output.pkl",
+           'train_cross' : "./cross_multi_output.pkl",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            'model' : "ConvNet",
            'nb_hidden_layer' : trial.suggest_int('nb_hidden_layer',2,50),
            'task_specific_hidden_size' : trial.suggest_int('task_specific_hidden_size',50,500),
-           'hidden_size' : trial.suggest_int('hidden_size',100,10000),
+           'hidden_size' : trial.suggest_int('hidden_size',100,5000),
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            'nb_epochs' : 70,
            'checkpoint_path' : "./",
@@ -352,7 +351,7 @@ def objective(trial):
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index) # Create dataset
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
-        model = HardSharing(input_size=512*512,hidden_size=opt['nb_hidden_layer'],n_hidden=opt['n_hidden'],n_outputs=NB_LABEL,task_specific_hidden_size=opt['task_specific_hidden_size']).to(device)
+        model = HardSharing(input_size=512*512,hidden_size=opt['hidden_size'],n_hidden=opt['nb_hidden_layer'],n_outputs=NB_LABEL,task_specific_hidden_size=opt['task_specific_hidden_size']).to(device)
         optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
