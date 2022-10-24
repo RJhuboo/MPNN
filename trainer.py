@@ -56,7 +56,9 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
             
+            print("--- OUTPUTS ---")
             print(outputs)
+            print("--- LABELS ---")
             print(labels)
             # statistics
             train_loss += loss.item()
