@@ -35,7 +35,7 @@ class Trainer():
         train_loss = 0.0
         train_total = 0
         running_loss = 0.0
-        mse_score = 0.0
+        metric_follow = 0.0
         for i, data in enumerate(trainloader,0):
             inputs, labels = data['image'], data['label']
             
@@ -60,13 +60,14 @@ class Trainer():
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
+            metric_follow += r2_score(labels,outputs)
             train_total += 1
             #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
             #labels, outputs = np.array(labels), np.array(outputs)
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
-                print('[%d %5d], loss: %.3f' %
-                      (epoch + 1, i+1, running_loss/self.opt.batch_size))
+                print('[%d %5d], loss: %.3f, metric: %.3f' %
+                      (epoch + 1, i+1, running_loss/self.opt.batch_size, metric_follow/self.opt.batch_size)
                 print("--- OUTPUTS ---")
                 print(outputs[:8])
                 print("--- LABELS ---")
