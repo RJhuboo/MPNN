@@ -33,7 +33,7 @@ parser.add_argument("--train_cross", default = "./cross_multinet.pkl", help = "f
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "MultiNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 8, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.001, help = "learning rate")
+parser.add_argument("--lr", type=float, default = 0.005, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 120, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
@@ -44,7 +44,7 @@ parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
-parser.add_argument("--nb_hidden_layer", default = 20, help= "Number of hidden layer")
+parser.add_argument("--nb_hidden_layer", default = 50, help= "Number of hidden layer")
 parser.add_argument("--task_specific_hidden_size", default= 100, help="number of neurons in specific layers")
 parser.add_argument("--hidden_size", default= 100, help="number of neurons in hard sharing layers")
 
