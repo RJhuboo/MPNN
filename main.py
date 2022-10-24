@@ -98,7 +98,7 @@ def train():
         model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
-        model = Model.HardSharing(input_size=SIZE_IMAGE**2,hidden_size=opt.hidden_size,n_hidden=opt.nb_hidden_layer,n_outputs=NB_LABEL,task_specific_hidden_size=opt.task_specific_hidden_size).to(device)
+        model = Model.HardSharing(input_size=64*64*64,hidden_size=opt.hidden_size,n_hidden=opt.nb_hidden_layer,n_outputs=NB_LABEL,task_specific_hidden_size=opt.task_specific_hidden_size).to(device)
 
     #model.apply(reset_weights)
     
