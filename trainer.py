@@ -70,7 +70,7 @@ class Trainer():
                 print("--- OUTPUTS ---")
                 print(outputs[:8])
                 print("--- LABELS ---")
-                print(labels[:8)
+                print(labels[:8])
                 running_loss = 0.0
                 
         # displaying results
