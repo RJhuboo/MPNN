@@ -171,11 +171,11 @@ class HardSharing(nn.Module):
             )
         )
         
-    def _init_weights(self, module):
-        if isinstance(module, nn.Linear):
-            module.weight.data.normal_(mean=0.0, std=config.initializer_range)
-            if module.bias is not None:
-                module.bias.data.zero_()
+    #def _init_weights(self, module):
+    #    if isinstance(module, nn.Linear):
+    #        module.weight.data.normal_(mean=0.0, std=config.initializer_range)
+    #        if module.bias is not None:
+    #            module.bias.data.zero_()
                 
     def forward(self, x):
         #x = torch.flatten(x,1) 
