@@ -60,9 +60,9 @@ class Trainer():
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
-            metric_follow += r2_score(labels,outputs)
             train_total += 1
-            #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+            metric_follow += r2_score(labels,outputs)
             #labels, outputs = np.array(labels), np.array(outputs)
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
@@ -115,7 +115,6 @@ class Trainer():
                 else:
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
-                metric_score += r2_score(labels,outputs)
                 test_total += 1
                 
                 # statistics
@@ -125,6 +124,7 @@ class Trainer():
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
                 outputs=outputs.reshape(1,self.NB_LABEL)
+                metric_score += r2_score(labels,outputs)
 
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs = self.scaler.inverse_transform(outputs)
