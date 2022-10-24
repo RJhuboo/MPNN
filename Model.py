@@ -24,18 +24,13 @@ class NeuralNet(nn.Module):
 
 ## 3 CNN model ##
 class ConvNet(nn.Module):
-    def __init__(self,features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
+    def __init__(self,features,k1=3,k2=3,k3=3):
         super(ConvNet,self).__init__()
         # initialize CNN layers 
         self.conv1 = nn.Conv2d(1,features,kernel_size = k1,stride = 1, padding = 1)
         self.conv2 = nn.Conv2d(features,features*2, kernel_size = k2, stride = 1, padding = 1)
         self.conv3 = nn.Conv2d(features*2,64, kernel_size = k3, stride = 1, padding = 1)
         self.pool = nn.MaxPool2d(2,2)
-        # initialize NN layers
-        #self.fc1 = nn.Linear(64**3,n1)
-        #self.fc2 = nn.Linear(n1,n2)
-        #self.fc3 = nn.Linear(n2,14)
-        self.neural = NeuralNet(n1,n2,n3,out_channels)
         # dropout
         # self.dropout = nn.Dropout(0.25)
     def forward(self, x):
@@ -43,7 +38,7 @@ class ConvNet(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
         x = self.neural(x)
-        #x = torch.flatten(x,1)
+        x = torch.flatten(x,1)
         return x 
        
 ## Multitasking ##
@@ -146,7 +141,8 @@ class HardSharing(nn.Module):
             task_specific_hidden_size = hidden_size
 
         self.model = nn.Sequential()
-
+        
+        self.model.add_module('convnet',ConvNet(features=40))
         self.model.add_module(
             'hard_sharing',
             FFNN(
@@ -183,6 +179,6 @@ class HardSharing(nn.Module):
                 module.bias.data.zero_()
                 
     def forward(self, x):
-        x = torch.flatten(x,1) 
+        #x = torch.flatten(x,1) 
         return self.model(x)
     
