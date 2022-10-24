@@ -99,9 +99,6 @@ def train():
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.HardSharing(input_size=SIZE_IMAGE**2,hidden_size=opt.hidden_size,n_hidden=opt.nb_hidden_layer,n_outputs=NB_LABEL,task_specific_hidden_size=opt.task_specific_hidden_size).to(device)
-    print(" --- Verify Initialization --- ")
-    for param in model.parameters():
-        print(param.data)
 
     #model.apply(reset_weights)
     
