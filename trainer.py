@@ -113,8 +113,6 @@ class Trainer():
                 # statistics
                 labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
                 labels, outputs = np.array(labels), np.array(outputs)
-                print(np.shape(labels))
-                print(np.shape(outputs))
                
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
