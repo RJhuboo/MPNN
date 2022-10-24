@@ -43,15 +43,13 @@ parser.add_argument("--n2", type=int, default = 120, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 5, help = "specify the number of labels")
-parser.add_argument("--alpha1", type=float, default = 1)
-parser.add_argument("--alpha2", type=float, default = 1)
-parser.add_argument("--alpha3", type=float, default = 1)
-parser.add_argument("--alpha4", type=float, default = 1)
-parser.add_argument("--alpha5", type=float, default = 1)
+parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
+parser.add_argument("--nb_hidden_layer", default = 20, help= "Number of hidden layer")
+parser.add_argument("task_specific_hidden_size", default= 100, help="number of neurons in specific layers")
+parser.add_argument("hidden_size", default= 100, help="number of neurons in hard sharing layers")
 
 opt = parser.parse_args()
-NB_DATA = 3991
+NB_DATA = 4073
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -98,19 +96,14 @@ def train():
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
         model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    elif opt.model == "resnet50":
-        print("## Choose model : resnet50 ##")
-        model = Model.ResNet50(14,1).to(device)
-    elif opt.model == "restnet101":
-        print("## Choose model : resnet101 ##")
-        model = Model.ResNet101(14,1).to(device)
-    elif opt.model == "Unet":
-        print("## Choose model : Unet ##")
-        model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
-        model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    model.apply(reset_weights)
+        model = Model.HardSharing(input_size=SIZE_IMAGE**2,hidden_size=opt.hidden_size,n_hidden=opt.nb_hidden_layer,n_outputs=NB_LABEL,task_specific_hidden_size=opt.task_specific_hidden_size).to(device)
+    print(" --- Verify Initialization --- ")
+    for param in model.parameters():
+        print(param.data)
+
+    #model.apply(reset_weights)
     
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
