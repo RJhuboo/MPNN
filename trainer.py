@@ -50,12 +50,7 @@ class Trainer():
             # forward backward and optimization
             outputs = self.model(inputs)
             if self.opt.model == "MultiNet":
-                loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
-                loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
-                loss3 = self.criterion(outputs[2],torch.reshape(labels[:,2],[len(outputs[2]),1]))
-                loss4 = self.criterion(outputs[3],torch.reshape(labels[:,3],[len(outputs[3]),1]))
-                loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[len(outputs[4]),1]))
-                loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
+                loss = self.criterion(outputs,labels)
             else:
                 loss = self.criterion(outputs,labels)
             loss.backward()
@@ -109,12 +104,7 @@ class Trainer():
                 # loss
                 outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
-                    loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
-                    loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[1,1]))
-                    loss3 = self.criterion(outputs[2],torch.reshape(labels[:,2],[1,1]))
-                    loss4 = self.criterion(outputs[3],torch.reshape(labels[:,3],[1,1]))
-                    loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[1,1]))
-                    loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
+                    loss = self.criterion(outputs,labels)
                 else:
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
