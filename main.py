@@ -34,7 +34,7 @@ parser.add_argument("--batch_size", type=int, default = 16, help = "number of ba
 parser.add_argument("--model", default = "MultiNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 8, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.001, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 5, help = "number of epochs")
+parser.add_argument("--nb_epochs", type=int, default = 120, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "Train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitting for k cross-validation")
