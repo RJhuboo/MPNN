@@ -10,7 +10,7 @@ import random
 import pickle
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import Model
 from trainer import Trainer
@@ -44,7 +44,7 @@ parser.add_argument("--n3", type=int, default = 60, help = "number of neurons in
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
-parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
+parser.add_argument("--optim", type=str, default = "SGD", help= "specify the optimizer")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
 parser.add_argument("--alpha3", type=float, default = 1)
@@ -60,15 +60,15 @@ NB_LABEL = opt.NB_LABEL
 
 ## RESET WEIGHT FOR CROSS VALIDATION
 
-def reset_weights(m):
-  '''
-    Try resetting model weights to avoid
-    weight leakage.
-  '''
-  for layer in m.children():
-    if hasattr(layer, 'reset_parameters'):
-        print(f'Reset trainable parameters of layer = {layer}')
-        layer.reset_parameters()
+#def reset_weights(m):
+#  '''
+#    Try resetting model weights to avoid
+#    weight leakage.
+#  '''
+#  for layer in m.children():
+#    if hasattr(layer, 'reset_parameters'):
+#        print(f'Reset trainable parameters of layer = {layer}')
+#        layer.reset_parameters()
 
 ## FOR TRAINING
 
@@ -88,8 +88,8 @@ def train():
     split = train_test_split(index,test_size = 0.2,shuffle=False)
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = split[0], num_workers = opt.nb_workers )
-    testloader =DataLoader(datasets, batch_size = 1, sampler = split[1], num_workers = opt.nb_workers )
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(split[0]), num_workers = opt.nb_workers )
+    testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(split[1]), num_workers = opt.nb_workers )
 
     if opt.norm_method == "standardization" or opt.norm_method == "minmax":
         scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
@@ -99,15 +99,6 @@ def train():
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
         model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    elif opt.model == "resnet50":
-        print("## Choose model : resnet50 ##")
-        model = Model.ResNet50(14,1).to(device)
-    elif opt.model == "restnet101":
-        print("## Choose model : resnet101 ##")
-        model = Model.ResNet101(14,1).to(device)
-    elif opt.model == "Unet":
-        print("## Choose model : Unet ##")
-        model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)

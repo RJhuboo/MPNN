@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import KFold
 import random
 import pickle
+from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -142,6 +143,8 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs)
+        print(outputs.size)
+        print(labels.size)
         Loss = MSELoss()
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
@@ -181,6 +184,7 @@ def test(model,testloader,epoch,opt):
     output = {}
     label = {}
     # Loading Checkpoint
+    print("------start testing-------")
     if opt['mode'] == "Test":
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         model.load_state_dict(torch.load(os.path.join(opt['checkpoint_path'],check_name)))
@@ -200,8 +204,8 @@ def test(model,testloader,epoch,opt):
             # statistics
 
             outputs,labels=outputs.reshape(1,NB_LABEL), labels.reshape(1,NB_LABEL)
-            output[i] = outputs
-            label[i] = labels
+            #output[i] = outputs
+            #label[i] = labels
         name_out = "./output" + str(epoch) + ".txt"
         name_lab = "./label" + str(epoch) + ".txt"
 
@@ -233,7 +237,7 @@ def objective(trial):
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 4,
+           'k_fold' : 2,
            #'n1': 169,
            #'n2':155,
            #'n3':154,
@@ -270,8 +274,8 @@ def objective(trial):
         #print(len(datasets))
         #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
         #data_tot = ConcatDataset([datasets,datasets_2])
-        trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = train_index, num_workers = opt['nb_workers'])
-        testloader =DataLoader(datasets, batch_size = 1, sampler = test_index, num_workers = opt['nb_workers'])
+        trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
+        testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
         model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
         model.apply(reset_weights)
         optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
@@ -297,6 +301,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=15)
-with open("./cross_6p_new.pkl","wb") as f:
+study.optimize(objective,n_trials=12)
+with open("./cross_6p_new2.pkl","wb") as f:
     pickle.dump(study,f)

@@ -25,10 +25,10 @@ class Trainer():
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
-        if opt.optim == "Adam":
-            self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
-        else:
-            self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
+        #if opt.optim == "Adam":
+        #    self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
+        #else:
+        self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
         self.criterion = MSELoss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
@@ -52,6 +52,11 @@ class Trainer():
             
             # forward backward and optimization
             outputs = self.model(inputs)
+            print("------Training------")
+            print(outputs.size())
+            print(labels.size())
+            print(outputs)
+            print(labels)
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
@@ -61,6 +66,7 @@ class Trainer():
                 loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
             else:
                 loss = self.criterion(outputs,labels)
+            print(loss.item())
             loss.backward()
             self.optimizer.step()
             
@@ -116,7 +122,7 @@ class Trainer():
                 # reshape
                 inputs = inputs.reshape(1,1,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
-                print("nb parameters labels", labels.size())
+                
                 inputs, labels = inputs.to(self.device),labels.to(self.device)
                 
                 # loss
