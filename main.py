@@ -100,7 +100,7 @@ def train():
         print("## Choose model : MultiNet ##")
         model = Model.HardSharing(input_size=64*64*64,hidden_size=opt.hidden_size,n_hidden=opt.nb_hidden_layer,n_outputs=NB_LABEL,task_specific_hidden_size=opt.task_specific_hidden_size).to(device)
 
-    #model.apply(reset_weights)
+    model.apply(reset_weights)
     
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
