@@ -56,10 +56,7 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
             
-            print("--- OUTPUTS ---")
-            print(outputs)
-            print("--- LABELS ---")
-            print(labels)
+           
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
@@ -70,6 +67,10 @@ class Trainer():
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
+                print("--- OUTPUTS ---")
+                print(outputs[:8])
+                print("--- LABELS ---")
+                print(labels[:8)
                 running_loss = 0.0
                 
         # displaying results
