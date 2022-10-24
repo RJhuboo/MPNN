@@ -111,11 +111,11 @@ class Trainer():
                 test_total += 1
                 
                 # statistics
-                if self.opt.model == "MultiNet":
-                    labels = labels.cpu().detach().numpy()
-                else:
-                    labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
+                labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
                 labels, outputs = np.array(labels), np.array(outputs)
+                print(np.shape(labels))
+                print(np.shape(outputs))
+               
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
                 outputs=outputs.reshape(1,self.NB_LABEL)
