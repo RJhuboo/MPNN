@@ -37,7 +37,6 @@ class ConvNet(nn.Module):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
-        x = self.neural(x)
         x = torch.flatten(x,1)
         return x 
        
