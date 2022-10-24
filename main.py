@@ -45,8 +45,8 @@ parser.add_argument("--nb_workers", type=int, default = 0, help ="number of work
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
 parser.add_argument("--nb_hidden_layer", default = 20, help= "Number of hidden layer")
-parser.add_argument("task_specific_hidden_size", default= 100, help="number of neurons in specific layers")
-parser.add_argument("hidden_size", default= 100, help="number of neurons in hard sharing layers")
+parser.add_argument("--task_specific_hidden_size", default= 100, help="number of neurons in specific layers")
+parser.add_argument("--hidden_size", default= 100, help="number of neurons in hard sharing layers")
 
 opt = parser.parse_args()
 NB_DATA = 4073
