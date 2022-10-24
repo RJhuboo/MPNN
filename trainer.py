@@ -67,11 +67,12 @@ class Trainer():
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f, metric: %.3f' %
-                      (epoch + 1, i+1, running_loss/self.opt.batch_size, metric_follow/self.opt.batch_size)
+                      (epoch + 1, i+1, running_loss/self.opt.batch_size, metric_follow/self.opt.batch_size))
                 print("--- OUTPUTS ---")
                 print(outputs[:8])
                 print("--- LABELS ---")
                 print(labels[:8])
+                metric_follow = 0.0
                 running_loss = 0.0
                 
         # displaying results
@@ -89,7 +90,7 @@ class Trainer():
 
         test_loss = 0
         test_total = 0
-        mse_score = 0.0
+        metric_score = 0.0
         output = {}
         label = {}
         IDs = {}
@@ -114,6 +115,7 @@ class Trainer():
                 else:
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
+                metric_score += r2_score(labels,outputs)
                 test_total += 1
                 
                 # statistics
@@ -138,4 +140,5 @@ class Trainer():
                 #pickle.dump(label,f)
            
         print(' Test_loss: {}'.format(test_loss/test_total))
+        print(' Test metric: {}'.format(metric_score/test_total))
         return mse
