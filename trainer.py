@@ -49,6 +49,8 @@ class Trainer():
             
             # forward backward and optimization
             outputs = self.model(inputs)
+            print(outputs.shape)
+            print(labels.shape)
             if self.opt.model == "MultiNet":
                 loss = self.criterion(outputs,labels)
             else:
