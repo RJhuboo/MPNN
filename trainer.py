@@ -63,7 +63,6 @@ class Trainer():
                 loss = self.criterion(outputs,labels)
             loss.backward()
             self.optimizer.step()
-            
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
@@ -75,6 +74,8 @@ class Trainer():
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
                 running_loss = 0.0
+                print("output",outputs[:8])
+                print("label",labels[:8])
                 
         # displaying results
         mse = train_loss / train_total
@@ -147,7 +148,8 @@ class Trainer():
                 pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
-           
+        print(outputs)
+        print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
         return mse
     
