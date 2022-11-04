@@ -39,8 +39,10 @@ class Trainer():
         train_total = 0
         running_loss = 0.0
         mse_score = 0.0
+        save_output=[]
+        save_label=[]
         for i, data in enumerate(trainloader,0):
-            inputs, labels = data['image'], data['label']
+            inputs, labels,imname = data['image'], data['label'],data['ID']
             
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
@@ -49,7 +51,7 @@ class Trainer():
             
             # zero the parameter gradients
             self.optimizer.zero_grad()
-            
+
             # forward backward and optimization
             outputs = self.model(inputs)
             if self.opt.model == "MultiNet":
@@ -67,23 +69,26 @@ class Trainer():
             train_loss += loss.item()
             running_loss += loss.item()
             train_total += 1
-            #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-            #labels, outputs = np.array(labels), np.array(outputs)
+            if epoch == self.opt.nb_epochs -1 :
+                outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+                save_label.append(np.array(labels)), save_output.append(np.array(outputs))
+                with open(os.path.join(self.save_fold,"train_output"+str(epoch)+".pkl"),"wb") as f:
+                    pickle.dump({"output":save_output,"label":save_label,"ID":imname},f)
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
                 running_loss = 0.0
-                print("output",outputs[:8])
-                print("label",labels[:8])
-                
+                #print("output",outputs[:8])
+                #print("label",labels[:8])
         # displaying results
         mse = train_loss / train_total
         print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
         print('Finished Training')
         
         # saving trained model
-        if epoch > 400: 
+        if epoch > 100:
+            print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse
@@ -148,8 +153,8 @@ class Trainer():
                 pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
-        print(outputs)
-        print(labels)
+        #print(outputs)
+        #print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
         return mse
     
