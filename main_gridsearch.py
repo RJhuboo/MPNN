@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
-from torch.nn import MSELoss
+from torch.nn import MSELoss,L1Loss
 from torch.optim import Adam, SGD
 from sklearn.metrics import r2_score
 from skimage import io,transform
@@ -106,10 +106,14 @@ class ConvNet(nn.Module):
         self.activation = activation
         # initialize NN layers
         self.neural = NeuralNet(activation,n1,n2,n3,out_channels)
+        # Dropout
+        self.dropout = nn.Dropout2d(0.25)
 
     def forward(self, x):
         x = self.pool(self.activation(self.conv1(x)))
+        x = self.dropout(x)
         x = self.pool(self.activation(self.conv2(x)))
+        x = self.dropout(x)
         x = self.pool(self.activation(self.conv3(x)))
         x = self.neural(x)
         return x
@@ -144,7 +148,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs)
-        Loss = MSELoss()
+        Loss = L1Loss()
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
             print(outputs)
@@ -196,7 +200,7 @@ def test(model,testloader,epoch,opt):
             inputs, labels = inputs.to(device),labels.to(device)
             # loss
             outputs = model(inputs)
-            Loss = MSELoss()
+            Loss = L1Loss()
             test_loss += Loss(outputs,labels)
             test_total += 1
             # statistics
