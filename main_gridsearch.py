@@ -25,8 +25,8 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 4073
-NB_LABEL = 9
+NB_DATA = 3000
+NB_LABEL = 6
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -221,14 +221,14 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_9p"+str(i)) == False:
-            save_folder = "./result/cross_9p"+str(i)
+        if os.path.isdir("./result/cross_6p_100"+str(i)) == False:
+            save_folder = "./result/cross_6p_100"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Train_Label_9p.csv",
-           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+    opt = {'label_dir' : "./Train_Label_6p.csv",
+           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab_100",
+           'batch_size' : trial.suggest_int('batch_size',4,24,step=8),
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,64),
@@ -239,7 +239,7 @@ def objective(trial):
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 1,
+           'k_fold' : 5,
            #'n1': 169,
            #'n2':155,
            #'n3':154,
@@ -259,43 +259,43 @@ def objective(trial):
     # defining data
     mse_train = []
     index = range(NB_DATA)
-    split = train_test_split(index,test_size = 0.2,shuffle=False)
-    #kf = KFold(n_splits = opt['k_fold'], shuffle=True)
-    #kf.get_n_splits(split[0])
+    #split = train_test_split(index,test_size = 0.2,shuffle=False)
+    kf = KFold(n_splits = opt['k_fold'], shuffle=False)
+    kf.get_n_splits(index)
     print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
 
-    #for train_index, test_index in kf.split(split[0]):
-    train_index=split[0]
-    test_index=split[1]
-    mse_test = []
-    if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
-        scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
-    else:
-        scaler = None
-    #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
-    datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
-    #print(len(datasets))
-    #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
-    #data_tot = ConcatDataset([datasets,datasets_2])
-    trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
-    testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
-    model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
-    model.apply(reset_weights)
-    optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
-    for epoch in range(opt['nb_epochs']):
-        mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-        mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
-    mse_total = mse_total + np.array(mse_test)
+    for train_index, test_index in kf.split(index):
+        #train_index=split[0]
+        #test_index=split[1]
+        mse_test = []
+        if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
+            scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
+        else:
+            scaler = None
+        #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
+        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+        #print(len(datasets))
+        #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+        #data_tot = ConcatDataset([datasets,datasets_2])
+        trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
+        testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
+        model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
+        model.apply(reset_weights)
+        optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
+        for epoch in range(opt['nb_epochs']):
+            mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
+            mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
+        mse_total = mse_total + np.array(mse_test)
     
-    mse_mean = mse_total / opt['k_fold']
-    print("mse_mean :", mse_mean)
-    i_min = np.where(mse_mean == np.min(mse_mean))
-    print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
-    with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
-        pickle.dump(result_display,f)
-    return np.min(mse_mean)
+        mse_mean = mse_total / opt['k_fold']
+        print("mse_mean :", mse_mean)
+        i_min = np.where(mse_mean == np.min(mse_mean))
+        print('best epoch :', i_min[0][0]+1)
+        result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
+        with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
+            pickle.dump(result_display,f)
+        return np.min(mse_mean)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
 
@@ -306,6 +306,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=18)
-with open("./cross_9p.pkl","wb") as f:
+study.optimize(objective,n_trials=20)
+with open("./cross_6p_100.pkl","wb") as f:
     pickle.dump(study,f)
