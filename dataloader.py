@@ -43,7 +43,7 @@ class Datasets(Dataset):
         labels = labels.astype('float32')
         if self.transform:
             sample = self.transform(sample)
-        return {'image': image, 'label': labels, 'ID': lab.iloc[idx,0]}
+        return {'image': image, 'label': labels["Trabecular thickness (plate model)"], 'ID': lab.iloc[idx,0]}
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
