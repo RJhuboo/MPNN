@@ -39,7 +39,7 @@ class Datasets(Dataset):
         # lab.columns = self.labels.columns
         labels = lab.iloc[idx,1] # Takes all corresponding labels
         labels = np.array([labels]) 
-        #labels = labels.reshape(-1,1)
+        labels = labels.reshape(-1,1)
         labels = labels.astype('float32')
         if self.transform:
             sample = self.transform(sample)
