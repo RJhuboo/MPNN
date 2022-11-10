@@ -43,7 +43,7 @@ class Datasets(Dataset):
         #labels = labels.reshape(-1,1)
         labels = labels.astype('float32')
         if self.transform:
-            sample = self.transform(sample)
+            image = self.transform(image)
         return {'image': image, 'label': labels, 'ID': lab.iloc[idx,0]}
 
 class Test_Datasets(Dataset):
