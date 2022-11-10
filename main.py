@@ -89,6 +89,7 @@ def train():
     #split = train_test_split(index,test_size = 0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
     my_transforms = transforms.Compose([
+      transofrms.ToPILImage(),
       transforms.RandomRotation(degrees=45),
       transforms.RandomHorizontalFlip(p=0.3),
       transforms.RandomVerticalFlip(p=0.3),
