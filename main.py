@@ -27,8 +27,8 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Train_Label_9p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab", help = "path to image directory")
+parser.add_argument("--label_dir", default = "./Train_Label_6p.csv", help = "path to label csv file")
+parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab_100", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
