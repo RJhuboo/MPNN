@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import argparse
 from torch.optim import Adam, SGD
-from torch.nn import MSELoss
+from torch.nn import MSELoss,L1Loss
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 import pickle
@@ -29,7 +29,7 @@ class Trainer():
             self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
         else:
             self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
-        self.criterion = MSELoss()
+        self.criterion = L1Loss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
         self.model.train()
