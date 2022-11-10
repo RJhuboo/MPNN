@@ -12,7 +12,7 @@ class NeuralNet(nn.Module):
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
         #self.fc5 = nn.Linear(n3,20)
-        self.fc4 = nn.Linear(n1,out_channels)
+        self.fc4 = nn.Linear(n3,out_channels)
     def forward(self,x):
         x = torch.flatten(x,1)
         x = F.relu(self.fc1(x))
