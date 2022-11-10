@@ -29,7 +29,7 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Train_Label_1p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab_100_rot", help = "path to image directory")
+parser.add_argument("--image_dir", default = "../Train_Label_trab_100_rot", help = "path to image directory")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
@@ -96,7 +96,7 @@ def train():
     ])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_1p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Test_Label_trab_100",scaler=scaler,opt=opt)
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_1p.csv", image_dir="../Test_Label_trab_100",scaler=scaler,opt=opt)
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
     testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
