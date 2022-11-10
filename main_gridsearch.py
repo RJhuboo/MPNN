@@ -25,7 +25,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 3000
+NB_DATA = 2800
 NB_LABEL = 6
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -148,7 +148,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs)
-        Loss = L1Loss()
+        Loss = MSELoss()
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
             print(outputs)
@@ -200,7 +200,7 @@ def test(model,testloader,epoch,opt):
             inputs, labels = inputs.to(device),labels.to(device)
             # loss
             outputs = model(inputs)
-            Loss = L1Loss()
+            Loss = MSELoss()
             test_loss += Loss(outputs,labels)
             test_total += 1
             # statistics
@@ -221,14 +221,14 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_6p_100"+str(i)) == False:
-            save_folder = "./result/cross_6p_100"+str(i)
+        if os.path.isdir("./result/cross_6p_100_MSE"+str(i)) == False:
+            save_folder = "./result/cross_6p_100_MSE"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Train_Label_6p.csv",
-           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Train_Label_trab_100",
-           'batch_size' : trial.suggest_int('batch_size',4,24,step=8),
+           'image_dir' : "../MOUSE_BPNN/Train_Label_trab_100",
+           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,64),
@@ -248,20 +248,17 @@ def objective(trial):
            'n3' : trial.suggest_int('n3',100,170),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
-           'norm_method': "minmax",
-           'optimizer' :  trial.suggest_categorical("optimizer",[Adam, SGD]),
+           'norm_method': "standardization",
+           'optimizer' :  trial.suggest_categorical("optimizer",[Adam]),
            #'optimizer': Adam,
            'activation' : trial.suggest_categorical("activation", [F.relu]),                                         
           }
     
-    mse_total = np.zeros(opt['nb_epochs'])
-    mse_train = []
     # defining data
     mse_train = []
     index = range(NB_DATA)
     #split = train_test_split(index,test_size = 0.2,shuffle=False)
     kf = KFold(n_splits = opt['k_fold'], shuffle=False)
-    kf.get_n_splits(index)
     print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
 
@@ -281,21 +278,21 @@ def objective(trial):
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
         model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
-        model.apply(reset_weights)
+        #model.apply(reset_weights)
         optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
         for epoch in range(opt['nb_epochs']):
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
         mse_total = mse_total + np.array(mse_test)
-    
-        mse_mean = mse_total / opt['k_fold']
-        print("mse_mean :", mse_mean)
-        i_min = np.where(mse_mean == np.min(mse_mean))
-        print('best epoch :', i_min[0][0]+1)
-        result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
-        with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
-            pickle.dump(result_display,f)
-        return np.min(mse_mean)
+    print("mse train size :",len(mse_train))
+    mse_mean = mse_total / opt['k_fold']
+    print("mse_mean :", mse_mean)
+    i_min = np.where(mse_mean == np.min(mse_mean))
+    print('best epoch :', i_min[0][0]+1)
+    result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
+    with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
+        pickle.dump(result_display,f)
+    return np.min(mse_mean)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
 
@@ -306,6 +303,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=20)
-with open("./cross_6p_100.pkl","wb") as f:
+study.optimize(objective,n_trials=12)
+with open("./cross_6p_100_MSE.pkl","wb") as f:
     pickle.dump(study,f)
