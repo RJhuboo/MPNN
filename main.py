@@ -115,7 +115,7 @@ def train():
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
         mse_train = t.train(trainloader,epoch)
-        #mse_test = t.test(testloader,epoch)
+        mse_test = t.test(testloader,epoch)
         score_mse_t.append(mse_train)
         score_mse_v.append(mse_test)
     resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v}
