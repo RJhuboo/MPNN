@@ -165,12 +165,15 @@ class ConvNet(nn.Module):
         #self.fc1 = nn.Linear(64**3,n1)
         #self.fc2 = nn.Linear(n1,n2)
         #self.fc3 = nn.Linear(n2,14)
+        self.dropout = nn.Dropout2d(0.25)
         self.neural = NeuralNet(n1,n2,n3,out_channels)
         # dropout
         # self.dropout = nn.Dropout(0.25)
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
+        x = self.dropout(x)
         x = self.pool(F.relu(self.conv2(x)))
+        self.dropout(x)
         x = self.pool(F.relu(self.conv3(x)))
         x = self.neural(x)
         #x = torch.flatten(x,1)
