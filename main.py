@@ -94,7 +94,8 @@ def train():
       transforms.RandomHorizontalFlip(p=0.3),
       transforms.RandomVerticalFlip(p=0.3),
       transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-      transforms.ToTensor()
+      transforms.ToTensor(),
+      transforms.Normalize(mean=[0.0], std=[1.0])
     ])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
