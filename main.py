@@ -77,8 +77,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train_9p"+str(i)) == False:
-            save_folder = "./result/train_9p"+str(i)
+        if os.path.isdir("./result/train_single"+str(i)) == False:
+            save_folder = "./result/train_single"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
