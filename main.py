@@ -43,7 +43,7 @@ parser.add_argument("--n2", type=int, default = 120, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 80, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 9, help = "specify the number of labels")
+parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "SGD", help= "specify the optimizer")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
@@ -52,7 +52,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 4073
+NB_DATA = 2800
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -85,12 +85,13 @@ def train():
     score_mse_v = []
     # defining data
     index = range(NB_DATA)
-    split = train_test_split(index,test_size = 0.2,shuffle=False)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
+    #split = train_test_split(index,test_size = 0.2,shuffle=False)
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt) # Create dataset
+    test_datasets = dataloader.Datasets(csv_file = "./Test_label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Test_Label_trab_100",scaler=scaler,opt=opt)
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(split[0]), num_workers = opt.nb_workers )
-    testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(split[1]), num_workers = opt.nb_workers )
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
+    testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
@@ -114,7 +115,7 @@ def train():
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
         mse_train = t.train(trainloader,epoch)
-        mse_test = t.test(testloader,epoch)
+        #mse_test = t.test(testloader,epoch)
         score_mse_t.append(mse_train)
         score_mse_v.append(mse_test)
     resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v}
