@@ -31,7 +31,7 @@ class Datasets(Dataset):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
-        print("max value:",np.max(image))
+        print("max value:",np.shape(image))
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
         lab = self.scaler.transform(self.labels.iloc[:,1:])
