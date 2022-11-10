@@ -8,6 +8,7 @@ from sklearn.model_selection import KFold
 from torch.utils.data import Dataset, DataLoader
 import random
 import pickle
+import torchvision.transforms as transforms
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import shuffle
@@ -87,7 +88,14 @@ def train():
     index = range(NB_DATA)
     #split = train_test_split(index,test_size = 0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt) # Create dataset
+    my_transforms = transforms.Compose([
+      transforms.RandomRotation(degrees=45),
+      transforms.RandomHorizontalFlip(p=0.3),
+      transforms.RandomVerticalFlip(p=0.3),
+      transforms.RandomAffine(degrees=None,translate=(0.1,0.1))
+    ])
+    
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     test_datasets = dataloader.Datasets(csv_file = "./Test_Label_1p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/MOUSE_BPNN/HR/Test_Label_trab_100",scaler=scaler,opt=opt)
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
