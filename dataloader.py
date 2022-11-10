@@ -37,13 +37,13 @@ class Datasets(Dataset):
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
         lab.columns = self.labels.columns
-        labels = lab.iloc[idx,1:] # Takes all corresponding labels
+        labels = lab.iloc[idx,1] # Takes all corresponding labels
         labels = np.array([labels]) 
         #labels = labels.reshape(-1,1)
         labels = labels.astype('float32')
         if self.transform:
             sample = self.transform(sample)
-        return {'image': image, 'label': labels["Trabecular thickness (plate model)"], 'ID': lab.iloc[idx,0]}
+        return {'image': image, 'label': labels, 'ID': lab.iloc[idx,0]}
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
