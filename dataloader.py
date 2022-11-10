@@ -14,7 +14,7 @@ def normalization(csv_file,mode,indices):
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
         scaler = preprocessing.MinMaxScaler()
-    scaler.fit(Data.iloc[indices,1])
+    scaler.fit(Data.iloc[indices,1:])
     return scaler
 
 class Datasets(Dataset):
@@ -33,14 +33,14 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
-        lab = self.scaler.transform(self.labels.iloc[:,1])
+        lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
-        # lab.columns = self.labels.columns
-        labels = lab.iloc[idx,1] # Takes all corresponding labels
+        lab.columns = self.labels.columns
+        labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
-        print(np.shape(labels))
-        labels = labels.reshape(-1,1)
+        #print(np.shape(labels))
+        #labels = labels.reshape(-1,1)
         labels = labels.astype('float32')
         if self.transform:
             sample = self.transform(sample)
