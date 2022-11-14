@@ -48,6 +48,8 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
+            print(inputs)
+            print(labels)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
             # zero the parameter gradients
