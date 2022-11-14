@@ -41,7 +41,7 @@ class Trainer():
         mse_score = 0.0
         save_output=[]
         save_label=[]
-        L1_loss_train=np.zeros((6,round(2800/self.opt.batch_size)))
+        #L1_loss_train=np.zeros((6,round(2800/self.opt.batch_size)))
         for i, data in enumerate(trainloader,0):
             inputs, labels,imname = data['image'], data['label'],data['ID']
             
@@ -69,12 +69,12 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
                        
-            L1_loss_train[i,0] = MSE(labels[:,0],outputs[:,0])
-            L1_loss_train[i,1] = MSE(labels[:,1],outputs[:,1])
-            L1_loss_train[i,2] = MSE(labels[:,2],outputs[:,2])
-            L1_loss_train[i,3] = MSE(labels[:,3],outputs[:,3])
-            L1_loss_train[i,4] = MSE(labels[:,4],outputs[:,4])
-            L1_loss_train[i,5] = MSE(labels[:,5],outputs[:,5])
+            #L1_loss_train[i,0] = MSE(labels[:,0],outputs[:,0])
+            #L1_loss_train[i,1] = MSE(labels[:,1],outputs[:,1])
+            #L1_loss_train[i,2] = MSE(labels[:,2],outputs[:,2])
+            #L1_loss_train[i,3] = MSE(labels[:,3],outputs[:,3])
+            #L1_loss_train[i,4] = MSE(labels[:,4],outputs[:,4])
+            #L1_loss_train[i,5] = MSE(labels[:,5],outputs[:,5])
             
             # statistics
             train_loss += loss.item()
@@ -102,7 +102,7 @@ class Trainer():
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
-        return mse, np.mean(L1_loss_train,axis=0)
+        return mse#, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch):
 
