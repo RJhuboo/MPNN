@@ -34,8 +34,8 @@ parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "fil
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 40, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.001, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 50, help = "number of epochs")
+parser.add_argument("--lr", type=float, default = 0.0006, help = "learning rate")
+parser.add_argument("--nb_epochs", type=int, default = 100, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitting for k cross-validation")
@@ -78,8 +78,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train_single"+str(i)) == False:
-            save_folder = "./result/train_single"+str(i)
+        if os.path.isdir("./result/train_multi"+str(i)) == False:
+            save_folder = "./result/train_multi"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
