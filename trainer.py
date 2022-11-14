@@ -64,6 +64,10 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
             
+            print("how to select one particular parameter ?")
+            print(output)
+            print(output[1])
+            print(output[2])
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
