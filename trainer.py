@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
 
 def MSE(y_predicted,y):
-    squared_error = (y_predicted - y) **2
+    squared_error = (y_predicted - y)
     sum_squared_error = np.sum(squared_error)
     mse = sum_squared_error / y.size
     return mse
@@ -41,12 +41,15 @@ class Trainer():
         mse_score = 0.0
         save_output=[]
         save_label=[]
+        #L1_loss_train=np.zeros((6,round(2800/self.opt.batch_size)))
         for i, data in enumerate(trainloader,0):
             inputs, labels,imname = data['image'], data['label'],data['ID']
             
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
+            print(inputs)
+            print(labels)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
             # zero the parameter gradients
@@ -65,6 +68,14 @@ class Trainer():
                 loss = self.criterion(outputs,labels)
             loss.backward()
             self.optimizer.step()
+                       
+            #L1_loss_train[i,0] = MSE(labels[:,0],outputs[:,0])
+            #L1_loss_train[i,1] = MSE(labels[:,1],outputs[:,1])
+            #L1_loss_train[i,2] = MSE(labels[:,2],outputs[:,2])
+            #L1_loss_train[i,3] = MSE(labels[:,3],outputs[:,3])
+            #L1_loss_train[i,4] = MSE(labels[:,4],outputs[:,4])
+            #L1_loss_train[i,5] = MSE(labels[:,5],outputs[:,5])
+            
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
@@ -91,7 +102,7 @@ class Trainer():
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
-        return mse
+        return mse#, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch):
 
@@ -107,7 +118,7 @@ class Trainer():
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
         self.model.eval()
-
+        L1_loss_test=np.zeros((6,1100))
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
@@ -130,7 +141,12 @@ class Trainer():
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
                 test_total += 1
-                
+                L1_loss_test[i,0] = MSE(labels[0],outputs[0])
+                L1_loss_test[i,1] = MSE(labels[1],outputs[1])
+                L1_loss_test[i,2] = MSE(labels[2],outputs[2])
+                L1_loss_test[i,3] = MSE(labels[3],outputs[3])
+                L1_loss_test[i,4] = MSE(labels[4],outputs[4])
+                L1_loss_test[i,5] = MSE(labels[5],outputs[5])
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
@@ -156,7 +172,7 @@ class Trainer():
         #print(outputs)
         #print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
-        return mse
+        return mse, np.mean(L1_loss_test,axis=0)
     
     def inference(infloader,epoch):
        
