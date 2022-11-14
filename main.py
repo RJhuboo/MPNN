@@ -84,6 +84,8 @@ def train():
             break
     score_mse_t = []
     score_mse_v = []
+    score_train_per_param = []
+    score_test_per_param = []
     # defining data
     index = range(NB_DATA)
     #split = train_test_split(index,test_size = 0.2,shuffle=False)
@@ -124,11 +126,13 @@ def train():
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
-        mse_train = t.train(trainloader,epoch)
-        mse_test = t.test(testloader,epoch)
+        mse_train, param_train = t.train(trainloader,epoch)
+        mse_test, param_test = t.test(testloader,epoch)
         score_mse_t.append(mse_train)
         score_mse_v.append(mse_test)
-    resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v}
+        score_train_per_param.append(param_train)
+        score_test_per_param.append(param_test)
+    resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(resultat, f)
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
