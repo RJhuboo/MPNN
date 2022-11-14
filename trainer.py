@@ -16,7 +16,7 @@ def MSE(y_predicted,y):
     print("MSE")
     print(y,y_predicted)
     print(squared_error)
-    sum_squared_error = np.sum(squared_error)
+    sum_squared_error = np.sum(np.array(squared_error))
     mse = sum_squared_error / y.size
     return mse
 
