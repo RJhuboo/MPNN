@@ -12,12 +12,12 @@ from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
 
 def MSE(y_predicted,y):
-    squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy())
+    squared_error = (y_predicted - y)
     print("MSE")
     print(y,y_predicted)
     print(squared_error)
-    sum_squared_error = np.sum(np.array(squared_error))
-    mse = sum_squared_error / y.size
+    sum_squared_error = np.sum(squared_error)
+    mse = sum_squared_error / 24
     return mse
 
 class Trainer():
