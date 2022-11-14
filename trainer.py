@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
 
 def MSE(y_predicted,y):
-    squared_error = (y_predicted - y)
+    squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy())
     print("MSE")
     print(y,y_predicted)
     print(squared_error)
