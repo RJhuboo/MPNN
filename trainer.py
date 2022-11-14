@@ -68,8 +68,8 @@ class Trainer():
                        
             print("how to select one particular parameter ?")
             print(outputs)
-            print(outputs[1])
-            print(outputs[2])
+            print(outputs[:,0])
+            print(outputs[:,1])
             
             # statistics
             train_loss += loss.item()
