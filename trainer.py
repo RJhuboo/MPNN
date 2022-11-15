@@ -143,14 +143,14 @@ class Trainer():
                 test_loss += loss.item()
                 test_total += 1
                 print("test")
-                print(outputs)
-                print(outputs[0])
-                #L1_loss_test[i,0] = MSE(labels[:,0],outputs[0])
-                #L1_loss_test[i,1] = MSE(labels[:,1],outputs[1])
-                #L1_loss_test[i,2] = MSE(labels[:,2],outputs[2])
-                #L1_loss_test[i,3] = MSE(labels[:,3],outputs[3])
-                #L1_loss_test[i,4] = MSE(labels[:,4],outputs[4])
-                #L1_loss_test[i,5] = MSE(labels[:,5],outputs[5])
+                print(labels)
+                print(label-0.0902,s[0])
+                #L1_loss_test[i,0] = MSE(labels[:,0],outputs[0,0])
+                #L1_loss_test[i,1] = MSE(labels[:,1],outputs[0,1])
+                #L1_loss_test[i,2] = MSE(labels[:,2],outputs[0,2])
+                #L1_loss_test[i,3] = MSE(labels[:,3],outputs[0,3])
+                #L1_loss_test[i,4] = MSE(labels[:,4],outputs[0,4])
+                #L1_loss_test[i,5] = MSE(labels[:,5],outputs[0,5])
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
