@@ -47,7 +47,7 @@ class Trainer():
             inputs, labels,imname = data['image'], data['label'],data['ID']
             
             # reshape
-            inputs = inputs.reshape(inputs.size(0),1,512,512)
+            inputs = inputs.reshape(inputs.size(0),self.opt.in_channel,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
@@ -123,7 +123,7 @@ class Trainer():
             for i, data in enumerate(testloader):
                 inputs, labels, ID = data['image'],data['label'],data['ID']
                 # reshape
-                inputs = inputs.reshape(1,1,512,512)
+                inputs = inputs.reshape(1,self.opt.in_channel,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
                 inputs, labels = inputs.to(self.device),labels.to(self.device)
                 
