@@ -30,7 +30,8 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Train_Label_6p.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "../Train_segmented_filtered", help = "path to image directory")
-parser.add_argument("--mask_dir", default = "../Train_trab_mask", help = "path to label csv file")
+parser.add_argument("--mask_dir", default = "../Train_trab_mask", help = "path to mask")
+parser.add_argument("--in_channel", default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
@@ -108,7 +109,7 @@ def train():
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
-        model = Model.ConvNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+        model = Model.ConvNet(in_channel=2,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     elif opt.model == "resnet50":
         print("## Choose model : resnet50 ##")
         model = Model.ResNet50(14,1).to(device)
@@ -117,7 +118,7 @@ def train():
         model = Model.ResNet101(14,1).to(device)
     elif opt.model == "Unet":
         print("## Choose model : Unet ##")
-        model = Model.UNet(in_channels=1,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
+        model = Model.UNet(in_channels=opt.in_channel,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
