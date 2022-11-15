@@ -51,8 +51,6 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
-            print(inputs)
-            print(labels)
             inputs, labels = inputs.to(self.device), labels.to(self.device)
             
             # zero the parameter gradients
@@ -144,12 +142,15 @@ class Trainer():
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
                 test_total += 1
-                L1_loss_test[i,0] = MSE(labels[:,0],outputs[0])
-                L1_loss_test[i,1] = MSE(labels[:,1],outputs[1])
-                L1_loss_test[i,2] = MSE(labels[:,2],outputs[2])
-                L1_loss_test[i,3] = MSE(labels[:,3],outputs[3])
-                L1_loss_test[i,4] = MSE(labels[:,4],outputs[4])
-                L1_loss_test[i,5] = MSE(labels[:,5],outputs[5])
+                print("test")
+                print(outputs)
+                print(outputs[0])
+                #L1_loss_test[i,0] = MSE(labels[:,0],outputs[0])
+                #L1_loss_test[i,1] = MSE(labels[:,1],outputs[1])
+                #L1_loss_test[i,2] = MSE(labels[:,2],outputs[2])
+                #L1_loss_test[i,3] = MSE(labels[:,3],outputs[3])
+                #L1_loss_test[i,4] = MSE(labels[:,4],outputs[4])
+                #L1_loss_test[i,5] = MSE(labels[:,5],outputs[5])
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
