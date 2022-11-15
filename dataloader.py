@@ -22,6 +22,7 @@ class Datasets(Dataset):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
+        self.mask_dir = opt.mask_dir
         self.transform = transform
         self.scaler = scaler
     def __len__(self):
@@ -30,10 +31,14 @@ class Datasets(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
+        mask_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
-        #print("max value:",np.shape(image))
+        mask = io.imread(mask_name)
+        mask = mask / 255.0 # Normalizing [0;1]
+        mask = mask.astype('float32') # Converting images to float32
         image = image / 255.0 # Normalizing [0;1]
         image = image.astype('float32') # Converting images to float32
+        image = np.dstack( ( image, mask ) )
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
