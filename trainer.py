@@ -13,9 +13,7 @@ from torchvision import transforms
 
 def MSE(y_predicted,y):
     squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy())
-    print("MSE")
-    print(y,y_predicted)
-    print(squared_error)
+
     sum_squared_error = np.sum(np.array(squared_error))
     mse = sum_squared_error / 24
     return mse
