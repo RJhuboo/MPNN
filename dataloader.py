@@ -18,13 +18,14 @@ def normalization(csv_file,mode,indices):
     return scaler
 
 class Datasets(Dataset):
-    def __init__(self, csv_file, image_dir, scaler, opt,transform=None):
+    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt,transform=None):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
-        self.mask_dir = opt.mask_dir
+        self.mask_dir = mask_dir
         self.transform = transform
         self.scaler = scaler
+        self.mask_use = False
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
@@ -33,12 +34,16 @@ class Datasets(Dataset):
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         mask_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
-        mask = io.imread(mask_name)
-        mask = mask / 255.0 # Normalizing [0;1]
-        mask = mask.astype('float32') # Converting images to float32
-        image = image / 255.0 # Normalizing [0;1]
-        image = image.astype('float32') # Converting images to float32
-        image = np.dstack( ( image, mask ) )
+        if self.mask_use == True:
+            mask = io.imread(mask_name)
+            mask = mask / 255.0 # Normalizing [0;1]
+            mask = mask.astype('float32') # Converting images to float32
+            image = image / 255.0 # Normalizing [0;1]
+            image = image.astype('float32') # Converting images to float32
+            image = np.dstack( ( image, mask ) )
+        else:
+            image = image / 255.0 # Normalizing [0;1]
+            image = image.astype('float32') # Converting images to float32 
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
