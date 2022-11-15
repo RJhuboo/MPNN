@@ -25,14 +25,14 @@ class Datasets(Dataset):
         self.mask_dir = mask_dir
         self.transform = transform
         self.scaler = scaler
-        self.mask_use = False
+        self.mask_use = True
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
+        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
         if self.mask_use == True:
             mask = io.imread(mask_name)
