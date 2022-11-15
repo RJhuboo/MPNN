@@ -100,13 +100,9 @@ def train():
       transforms.ToTensor(),
     ])
     
-<<<<<<< HEAD
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered",scaler=scaler,opt=opt)
-=======
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="../Test_segmented_filtered", mask_dir = "../Test_trab_mask", scaler=scaler,opt=opt)
->>>>>>> 6e15bf9413e5fda25a53ff82f0dba386df123c71
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
     testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
