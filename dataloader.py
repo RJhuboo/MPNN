@@ -40,7 +40,6 @@ class Datasets(Dataset):
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32
-            image = np.dstack( ( image, mask ) )
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
@@ -55,6 +54,8 @@ class Datasets(Dataset):
         labels = labels.astype('float32')
         if self.transform:
             image = self.transform(image)
+            mask = self.transform(mask)
+        image = np.dstack( ( image, mask ) )
         return {'image': image, 'label': labels, 'ID': lab.iloc[idx,0]}
 
 class Test_Datasets(Dataset):
