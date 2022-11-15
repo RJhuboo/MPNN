@@ -11,11 +11,11 @@ import pickle
 from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
 
-def MSE(y_predicted,y):
+def MSE(y_predicted,y,batch_size):
     squared_error = abs(y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy())
 
     sum_squared_error = np.sum(np.array(squared_error))
-    mse = sum_squared_error / 24
+    mse = sum_squared_error / batch_size
     return mse
 
 class Trainer():
@@ -68,12 +68,12 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
                        
-            L1_loss_train[i,0] = MSE(labels[:,0],outputs[:,0])
-            L1_loss_train[i,1] = MSE(labels[:,1],outputs[:,1])
-            L1_loss_train[i,2] = MSE(labels[:,2],outputs[:,2])
-            L1_loss_train[i,3] = MSE(labels[:,3],outputs[:,3])
-            L1_loss_train[i,4] = MSE(labels[:,4],outputs[:,4])
-            L1_loss_train[i,5] = MSE(labels[:,5],outputs[:,5])
+            L1_loss_train[i,0] = MSE(labels[:,0],outputs[:,0],24)
+            L1_loss_train[i,1] = MSE(labels[:,1],outputs[:,1],24)
+            L1_loss_train[i,2] = MSE(labels[:,2],outputs[:,2],24)
+            L1_loss_train[i,3] = MSE(labels[:,3],outputs[:,3],24)
+            L1_loss_train[i,4] = MSE(labels[:,4],outputs[:,4],24)
+            L1_loss_train[i,5] = MSE(labels[:,5],outputs[:,5],24)
             
             # statistics
             train_loss += loss.item()
@@ -141,12 +141,12 @@ class Trainer():
                 test_loss += loss.item()
                 test_total += 1
               
-                L1_loss_test[i,0] = MSE(labels[0,0],outputs[0,0])
-                L1_loss_test[i,1] = MSE(labels[0,1],outputs[0,1])
-                L1_loss_test[i,2] = MSE(labels[0,2],outputs[0,2])
-                L1_loss_test[i,3] = MSE(labels[0,3],outputs[0,3])
-                L1_loss_test[i,4] = MSE(labels[0,4],outputs[0,4])
-                L1_loss_test[i,5] = MSE(labels[0,5],outputs[0,5])
+                L1_loss_test[i,0] = MSE(labels[0,0],outputs[0,0],1)
+                L1_loss_test[i,1] = MSE(labels[0,1],outputs[0,1],1)
+                L1_loss_test[i,2] = MSE(labels[0,2],outputs[0,2],1)
+                L1_loss_test[i,3] = MSE(labels[0,3],outputs[0,3],1)
+                L1_loss_test[i,4] = MSE(labels[0,4],outputs[0,4],1)
+                L1_loss_test[i,5] = MSE(labels[0,5],outputs[0,5],1)
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
