@@ -10,7 +10,6 @@ from sklearn.metrics import r2_score
 import pickle
 from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
-from torchmetrics import MeanAbsoluteError as MAE
 
 class Trainer():
     def __init__(self,opt,my_model,device,save_fold,scaler):
@@ -61,7 +60,7 @@ class Trainer():
                 loss = self.criterion(outputs,labels)
             loss.backward()
             self.optimizer.step()
-            mean_absolute_error = MAE()
+            mean_absolute_error = L1Loss()
             L1_loss_train[i,0] = Mean_absolute_error(labels[:,0],outputs[:,0],24)
             L1_loss_train[i,1] = Mean_absolute_error(labels[:,1],outputs[:,1],24)
             L1_loss_train[i,2] = Mean_absolute_error(labels[:,2],outputs[:,2],24)
@@ -134,7 +133,7 @@ class Trainer():
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
                 test_total += 1
-                mean_absolute_error = MAE()
+                mean_absolute_error = L1Loss()
 
                 L1_loss_test[i,0] = mean_absolute_error(labels[0,0],outputs[0,0],1)
                 L1_loss_test[i,1] = mean_absolute_error(labels[0,1],outputs[0,1],1)
