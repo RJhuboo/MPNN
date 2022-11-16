@@ -60,7 +60,7 @@ class Trainer():
                 loss = self.criterion(outputs,labels)
             loss.backward()
             self.optimizer.step()
-            mean_absolute_error = L1Loss()
+            Mean_absolute_error = L1Loss()
             L1_loss_train[i,0] = Mean_absolute_error(labels[:,0],outputs[:,0]).item()
             L1_loss_train[i,1] = Mean_absolute_error(labels[:,1],outputs[:,1]).item()
             L1_loss_train[i,2] = Mean_absolute_error(labels[:,2],outputs[:,2]).item()
