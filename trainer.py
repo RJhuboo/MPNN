@@ -61,12 +61,12 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
             mean_absolute_error = L1Loss()
-            L1_loss_train[i,0] = Mean_absolute_error(labels[:,0],outputs[:,0],24)
-            L1_loss_train[i,1] = Mean_absolute_error(labels[:,1],outputs[:,1],24)
-            L1_loss_train[i,2] = Mean_absolute_error(labels[:,2],outputs[:,2],24)
-            L1_loss_train[i,3] = Mean_absolute_error(labels[:,3],outputs[:,3],24)
-            L1_loss_train[i,4] = Mean_absolute_error(labels[:,4],outputs[:,4],24)
-            L1_loss_train[i,5] = Mean_absolute_error(labels[:,5],outputs[:,5],24)
+            L1_loss_train[i,0] = Mean_absolute_error(labels[:,0],outputs[:,0]).item()
+            L1_loss_train[i,1] = Mean_absolute_error(labels[:,1],outputs[:,1]).item()
+            L1_loss_train[i,2] = Mean_absolute_error(labels[:,2],outputs[:,2]).item()
+            L1_loss_train[i,3] = Mean_absolute_error(labels[:,3],outputs[:,3]).item()
+            L1_loss_train[i,4] = Mean_absolute_error(labels[:,4],outputs[:,4]).item()
+            L1_loss_train[i,5] = Mean_absolute_error(labels[:,5],outputs[:,5]).item()
             
             # statistics
             train_loss += loss.item()
@@ -135,12 +135,12 @@ class Trainer():
                 test_total += 1
                 mean_absolute_error = L1Loss()
 
-                L1_loss_test[i,0] = mean_absolute_error(labels[0,0],outputs[0,0],1)
-                L1_loss_test[i,1] = mean_absolute_error(labels[0,1],outputs[0,1],1)
-                L1_loss_test[i,2] = mean_absolute_error(labels[0,2],outputs[0,2],1)
-                L1_loss_test[i,3] = mean_absolute_error(labels[0,3],outputs[0,3],1)
-                L1_loss_test[i,4] = mean_absolute_error(labels[0,4],outputs[0,4],1)
-                L1_loss_test[i,5] = mean_absolute_error(labels[0,5],outputs[0,5],1)
+                L1_loss_test[i,0] = mean_absolute_error(labels[0,0],outputs[0,0]).iteù()
+                L1_loss_test[i,1] = mean_absolute_error(labels[0,1],outputs[0,1]).item()
+                L1_loss_test[i,2] = mean_absolute_error(labels[0,2],outputs[0,2]).item()
+                L1_loss_test[i,3] = mean_absolute_error(labels[0,3],outputs[0,3]).item()
+                L1_loss_test[i,4] = mean_absolute_error(labels[0,4],outputs[0,4]).item()
+                L1_loss_test[i,5] = mean_absolute_error(labels[0,5],outputs[0,5]).item()
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
