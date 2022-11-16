@@ -15,7 +15,7 @@ def MSE(y_predicted,y,batch_size):
     squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()) **2
     sum_squared_error = np.sum(np.array(squared_error))
     mse = sum_squared_error / batch_size
-    return 
+    return mse
 
 class Trainer():
     def __init__(self,opt,my_model,device,save_fold,scaler):
