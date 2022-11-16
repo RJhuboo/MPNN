@@ -135,7 +135,7 @@ class Trainer():
                 test_total += 1
                 mean_absolute_error = L1Loss()
 
-                L1_loss_test[i,0] = mean_absolute_error(labels[0,0],outputs[0,0]).iteù()
+                L1_loss_test[i,0] = mean_absolute_error(labels[0,0],outputs[0,0]).item()
                 L1_loss_test[i,1] = mean_absolute_error(labels[0,1],outputs[0,1]).item()
                 L1_loss_test[i,2] = mean_absolute_error(labels[0,2],outputs[0,2]).item()
                 L1_loss_test[i,3] = mean_absolute_error(labels[0,3],outputs[0,3]).item()
