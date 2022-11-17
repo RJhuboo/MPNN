@@ -80,8 +80,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train_multi"+str(i)) == False:
-            save_folder = "./result/train_multi"+str(i)
+        if os.path.isdir("./result/train_mask"+str(i)) == False:
+            save_folder = "./result/train_mask"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
