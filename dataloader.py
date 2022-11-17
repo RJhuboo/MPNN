@@ -56,9 +56,7 @@ class Datasets(Dataset):
             image = self.transform(image)
             if self.mask_use == True:
                 mask = self.transform(mask)
-        if self.mask_use == True:
-            image = np.dstack( ( image, mask ) )
-        return {'image': image, 'label': labels, 'ID': lab.iloc[idx,0]}
+        return {'image': image, 'mask': mask, 'label': labels, 'ID': lab.iloc[idx,0]}
 
 class Test_Datasets(Dataset):
     def __init__(self, image_dir, transform=None):
