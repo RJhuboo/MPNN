@@ -43,7 +43,7 @@ class Trainer():
         save_label=[]
         L1_loss_train=np.zeros((round(2800/self.opt.batch_size),6))
         for i, data in enumerate(trainloader,0):
-            inputs, labels,imname = data['image'], data['label'],data['ID']
+            inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']
             
             # reshape
             inputs = inputs.reshape(inputs.size(0),self.opt.in_channel,512,512)
@@ -54,7 +54,7 @@ class Trainer():
             self.optimizer.zero_grad()
 
             # forward backward and optimization
-            outputs = self.model(inputs)
+            outputs = self.model(inputs,masks)
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
@@ -119,14 +119,14 @@ class Trainer():
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
-                inputs, labels, ID = data['image'],data['label'],data['ID']
+                inputs, masks, labels, ID = data['image'],data['mask'],data['label'],data['ID']
                 # reshape
                 inputs = inputs.reshape(1,self.opt.in_channel,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
                 inputs, labels = inputs.to(self.device),labels.to(self.device)
                 
                 # loss
-                outputs = self.model(inputs)
+                outputs = self.model(inputs,masks)
                 if self.opt.model == "MultiNet":
                     loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
                     loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[1,1]))
