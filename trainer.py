@@ -48,7 +48,8 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),self.opt.in_channel,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
-            inputs, labels = inputs.to(self.device), labels.to(self.device)
+            masks = masks.reshape(masks.size(0),1,512,512)
+            inputs, labels = inputs.to(self.device), labels.to(self.device), masks.to(self.device)
             
             # zero the parameter gradients
             self.optimizer.zero_grad()
@@ -123,8 +124,9 @@ class Trainer():
                 # reshape
                 inputs = inputs.reshape(1,self.opt.in_channel,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
-                inputs, labels = inputs.to(self.device),labels.to(self.device)
-                
+                masks = masks.reshape(1,1,512,512)
+                inputs, labels = inputs.to(self.device),labels.to(self.device), masks.to(self.device)
+       
                 # loss
                 outputs = self.model(inputs,masks)
                 if self.opt.model == "MultiNet":
