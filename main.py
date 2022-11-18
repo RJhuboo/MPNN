@@ -28,7 +28,7 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Train_Label_6p.csv", help = "path to label csv file")
+parser.add_argument("--label_dir", default = "./Train_Label_1p_bvtv.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "../Train_segmented_filtered", help = "path to image directory")
 parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
@@ -46,7 +46,7 @@ parser.add_argument("--n2", type=int, default = 120, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 80, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 6, help = "specify the number of labels")
+parser.add_argument("--NB_LABEL", type=int, default = 1, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "SGD", help= "specify the optimizer")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
@@ -102,7 +102,7 @@ def train():
     ])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_1p_bvtv.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
 
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
