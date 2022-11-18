@@ -161,7 +161,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs,masks)
-        Loss = MSELoss()
+        Loss = L1Loss()
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
             print(outputs)
@@ -213,7 +213,7 @@ def test(model,testloader,epoch,opt):
             inputs, labels = inputs.to(device),labels.to(device)
             # loss
             outputs = model(inputs)
-            Loss = MSELoss()
+            Loss = L1Loss()
             test_loss += Loss(outputs,labels)
             test_total += 1
             # statistics
@@ -234,8 +234,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_6p_100_MSE"+str(i)) == False:
-            save_folder = "./result/cross_6p_100_MSE"+str(i)
+        if os.path.isdir("./result/cross_bvtv_mask"+str(i)) == False:
+            save_folder = "./result/cross_bvtv_mask"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
