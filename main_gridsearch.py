@@ -283,7 +283,7 @@ def objective(trial):
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
             scaler = None
-       my_transforms = transforms.Compose([
+        my_transforms = transforms.Compose([
           transforms.ToPILImage(),
           transforms.RandomRotation(degrees=45),
           transforms.RandomHorizontalFlip(p=0.3),
