@@ -42,12 +42,14 @@ def normalization(csv_file,mode,indices):
     return scaler
 
 class Datasets(Dataset):
-    def __init__(self, csv_file, image_dir, opt, indices,transform=None):
+    def __init__(self, csv_file, image_dir, mask_dir, opt, indices,transform=None):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.transform = transform
         self.indices = indices
+        self.mask_dir = mask_dir
+        self.make_use = True
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
@@ -55,8 +57,15 @@ class Datasets(Dataset):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
-        image = image / 255.0 # Normalizing [0;1]
-        image = image.astype('float32') # Converting images to float32
+        if self.mask_use == True:
+            mask = io.imread(mask_name)
+            mask = mask / 255.0 # Normalizing [0;1]
+            mask = mask.astype('float32') # Converting images to float32
+            image = image / 255.0 # Normalizing [0;1]
+            image = image.astype('float32') # Converting images to float32
+        else:
+            image = image / 255.0 # Normalizing [0;1]
+            image = image.astype('float32') # Converting images to float32 
         if self.opt['norm_method']== "L2":
             lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
         elif self.opt['norm_method'] == "L1":
@@ -76,20 +85,23 @@ class Datasets(Dataset):
         labels = np.array([labels]) 
         labels = labels.astype('float32')
         if self.transform:
-            im = Image.fromarray(image)
-            image = self.transform(im)
-        return {'image': image, 'label': labels}
+            image = self.transform(image)
+            if self.mask_use == True:
+                mask = self.transform(mask)
+        return {'image': image,'mask':mask, 'label': labels}
     
 class NeuralNet(nn.Module):
     def __init__(self,activation,n1,n2,n3,out_channels):
         super().__init__()
-        self.fc1 = nn.Linear(64*64*64,n1)
+        self.fc1 = nn.Linear((64*64*64)+(512*512),n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
         self.fc4 = nn.Linear(n3,out_channels)
         self.activation = activation
-    def forward(self,x):
+    def forward(self,x,mask):
         x = torch.flatten(x,1)
+        mask = torch.flatten(mask,1)
+        x = torch.cat((x,mask),1)
         x = self.activation(self.fc1(x))
         x = self.activation(self.fc2(x))
         x = self.activation(self.fc3(x))
@@ -139,15 +151,16 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     mse_score = 0.0
 
     for i, data in enumerate(trainloader,0):
-        inputs, labels = data['image'], data['label']
+        inputs, masks, labels = data['image'],data['mask'], data['label']
         # reshape
         inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
-        inputs, labels = inputs.to(device), labels.to(device)
+        masks = masks.reshape(masks.size(0),1,512,512)
+        inputs, labels = inputs.to(device), labels.to(device), masks.to(device)
         # zero the parameter gradients
         optimizer.zero_grad()
         # forward backward and optimization
-        outputs = model(inputs)
+        outputs = model(inputs,masks)
         Loss = MSELoss()
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
@@ -226,16 +239,16 @@ def objective(trial):
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Train_Label_6p.csv",
-           'image_dir' : "../MOUSE_BPNN/Train_Label_trab_100",
+    opt = {'label_dir' : "./Train_Label_1p_bvtv.csv",
+           'image_dir' : "../Train_segmented_filtered",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,64),
            #'nof':23,
-           'lr': trial.suggest_loguniform('lr',1e-4,1e-1),
+           'lr': trial.suggest_loguniform('lr',1e-7,1e-4),
            #'lr':0.000642,
-           'nb_epochs' : 200,
+           'nb_epochs' : 150,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
@@ -270,8 +283,16 @@ def objective(trial):
             scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         else:
             scaler = None
+       my_transforms = transforms.Compose([
+          transforms.ToPILImage(),
+          transforms.RandomRotation(degrees=45),
+          transforms.RandomHorizontalFlip(p=0.3),
+          transforms.RandomVerticalFlip(p=0.3),
+          transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
+          transforms.ToTensor(),
+        ])
         #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
-        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, indices = train_index, transform=None)
         #print(len(datasets))
         #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
         #data_tot = ConcatDataset([datasets,datasets_2])
