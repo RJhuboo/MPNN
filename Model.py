@@ -16,7 +16,7 @@ class NeuralNet(nn.Module):
     def forward(self,x,mask):
         mask = torch.flatten(mask,1)
         x = torch.flatten(x,1)
-        x = torch.cat((x,mask),2)
+        x = torch.cat((x,mask),1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
