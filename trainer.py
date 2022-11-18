@@ -56,7 +56,6 @@ class Trainer():
 
             # forward backward and optimization
             outputs = self.model(inputs,masks)
-            print(np.shape(outputs))
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
@@ -143,7 +142,6 @@ class Trainer():
                 test_total += 1
 
                 L1_loss_test[i,0] = MSE(labels[0,0],outputs[0,0],1)
-                print("L1 param 1:",L1_loss_test[i,0])
                 L1_loss_test[i,1] = MSE(labels[0,1],outputs[0,1],1)
                 L1_loss_test[i,2] = MSE(labels[0,2],outputs[0,2],1)
                 L1_loss_test[i,3] = MSE(labels[0,3],outputs[0,3],1)
