@@ -240,7 +240,7 @@ def objective(trial):
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Train_Label_1p_bvtv.csv",
-           'image_dir' : "../Train_segmented_filtered",
+           'image_dir' : "./Train_segmented_filtered",
            'mask_dir' : "./Train_trab_mask",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            #'batch_size': 24,
