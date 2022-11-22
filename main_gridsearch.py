@@ -26,7 +26,7 @@ import time
 from sklearn.utils import shuffle
 
 NB_DATA = 2800
-NB_LABEL = 6
+NB_LABEL = 1
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -49,13 +49,14 @@ class Datasets(Dataset):
         self.transform = transform
         self.indices = indices
         self.mask_dir = mask_dir
-        self.make_use = True
+        self.mask_use = True
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
+        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
         if self.mask_use == True:
             mask = io.imread(mask_name)
@@ -121,13 +122,13 @@ class ConvNet(nn.Module):
         # Dropout
         self.dropout = nn.Dropout2d(0.25)
 
-    def forward(self, x):
+    def forward(self, x, mask):
         x = self.pool(self.activation(self.conv1(x)))
         x = self.dropout(x)
         x = self.pool(self.activation(self.conv2(x)))
         x = self.dropout(x)
         x = self.pool(self.activation(self.conv3(x)))
-        x = self.neural(x)
+        x = self.neural(x,mask)
         return x
     
 def reset_weights(m):
@@ -156,7 +157,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
         masks = masks.reshape(masks.size(0),1,512,512)
-        inputs, labels = inputs.to(device), labels.to(device), masks.to(device)
+        inputs, labels, masks= inputs.to(device), labels.to(device), masks.to(device)
         # zero the parameter gradients
         optimizer.zero_grad()
         # forward backward and optimization
@@ -206,13 +207,14 @@ def test(model,testloader,epoch,opt):
     # Testing
     with torch.no_grad():
         for i, data in enumerate(testloader):
-            inputs, labels = data['image'],data['label']
+            inputs, labels, masks = data['image'],data['label'], data['mask']
             # reshape
             inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
             labels = labels.reshape(1,NB_LABEL)
-            inputs, labels = inputs.to(device),labels.to(device)
+            masks = masks.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
+            inputs, labels, masks = inputs.to(device),labels.to(device),masks.to(device)
             # loss
-            outputs = model(inputs)
+            outputs = model(inputs,masks)
             Loss = L1Loss()
             test_loss += Loss(outputs,labels)
             test_total += 1
@@ -325,6 +327,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=12)
-with open("./cross_6p_100_MSE.pkl","wb") as f:
+study.optimize(objective,n_trials=15)
+with open("./cross_single_bvtv.pkl","wb") as f:
     pickle.dump(study,f)
