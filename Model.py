@@ -178,7 +178,7 @@ class ConvNet(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         self.dropout(x)
         x = self.pool(F.relu(self.conv3(x)))
-        x = self.neural(x,mask)
+        x = self.neural(x)
         #x = torch.flatten(x,1)
         return x 
        
