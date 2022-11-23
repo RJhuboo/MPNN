@@ -41,7 +41,7 @@ class Trainer():
         mse_score = 0.0
         save_output=[]
         save_label=[]
-        L1_loss_train=np.zeros((round(2800/self.opt.batch_size),6))
+        L1_loss_train=np.zeros((round(2800/self.opt.batch_size),self.NB_LABEL))
         for i, data in enumerate(trainloader,0):
             inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']
             
@@ -67,12 +67,8 @@ class Trainer():
                 loss = self.criterion(outputs,labels)
             loss.backward()
             self.optimizer.step()
-            #L1_loss_train[i,0] = MSE(labels[:,0],outputs[:,0],24)
-            #L1_loss_train[i,1] = MSE(labels[:,1],outputs[:,1],24)
-            #L1_loss_train[i,2] = MSE(labels[:,2],outputs[:,2],24)
-            #L1_loss_train[i,3] = MSE(labels[:,3],outputs[:,3],24)
-            #L1_loss_train[i,4] = MSE(labels[:,4],outputs[:,4],24)
-            #L1_loss_train[i,5] = MSE(labels[:,5],outputs[:,5],24)
+            for nb_lab in range(self.NB_LABEL): 
+                L1_loss_train[i,nb_lab] = MSE(labels[:,nb_lab],outputs[:,nb_lab],24)
             
             # statistics
             train_loss += loss.item()
@@ -140,13 +136,9 @@ class Trainer():
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
                 test_total += 1
-
-                #L1_loss_test[i,0] = MSE(labels[0,0],outputs[0,0],1)
-                #L1_loss_test[i,1] = MSE(labels[0,1],outputs[0,1],1)
-                #L1_loss_test[i,2] = MSE(labels[0,2],outputs[0,2],1)
-                #L1_loss_test[i,3] = MSE(labels[0,3],outputs[0,3],1)
-                #L1_loss_test[i,4] = MSE(labels[0,4],outputs[0,4],1)
-                #L1_loss_test[i,5] = MSE(labels[0,5],outputs[0,5],1)
+                for nb_lab in range(self.NB_LABEL):
+                    L1_loss_test[i,nb_lab] = MSE(labels[0,nb_lab],outputs[0,nb_lab],1)
+                    
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
