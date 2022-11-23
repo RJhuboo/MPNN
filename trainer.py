@@ -112,7 +112,7 @@ class Trainer():
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
         self.model.eval()
-        L1_loss_test=np.zeros((1100,6))
+        L1_loss_test=np.zeros((1100,self.NB_LABEL))
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
