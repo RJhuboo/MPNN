@@ -41,7 +41,7 @@ class Trainer():
         mse_score = 0.0
         save_output=[]
         save_label=[]
-        L1_loss_train=np.zeros((round(2800/self.opt.batch_size),self.NB_LABEL))
+        L1_loss_train=np.zeros((round((2800+4800)/self.opt.batch_size),self.NB_LABEL))
         for i, data in enumerate(trainloader,0):
             inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']
             
