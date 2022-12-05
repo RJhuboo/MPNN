@@ -67,6 +67,7 @@ class Trainer():
                 loss = self.criterion(outputs,labels)
             loss.backward()
             self.optimizer.step()
+            print(np.shape(labels), np.shape(outputs))
             for nb_lab in range(self.NB_LABEL): 
                 L1_loss_train[i,nb_lab] = MSE(labels[:,nb_lab],outputs[:,nb_lab],24)
             
