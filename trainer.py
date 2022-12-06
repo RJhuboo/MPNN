@@ -97,6 +97,7 @@ class Trainer():
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        print(np.mean(L1_loss_train,axis=0))
         return mse, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch):
@@ -166,6 +167,7 @@ class Trainer():
         #print(outputs)
         #print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
+        print(np.mean(L1_loss_test,axis=0))
         return mse, np.mean(L1_loss_test,axis=0)
     
     def inference(infloader,epoch):
