@@ -83,7 +83,6 @@ class Trainer():
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
-                print(L1_loss_train[i,0])
                 running_loss = 0.0
                 #print("output",outputs[:8])
                 #print("label",labels[:8])
@@ -98,6 +97,7 @@ class Trainer():
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         print(np.mean(L1_loss_train,axis=0))
+        print(L1_loss_train[:30,0])
         return mse, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch):
