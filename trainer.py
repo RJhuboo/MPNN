@@ -15,7 +15,6 @@ def MSE(y_predicted,y,batch_size):
     squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()) **2
     sum_squared_error = np.sum(np.array(squared_error))
     mse = sum_squared_error / batch_size
-    print(mse)
     return mse
 
 class Trainer():
@@ -84,6 +83,7 @@ class Trainer():
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
+                print(L1_loss_train[i,0])
                 running_loss = 0.0
                 #print("output",outputs[:8])
                 #print("label",labels[:8])
@@ -139,7 +139,8 @@ class Trainer():
                 test_total += 1
                 for nb_lab in range(self.NB_LABEL):
                     L1_loss_test[i,nb_lab] = MSE(labels[0,nb_lab],outputs[0,nb_lab],1)
-                    
+                if i%100==0:
+                    print(L1_loss_test[i,0])
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
