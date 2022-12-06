@@ -167,7 +167,7 @@ class Trainer():
         #print(outputs)
         #print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
-        print(np.mean(L1_loss_test,axis=0))
+        print(np.mean(L1_loss_test))
         return mse, np.mean(L1_loss_test,axis=0)
     
     def inference(infloader,epoch):
