@@ -96,7 +96,6 @@ class Trainer():
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
-        print("median",np.median(L1_loss_train))
         return mse, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch):
@@ -139,8 +138,6 @@ class Trainer():
                 test_total += 1
                 for nb_lab in range(self.NB_LABEL):
                     L1_loss_test[i,nb_lab] = MSE(labels[0,nb_lab],outputs[0,nb_lab],1)
-                if i%100==0:
-                    print(L1_loss_test[i,0])
                 # statistics
                 if self.opt.model == "MultiNet":
                     labels = labels.cpu().detach().numpy()
@@ -166,7 +163,6 @@ class Trainer():
         #print(outputs)
         #print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
-        print(np.median(L1_loss_test))
         return mse, np.mean(L1_loss_test,axis=0)
     
     def inference(infloader,epoch):
