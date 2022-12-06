@@ -15,6 +15,7 @@ def MSE(y_predicted,y,batch_size):
     squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()) **2
     sum_squared_error = np.sum(np.array(squared_error))
     mse = sum_squared_error / batch_size
+    print(mse)
     return mse
 
 class Trainer():
@@ -55,7 +56,7 @@ class Trainer():
             self.optimizer.zero_grad()
 
             # forward backward and optimization
-            outputs = self.model(inputs,masks)
+            outputs = self.model(inputs)
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
@@ -124,7 +125,7 @@ class Trainer():
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
        
                 # loss
-                outputs = self.model(inputs,masks)
+                outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
                     loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
                     loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[1,1]))
