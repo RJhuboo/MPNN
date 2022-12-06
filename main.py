@@ -28,7 +28,7 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "../Train_Label_tbth_augment.csv", help = "path to label csv file")
+parser.add_argument("--label_dir", default = "./Train_Label_tbth_augment.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "../Train_Label_trab_100_rot", help = "path to image directory")
 parser.add_argument("--mask_dir", default = "../Train_trab_mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
