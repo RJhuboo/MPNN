@@ -29,7 +29,7 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "./Train_Label_9p_augment.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./Train_segmented_filtered", help = "path to image directory")
+parser.add_argument("--image_dir", default = "./Train_Label_trab_100", help = "path to image directory")
 parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
@@ -55,7 +55,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 2800 + 4800
+NB_DATA = 2800 + 4700
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -80,8 +80,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train_9p"+str(i)) == False:
-            save_folder = "./result/train_9p"+str(i)
+        if os.path.isdir("./result/train_9p_final"+str(i)) == False:
+            save_folder = "./result/train_9p_final"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []

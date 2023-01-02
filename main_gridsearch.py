@@ -25,8 +25,8 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 2800
-NB_LABEL = 1
+NB_DATA = 2800 + 4700
+NB_LABEL = 9
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -236,12 +236,12 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_bvtv_mask"+str(i)) == False:
-            save_folder = "./result/cross_bvtv_mask"+str(i)
+        if os.path.isdir("./result/cross_9p_augment_short"+str(i)) == False:
+            save_folder = "./result/cross_9p_augment_short"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Train_Label_1p_bvtv.csv",
+    opt = {'label_dir' : "./Train_Label_9p_augment.csv",
            'image_dir' : "./Train_segmented_filtered",
            'mask_dir' : "./Train_trab_mask",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
@@ -249,19 +249,19 @@ def objective(trial):
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,64),
            #'nof':23,
-           'lr': trial.suggest_loguniform('lr',1e-7,1e-4),
+           'lr': trial.suggest_loguniform('lr',1e-7,1e-3),
            #'lr':0.000642,
            'nb_epochs' : 150,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 5,
+           'k_fold' : 2,
            #'n1': 169,
            #'n2':155,
            #'n3':154,
-           'n1' : trial.suggest_int('n1', 90,170),
+           'n1' : trial.suggest_int('n1', 90,190),
            'n2' : trial.suggest_int('n2',100,200),
-           'n3' : trial.suggest_int('n3',100,170),
+           'n3' : trial.suggest_int('n3',100,190),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
@@ -327,6 +327,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=15)
-with open("./cross_single_bvtv.pkl","wb") as f:
+study.optimize(objective,n_trials=10)
+with open("./cross_9p_augment_short.pkl","wb") as f:
     pickle.dump(study,f)
