@@ -30,7 +30,7 @@ else:
 parser = argparse.ArgumentParser()
 <<<<<<< HEAD
 parser.add_argument("--label_dir", default = "./Train_Label_9p_augment.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./Train_Label_trab_100", help = "path to image directory")
+parser.add_argument("--image_dir", default = "./Train_segmented_filtered", help = "path to image directory")
 parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
 =======
 parser.add_argument("--label_dir", default = "./Train_Label_tbth_augment.csv", help = "path to label csv file")
@@ -86,13 +86,8 @@ def train():
     i=0
     while True:
         i += 1
-<<<<<<< HEAD
         if os.path.isdir("./result/train_9p_final"+str(i)) == False:
             save_folder = "./result/train_9p_final"+str(i)
-=======
-        if os.path.isdir("./result/train_tbth"+str(i)) == False:
-            save_folder = "./result/train_tbth"+str(i)
->>>>>>> 2146a2c633ec864a0a2f95e1e92cde2eb46e2c84
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -113,7 +108,7 @@ def train():
     ])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_tbth_augment.csv", image_dir="../Test_Label_trab_100", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p_augment.csv", image_dir="../Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
 
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
