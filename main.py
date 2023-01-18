@@ -156,9 +156,10 @@ else :
             break
     
     # model #
+    index = range(NB_DATA)
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
     datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_LR_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt, upsample=True)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    index = range(NB_DATA)
     scaler = dataloader.normalization("./Train_Label_9p_augment.csv", opt.norm_method,index)
     testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     t = Trainer(opt,model,device,save_folder,scaler)
