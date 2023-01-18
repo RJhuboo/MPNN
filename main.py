@@ -28,22 +28,16 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-<<<<<<< HEAD
 parser.add_argument("--label_dir", default = "./Train_Label_9p_augment.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "./Train_segmented_filtered", help = "path to image directory")
 parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
-=======
-parser.add_argument("--label_dir", default = "./Train_Label_tbth_augment.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "../Train_Label_trab_100_rot", help = "path to image directory")
-parser.add_argument("--mask_dir", default = "../Train_trab_mask", help = "path to mask")
->>>>>>> 2146a2c633ec864a0a2f95e1e92cde2eb46e2c84
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 40, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.0006, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 100, help = "number of epochs")
+parser.add_argument("--nb_epochs", type=int, default = 15, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitting for k cross-validation")
@@ -52,7 +46,7 @@ parser.add_argument("--n2", type=int, default = 120, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 80, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 1, help = "specify the number of labels")
+parser.add_argument("--NB_LABEL", type=int, default = 9, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
@@ -108,7 +102,7 @@ def train():
     ])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p_augment.csv", image_dir="../Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
 
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
@@ -169,8 +163,7 @@ else :
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir,scaler=scaler, opt=opt) # Create dataset
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers)
     t = Trainer(opt,model,device,save_folder,scaler)
-    t.test(testloader,opt.nb_epochs)
-    
+    t.test(testloader,opt.nb_epochs)    
 
   
   

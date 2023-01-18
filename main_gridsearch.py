@@ -25,7 +25,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 2800 + 4700
+NB_DATA = 7100
 NB_LABEL = 9
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -205,6 +205,7 @@ def test(model,testloader,epoch,opt):
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
         model.load_state_dict(torch.load(os.path.join(opt['checkpoint_path'],check_name)))
     # Testing
+    Loss=L1Loss()
     with torch.no_grad():
         for i, data in enumerate(testloader):
             inputs, labels, masks = data['image'],data['label'], data['mask']
@@ -215,7 +216,6 @@ def test(model,testloader,epoch,opt):
             inputs, labels, masks = inputs.to(device),labels.to(device),masks.to(device)
             # loss
             outputs = model(inputs,masks)
-            Loss = L1Loss()
             test_loss += Loss(outputs,labels)
             test_total += 1
             # statistics
@@ -236,8 +236,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_9p_augment_short"+str(i)) == False:
-            save_folder = "./result/cross_9p_augment_short"+str(i)
+        if os.path.isdir("./result/cross_9p_augment"+str(i)) == False:
+            save_folder = "./result/cross_9p_augment"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
@@ -248,17 +248,17 @@ def objective(trial):
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',8,64),
-           #'nof':23,
+           #'nof':36,
            'lr': trial.suggest_loguniform('lr',1e-7,1e-3),
-           #'lr':0.000642,
-           'nb_epochs' : 150,
+           #'lr':0.00006,
+           'nb_epochs' : 200,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 2,
-           #'n1': 169,
-           #'n2':155,
-           #'n3':154,
+           'k_fold' : 1,
+           #'n1': 135,
+           #'n2':146,
+           #'n3':131,
            'n1' : trial.suggest_int('n1', 90,190),
            'n2' : trial.suggest_int('n2',100,200),
            'n3' : trial.suggest_int('n3',100,190),
@@ -273,41 +273,41 @@ def objective(trial):
     # defining data
     mse_train = []
     index = range(NB_DATA)
-    #split = train_test_split(index,test_size = 0.2,shuffle=False)
-    kf = KFold(n_splits = opt['k_fold'], shuffle=False)
+    split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
+    #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
     print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
 
-    for train_index, test_index in kf.split(index):
-        #train_index=split[0]
-        #test_index=split[1]
-        mse_test = []
-        if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
-            scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
-        else:
-            scaler = None
-        my_transforms = transforms.Compose([
-          transforms.ToPILImage(),
-          transforms.RandomRotation(degrees=45),
-          transforms.RandomHorizontalFlip(p=0.3),
-          transforms.RandomVerticalFlip(p=0.3),
-          transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-          transforms.ToTensor(),
-        ])
-        #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
-        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, indices = train_index, transform=None)
-        #print(len(datasets))
-        #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
-        #data_tot = ConcatDataset([datasets,datasets_2])
-        trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
-        testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
-        model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
-        #model.apply(reset_weights)
-        optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
-        for epoch in range(opt['nb_epochs']):
-            mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-            mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
-        mse_total = mse_total + np.array(mse_test)
+    #for train_index, test_index in kf.split(index):
+    train_index=split[0]
+    test_index=split[1]
+    mse_test = []
+    if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
+        scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
+    else:
+        scaler = None
+    my_transforms = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.RandomRotation(degrees=45),
+        transforms.RandomHorizontalFlip(p=0.3),
+        transforms.RandomVerticalFlip(p=0.3),
+        transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
+        transforms.ToTensor(),
+    ])
+    #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
+    datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, indices = train_index, transform=my_transforms)
+    #print(len(datasets))
+    #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
+    #data_tot = ConcatDataset([datasets,datasets_2])
+    trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
+    testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
+    model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
+    #model.apply(reset_weights)
+    optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
+    for epoch in range(opt['nb_epochs']):
+        mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
+        mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
+    mse_total = mse_total + np.array(mse_test)
     print("mse train size :",len(mse_train))
     mse_mean = mse_total / opt['k_fold']
     print("mse_mean :", mse_mean)
@@ -327,6 +327,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=10)
-with open("./cross_9p_augment_short.pkl","wb") as f:
+study.optimize(objective,n_trials=15)
+with open("./cross_9p_augment.pkl","wb") as f:
     pickle.dump(study,f)

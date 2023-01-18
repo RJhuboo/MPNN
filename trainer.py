@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
 
 def MSE(y_predicted,y,batch_size):
-    squared_error = (y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()) **2
+    squared_error = abs((y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()))
     sum_squared_error = np.sum(np.array(squared_error))
     mse = sum_squared_error / batch_size
     return mse
@@ -41,7 +41,7 @@ class Trainer():
         mse_score = 0.0
         save_output=[]
         save_label=[]
-        L1_loss_train=np.zeros((round((2800+4800)/self.opt.batch_size),self.NB_LABEL))
+        L1_loss_train=np.zeros((len(trainloader),self.NB_LABEL))
         for i, data in enumerate(trainloader,0):
             inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']
             
@@ -50,12 +50,14 @@ class Trainer():
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             masks = masks.reshape(masks.size(0),1,512,512)
             inputs, labels, masks= inputs.to(self.device), labels.to(self.device), masks.to(self.device)
+
             
             # zero the parameter gradients
             self.optimizer.zero_grad()
 
             # forward backward and optimization
-            outputs = self.model(inputs)
+            outputs = self.model(masks,inputs)
+            #outputs = self.model(inputs)
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
@@ -92,7 +94,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 100:
+        if epoch > 10:
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
@@ -112,7 +114,7 @@ class Trainer():
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
         self.model.eval()
-        L1_loss_test=np.zeros((1100,self.NB_LABEL))
+        L1_loss_test=np.zeros((len(testloader),self.NB_LABEL))
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
@@ -124,7 +126,8 @@ class Trainer():
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
        
                 # loss
-                outputs = self.model(inputs)
+                outputs = self.model(masks,inputs)
+                #outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
                     loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
                     loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[1,1]))
