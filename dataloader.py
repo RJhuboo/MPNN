@@ -57,22 +57,3 @@ class Datasets(Dataset):
             if self.mask_use == True:
                 mask = self.transform(mask)
         return {'image': image, 'mask': mask, 'label': labels, 'ID': lab.iloc[idx,0]}
-
-class Test_Datasets(Dataset):
-    def __init__(self, image_dir, transform=None):
-        self.image_dir = image_dir
-        self.transform = transform
-    def __len__(self):
-        return len(self.labels)
-    def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-        image_name = os.listdir(self.image_dir)
-        img_name = os.path.join(self.image_dir,image_name[idx])
-        image = io.imread(img_name) # Loading Image
-        image = image / 255.0 # Normalizing [0;1]
-        image = image.astype('float32') # Converting images to float32
-        #sample = {'image': image}
-        #if self.transform:
-        #    sample = self.transform(sample)
-        return image
