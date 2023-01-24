@@ -117,7 +117,6 @@ class Trainer():
                 labels = labels.reshape(1,self.NB_LABEL)
                 masks = masks.reshape(1,1,64,64)
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
-       
                 # loss
                 outputs = self.model(masks,inputs)
                 #outputs = self.model(inputs)
@@ -169,8 +168,6 @@ class Trainer():
                 pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
-        #print(outputs)
-        #print(labels)
         print(' Test_loss: {}'.format(test_loss/test_total))
         return mse, np.mean(L1_loss_test,axis=0)
     

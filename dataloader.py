@@ -2,6 +2,7 @@ import torch
 import os
 import numpy as np
 import pandas as pd
+import torchvision.transforms.functional as TF
 import random
 from torch.utils.data import Dataset, DataLoader
 from skimage import io,transform
@@ -20,15 +21,15 @@ def normalization(csv_file,mode,indices):
     return scaler
 
 class Datasets(Dataset):
-    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt, upsample = False,transform=None):
+    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt, transforms, upsample = False):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.mask_dir = mask_dir
-        self.transform = transform
         self.scaler = scaler
         self.mask_use = True
         self.upsample = upsample
+        self.transforms=transforms
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
@@ -48,7 +49,7 @@ class Datasets(Dataset):
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
-            image = image / 255.0 # Normalizing [0;1]
+            #image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32
         else:
             image = image / 255.0 # Normalizing [0;1]

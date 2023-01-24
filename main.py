@@ -87,6 +87,7 @@ def train():
     i=0
     while True:
         i += 1
+
         if os.path.isdir("./result/Train_pixel_size"+str(i)) == False:
             save_folder = "./result/Train_pixel_size"+str(i)
             os.mkdir(save_folder)
@@ -97,6 +98,7 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
+
     index_set=train_test_split(index,test_size=0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
@@ -169,6 +171,7 @@ else :
     # model #
     index = list(range(NB_DATA))
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
+
     datasets = dataloader.Datasets(csv_file = "../Trab_Human.csv", image_dir="../DATA_HUMAN/IMAGE/", mask_dir = "../DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
     index_human = range(400)
     index_set=train_test_split(index_human,test_size=0.90,random_state=42)
