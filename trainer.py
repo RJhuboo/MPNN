@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import argparse
+import torchvision
 from torch.optim import Adam, SGD
 from torch.nn import MSELoss,L1Loss
 from sklearn.model_selection import KFold
@@ -51,7 +52,8 @@ class Trainer():
             masks = masks.reshape(masks.size(0),1,512,512)
             inputs, labels, masks= inputs.to(self.device), labels.to(self.device), masks.to(self.device)
 
-            
+            torchvision.utils.save_image(inputs,'./save_image/input_'+imname[0])
+            torchvision.utils.save_image(masks,'./save_image/mask_'+imname[0])
             # zero the parameter gradients
             self.optimizer.zero_grad()
 
