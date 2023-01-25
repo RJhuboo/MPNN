@@ -94,7 +94,7 @@ class Datasets(Dataset):
 class NeuralNet(nn.Module):
     def __init__(self,activation,n1,n2,n3,out_channels):
         super().__init__()
-        self.fc1 = nn.Linear((64*64*64)+(512*512),n1)
+        self.fc1 = nn.Linear((64*64*64)+(64*64),n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
         self.fc4 = nn.Linear(n3,out_channels)
@@ -184,7 +184,6 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
             running_loss = 0.0
         
     # displaying results
-    print("nb", train_total)
     mse = train_loss/train_total   
     print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
     print('Finished Training')
@@ -216,7 +215,7 @@ def test(model,testloader,epoch,opt):
             inputs, labels, masks = inputs.to(device),labels.to(device),masks.to(device)
             # loss
             outputs = model(inputs,masks)
-            test_loss += Loss(outputs,labels)
+            test_loss += Loss(outputs,labels).item()
             test_total += 1
             # statistics
 
@@ -286,15 +285,6 @@ def objective(trial):
         scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
     else:
         scaler = None
-    my_transforms = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.RandomRotation(degrees=45),
-        transforms.RandomHorizontalFlip(p=0.3),
-        transforms.RandomVerticalFlip(p=0.3),
-        transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-        transforms.ToTensor(),
-    ])
-    #transform = transforms.Compose([transforms.RandomRotation(degrees=(0,90)),transforms.RandomHorizontalFlip(p=0.3),transforms.RandomVerticalFlip(p=0.3),transforms.ToTensor()])
     datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, indices = train_index, transform=my_transforms)
     #print(len(datasets))
     #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
@@ -307,13 +297,13 @@ def objective(trial):
     for epoch in range(opt['nb_epochs']):
         mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
         mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
-    mse_total = mse_total + np.array(mse_test)
-    print("mse train size :",len(mse_train))
-    mse_mean = mse_total / opt['k_fold']
-    print("mse_mean :", mse_mean)
-    i_min = np.where(mse_mean == np.min(mse_mean))
+    #mse_total = mse_total + np.array(mse_test)
+    #print("mse train size :",len(mse_train))
+    #mse_mean = mse_total / opt['k_fold']
+    print("min mse test :", np.min(mse_test))
+    i_min = np.where(mse_test == np.min(mse_test))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
+    result_display = {"train mse":mse_train,"val mse":mse_test,"best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
     return np.min(mse_mean)

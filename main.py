@@ -80,8 +80,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train_9p_final"+str(i)) == False:
-            save_folder = "./result/train_9p_final"+str(i)
+        if os.path.isdir("./result/train_9p_64mask"+str(i)) == False:
+            save_folder = "./result/train_9p_64mask"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -92,14 +92,15 @@ def train():
     index = range(NB_DATA)
     #split = train_test_split(index,test_size = 0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    my_transforms = transforms.Compose([
-      transforms.ToPILImage(),
-      transforms.RandomRotation(degrees=45),
-      transforms.RandomHorizontalFlip(p=0.3),
-      transforms.RandomVerticalFlip(p=0.3),
-      transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-      transforms.ToTensor(),
-    ])
+    my_transforms=None
+    #my_transforms = transforms.Compose([
+    #  transforms.ToPILImage(),
+    #  transforms.RandomRotation(degrees=45),
+    #  transforms.RandomHorizontalFlip(p=0.3),
+    #  transforms.RandomVerticalFlip(p=0.3),
+    #  transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
+    #  transforms.ToTensor(),
+    #])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)

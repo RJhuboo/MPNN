@@ -8,7 +8,7 @@ import torch.nn.functional as F
 class NeuralNet(nn.Module):
     def __init__(self,n1,n2,n3,out_channels):
         super().__init__()
-        self.fc1 = nn.Linear((64*64*64)+(512*512),n1)
+        self.fc1 = nn.Linear((64*64*64)+(64*64),n1)
         #self.fc1 = nn.Linear(64*64*64,n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
@@ -171,7 +171,7 @@ class ConvNet(nn.Module):
         self.neural = NeuralNet(n1,n2,n3,out_channels)
         # dropout
         # self.dropout = nn.Dropout(0.25)
-    def forward(self,mask, x):
+    def forward(self, mask,x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.dropout(x)
         x = self.pool(F.relu(self.conv2(x)))

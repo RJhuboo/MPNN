@@ -49,11 +49,11 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),self.opt.in_channel,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
-            masks = masks.reshape(masks.size(0),1,512,512)
+            masks = masks.reshape(masks.size(0),1,64,64)
             inputs, labels, masks= inputs.to(self.device), labels.to(self.device), masks.to(self.device)
 
-            torchvision.utils.save_image(inputs,'./save_image/input_'+imname[0])
-            torchvision.utils.save_image(masks,'./save_image/mask_'+imname[0])
+            #torchvision.utils.save_image(inputs,'./save_image/input_'+imname[0])
+            #torchvision.utils.save_image(masks,'./save_image/mask_'+imname[0])
             # zero the parameter gradients
             self.optimizer.zero_grad()
 
@@ -96,7 +96,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 10:
+        if epoch > 150:
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
@@ -124,7 +124,7 @@ class Trainer():
                 # reshape
                 inputs = inputs.reshape(1,self.opt.in_channel,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
-                masks = masks.reshape(1,1,512,512)
+                masks = masks.reshape(1,1,64,64)
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
        
                 # loss
