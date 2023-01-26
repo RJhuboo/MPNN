@@ -6,6 +6,8 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from torch.nn import MSELoss,L1Loss
 from torch.optim import Adam, SGD
+import torchvision.transforms.functional as TF
+import random
 from sklearn.metrics import r2_score
 from skimage import io,transform
 from torchvision import transforms, utils
@@ -42,12 +44,11 @@ def normalization(csv_file,mode,indices):
     return scaler
 
 class Datasets(Dataset):
-    def __init__(self, csv_file, image_dir, mask_dir, opt, indices,transform=None):
+    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
-        self.transform = transform
-        self.indices = indices
+        self.scaler=scaler
         self.mask_dir = mask_dir
         self.mask_use = True
     def __len__(self):
@@ -60,6 +61,7 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         if self.mask_use == True:
             mask = io.imread(mask_name)
+            mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
@@ -67,28 +69,27 @@ class Datasets(Dataset):
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
-        if self.opt['norm_method']== "L2":
-            lab = preprocessing.normalize(self.labels.iloc[:,1:],axis=0)
-        elif self.opt['norm_method'] == "L1":
-            lab = preprocessing.normalize(self.labels.iloc[:,1:],norm='l1',axis=0)
-        elif self.opt['norm_method'] == "minmax":
-            scaler = preprocessing.MinMaxScaler()
-            scaler.fit(self.labels.iloc[self.indices,1:])
-            lab = scaler.transform(self.labels.iloc[:,1:])
-        elif self.opt['norm_method'] == "standardization":
-            scaler = preprocessing.StandardScaler()
-            scaler.fit(self.labels.iloc[self.indices,1:])
-            lab = scaler.transform(self.labels.iloc[:,1:])
+        lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
         lab.columns = self.labels.columns
         labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
         labels = labels.astype('float32')
-        if self.transform:
-            image = self.transform(image)
-            if self.mask_use == True:
-                mask = self.transform(mask)
+        p = random.random()
+        rot = random.randint(-45,45)
+        transform_list = []
+        image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
+        image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
+        if p<0.3:
+            image,mask=TF.vflip(image),TF.vflip(mask)
+        p = random.random()
+        if p<0.3:
+            image,mask=TF.hflip(image),TF.hflip(mask)
+        p = random.random()
+        if p>0.2:
+            image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
+        image,mask=TF.to_tensor(image),TF.to_tensor(mask)
         return {'image': image,'mask':mask, 'label': labels}
     
 class NeuralNet(nn.Module):
@@ -150,19 +151,18 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     running_loss = 0.0
     r2_s = 0
     mse_score = 0.0
-
+    Loss= L1Loss()
     for i, data in enumerate(trainloader,0):
         inputs, masks, labels = data['image'],data['mask'], data['label']
         # reshape
         inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
-        masks = masks.reshape(masks.size(0),1,512,512)
+        masks = masks.reshape(masks.size(0),1,64,64)
         inputs, labels, masks= inputs.to(device), labels.to(device), masks.to(device)
         # zero the parameter gradients
         optimizer.zero_grad()
         # forward backward and optimization
         outputs = model(inputs,masks)
-        Loss = L1Loss()
         loss = Loss(outputs,labels)
         if isnan(loss) == True:
             print(outputs)
@@ -211,11 +211,12 @@ def test(model,testloader,epoch,opt):
             # reshape
             inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
             labels = labels.reshape(1,NB_LABEL)
-            masks = masks.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
+            masks = masks.reshape(1,1,64,64)
             inputs, labels, masks = inputs.to(device),labels.to(device),masks.to(device)
             # loss
             outputs = model(inputs,masks)
-            test_loss += Loss(outputs,labels).item()
+            loss = Loss(outputs,labels)
+            test_loss += loss.item()
             test_total += 1
             # statistics
 
@@ -228,7 +229,7 @@ def test(model,testloader,epoch,opt):
 
 
     print(' Test_loss: {}'.format(test_loss/test_total))
-    return (test_loss/test_total).cpu().numpy()
+    return (test_loss/test_total)
 
 
 def objective(trial):
@@ -243,24 +244,24 @@ def objective(trial):
     opt = {'label_dir' : "./Train_Label_9p_augment.csv",
            'image_dir' : "./Train_segmented_filtered",
            'mask_dir' : "./Train_trab_mask",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           #'batch_size': 24,
+           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           'batch_size': 24,
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,64),
-           #'nof':36,
-           'lr': trial.suggest_loguniform('lr',1e-7,1e-3),
-           #'lr':0.00006,
-           'nb_epochs' : 200,
+           #'nof' : trial.suggest_int('nof',8,64),
+           'nof':36,
+           #'lr': trial.suggest_loguniform('lr',1e-7,1e-3),
+           'lr':0.00006,
+           'nb_epochs' : 250,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 1,
-           #'n1': 135,
-           #'n2':146,
-           #'n3':131,
-           'n1' : trial.suggest_int('n1', 90,190),
-           'n2' : trial.suggest_int('n2',100,200),
-           'n3' : trial.suggest_int('n3',100,190),
+           'n1': 135,
+           'n2':146,
+           'n3':131,
+           #'n1' : trial.suggest_int('n1', 90,190),
+           #'n2' : trial.suggest_int('n2',100,200),
+           #'n3' : trial.suggest_int('n3',100,190),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
@@ -277,18 +278,11 @@ def objective(trial):
     print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
 
-    #for train_index, test_index in kf.split(index):
     train_index=split[0]
     test_index=split[1]
     mse_test = []
-    if opt['norm_method'] == "standardization" or opt['norm_method'] == "minmax":
-        scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
-    else:
-        scaler = None
-    datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, indices = train_index, transform=my_transforms)
-    #print(len(datasets))
-    #datasets_2 = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], opt=opt, indices = train_index, transform=None)
-    #data_tot = ConcatDataset([datasets,datasets_2])
+    scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
+    datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
     trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
     testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
     model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
@@ -306,7 +300,7 @@ def objective(trial):
     result_display = {"train mse":mse_train,"val mse":mse_test,"best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
         pickle.dump(result_display,f)
-    return np.min(mse_mean)
+    return np.min(mse_test)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
 
