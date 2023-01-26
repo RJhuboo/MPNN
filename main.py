@@ -82,7 +82,7 @@ def reset_weights(m):
 def objective(trial):
     opt.n1 = trial.suggest_int('n1',90,190)
     opt.n2 = trial.suggest_int('n2',100,200)
-    opt.n3 = trial_suggest_int('n3',100,190)
+    opt.n3 = trial.suggest_int('n3',100,190)
     opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
     opt.nof = trial.suggest_int('nof',8,64)
     opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
