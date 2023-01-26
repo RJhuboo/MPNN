@@ -85,13 +85,14 @@ def objective(trial):
     opt.nof = trial.suggest_int('nof',8,64)
     opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
     # Create the folder where to save results and checkpoints
-    i=0
-    while True:
-        i += 1
-        if os.path.isdir("./result/train_9p_64mask"+str(i)) == False:
-            save_folder = "./result/train_9p_64mask"+str(i)
-            os.mkdir(save_folder)
-            break
+    if opt.mode == "train":
+        i=0
+        while True:
+            i += 1
+            if os.path.isdir("./result/train_9p_64mask"+str(i)) == False:
+                save_folder = "./result/train_9p_64mask"+str(i)
+                os.mkdir(save_folder)
+                break
     score_mse_t = []
     score_mse_v = []
     score_train_per_param = []
