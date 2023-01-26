@@ -78,11 +78,12 @@ class Trainer():
             train_loss += loss.item()
             running_loss += loss.item()
             train_total += 1
-            if epoch == self.opt.nb_epochs -1 :
-                outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-                save_label.append(np.array(labels)), save_output.append(np.array(outputs))
-                with open(os.path.join(self.save_fold,"train_output"+str(epoch)+".pkl"),"wb") as f:
-                    pickle.dump({"output":save_output,"label":save_label,"ID":imname},f)
+            if opt.mode=="cross":
+                if epoch == self.opt.nb_epochs -1 :
+                    outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+                    save_label.append(np.array(labels)), save_output.append(np.array(outputs))
+                    with open(os.path.join(self.save_fold,"train_output"+str(epoch)+".pkl"),"wb") as f:
+                        pickle.dump({"output":save_output,"label":save_label,"ID":imname},f)
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
@@ -96,10 +97,11 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 150:
-            print("---- saving model ----")
-            check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-            torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        if opt.mode=="train":
+            if epoch > 150:
+                print("---- saving model ----")
+                check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
+                torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch):
@@ -161,8 +163,9 @@ class Trainer():
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump({"output":output,"label":label,"ID":IDs},f)
+            if opt.mode=="train":
+                with open(os.path.join(self.save_fold,name_out),"wb") as f:
+                    pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
         #print(outputs)
