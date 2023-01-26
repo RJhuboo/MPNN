@@ -84,6 +84,7 @@ def objective(trial):
     opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
     opt.nof = trial.suggest_int('nof',8,64)
     opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
+    
     # Create the folder where to save results and checkpoints
     if opt.mode == "train":
         i=0
