@@ -109,7 +109,7 @@ def objective(trial):
     if opt.mode =="train":
         scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
         test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
-    
+    my_transforms=None
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
     if opt.mode=="train":
