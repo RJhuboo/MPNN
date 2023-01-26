@@ -88,6 +88,7 @@ def objective(trial):
     opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
     
     # Create the folder where to save results and checkpoints
+    save_folder=None
     if opt.mode == "train":
         i=0
         while True:
