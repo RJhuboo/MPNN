@@ -136,13 +136,14 @@ def objective(trial):
         score_mse_v.append(mse_test)
         score_train_per_param.append(param_train)
         score_test_per_param.append(param_test)
-    resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
-    with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
-        pickle.dump(resultat, f)
-    with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
-        pickle.dump(history,g)
-
+    #resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
+    #with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
+        #pickle.dump(resultat, f)
+    #with open(os.path.join(save_folder,"history.txt"),'wb') as g:
+        #history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
+        #pickle.dump(history,g)
+    return np.min(score_mse_v)
+  
 ''' main '''
 if opt.mode == "train":
     train()
