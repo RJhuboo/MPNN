@@ -293,6 +293,7 @@ def objective(trial):
     testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
     model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
     #model.apply(reset_weights)
+    torch.manual_seed(5)
     optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
     for epoch in range(opt['nb_epochs']):
         mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
