@@ -117,7 +117,7 @@ def objective(trial):
         testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     elif opt.mode=="cross":
         trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(split[0]), num_workers = opt.nb_workers )
-        testloader = DataLoader(datasets, batch_size = 1, sampler=split[1], num_workers = opt.nb_workers, shuffle=True)
+        testloader = DataLoader(datasets, batch_size = 1, sampler=split[1], num_workers = opt.nb_workers)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
