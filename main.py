@@ -39,7 +39,7 @@ parser.add_argument("--nof", type=int, default = 40, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.0006, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 15, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
-parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
+parser.add_argument("--mode", default = "cross", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitting for k cross-validation")
 parser.add_argument("--n1", type=int, default = 240, help = "number of neurons in the first layer of the neural network")
 parser.add_argument("--n2", type=int, default = 120, help = "number of neurons in the second layer of the neural network")
@@ -98,16 +98,22 @@ def objective(trial):
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    #split = train_test_split(index,test_size = 0.2,shuffle=False)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    my_transforms=None
+    if opt.mode == "cross":
+      split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
+      scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
+    
+    if opt.mode =="train":
+        scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
+        test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
-
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
-    testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    if opt.mode=="train":
+        trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
+        testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    elif opt.mode=="cross":
+        trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(split[0]), num_workers = opt.nb_workers )
+        testloader = DataLoader(datasets, batch_size = 1, sampler=split[1], num_workers = opt.nb_workers, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
