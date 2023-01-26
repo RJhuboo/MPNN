@@ -61,6 +61,8 @@ SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
 '''functions'''
 
+study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
+
 ## RESET WEIGHT FOR CROSS VALIDATION
 
 def reset_weights(m):
@@ -75,7 +77,13 @@ def reset_weights(m):
 
 ## FOR TRAINING
 
-def train():
+def objective(trial):
+    opt.n1 = trial.suggest_int('n1',90,190)
+    opt.n2 = trial.suggest_int('n2',100,200)
+    opt.n3 = trial_suggest_int('n3',100,190)
+    opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
+    opt.nof = trial.suggest_int('nof',8,64)
+    opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
     # Create the folder where to save results and checkpoints
     i=0
     while True:
@@ -93,14 +101,6 @@ def train():
     #split = train_test_split(index,test_size = 0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
     my_transforms=None
-    #my_transforms = transforms.Compose([
-    #  transforms.ToPILImage(),
-    #  transforms.RandomRotation(degrees=45),
-    #  transforms.RandomHorizontalFlip(p=0.3),
-    #  transforms.RandomVerticalFlip(p=0.3),
-    #  transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-    #  transforms.ToTensor(),
-    #])
     
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
@@ -142,11 +142,14 @@ def train():
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
         history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
         pickle.dump(history,g)
-      
 
 ''' main '''
 if opt.mode == "train":
     train()
+elif opt.mode == "cross":
+    study.optimize(objective,n_trials=15)
+    with open("./cross_9p_augment.pkl","wb") as f:
+        pickle.dump(study,f)
 else :
     i=0
     while True:
