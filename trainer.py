@@ -78,7 +78,7 @@ class Trainer():
             train_loss += loss.item()
             running_loss += loss.item()
             train_total += 1
-            if opt.mode=="cross":
+            if self.opt.mode=="cross":
                 if epoch == self.opt.nb_epochs -1 :
                     outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
                     save_label.append(np.array(labels)), save_output.append(np.array(outputs))
@@ -97,7 +97,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if opt.mode=="train":
+        if self.opt.mode=="train":
             if epoch > 150:
                 print("---- saving model ----")
                 check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
@@ -163,7 +163,7 @@ class Trainer():
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            if opt.mode=="train":
+            if self.opt.mode=="train":
                 with open(os.path.join(self.save_fold,name_out),"wb") as f:
                     pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
