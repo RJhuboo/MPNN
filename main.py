@@ -41,7 +41,7 @@ parser.add_argument("--nof", type=int, default = 36, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.00006, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 200, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
-parser.add_argument("--mode", default = "cross", help = "Mode used : Train, Using or Test")
+parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
 parser.add_argument("--n1", type=int, default = 135, help = "number of neurons in the first layer of the neural network")
 parser.add_argument("--n2", type=int, default = 146, help = "number of neurons in the second layer of the neural network")
@@ -102,22 +102,13 @@ def objective(trial):
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    if opt.mode == "cross":
-      split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
-      scaler = dataloader.normalization(opt.label_dir,opt.norm_method,range(6000))
-      #print(split[1])
-    if opt.mode =="train":
-        scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-        test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     my_transforms=None
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
-    if opt.mode=="train":
-        trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
-        testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
-    elif opt.mode=="cross":
-        trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(split[0]), num_workers = opt.nb_workers )
-        testloader = DataLoader(datasets, batch_size = 1, sampler=split[1], num_workers = opt.nb_workers)
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
+    testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
@@ -146,21 +137,17 @@ def objective(trial):
         score_mse_v.append(mse_test)
         score_train_per_param.append(param_train)
         score_test_per_param.append(param_test)
-    #resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
-    #with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
-        #pickle.dump(resultat, f)
-    #with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        #history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
-        #pickle.dump(history,g)
+    resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
+    with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
+        pickle.dump(resultat, f)
+    with open(os.path.join(save_folder,"history.txt"),'wb') as g:
+        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
+        pickle.dump(history,g)
     return np.min(score_mse_v)
   
 ''' main '''
 if opt.mode == "train":
     train()
-elif opt.mode == "cross":
-    study.optimize(objective,n_trials=15)
-    with open("./cross_9p_augment.pkl","wb") as f:
-        pickle.dump(study,f)
 else :
     i=0
     while True:
