@@ -174,9 +174,9 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         train_loss += loss.item()
         running_loss += loss.item()
         train_total += 1
-        outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
-        labels, outputs = np.array(labels), np.array(outputs)
-        labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
+        #outputs, labels = outputs.cpu().detach().numpy(), labels.cpu().detach().numpy()
+        #labels, outputs = np.array(labels), np.array(outputs)
+        #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
         #Loss = MSELoss()
         if i % opt['batch_size'] == opt['batch_size']-1:
             print('[%d %5d], loss: %.3f' %
@@ -285,9 +285,9 @@ def objective(trial):
     datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
     trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
     testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
+    torch.manual_seed(5)
     model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
     #model.apply(reset_weights)
-    torch.manual_seed(5)
     optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
     for epoch in range(opt['nb_epochs']):
         mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
