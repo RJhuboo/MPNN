@@ -35,17 +35,17 @@ parser.add_argument("--image_dir", default = "./Train_segmented_filtered", help 
 parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
-parser.add_argument("--batch_size", type=int, default = 16, help = "number of batch")
+parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
-parser.add_argument("--nof", type=int, default = 40, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.0006, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 15, help = "number of epochs")
+parser.add_argument("--nof", type=int, default = 36, help = "number of filter")
+parser.add_argument("--lr", type=float, default = 0.00006, help = "learning rate")
+parser.add_argument("--nb_epochs", type=int, default = 200, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "cross", help = "Mode used : Train, Using or Test")
-parser.add_argument("--k_fold", type=int, default = 5, help = "Number of splitting for k cross-validation")
-parser.add_argument("--n1", type=int, default = 240, help = "number of neurons in the first layer of the neural network")
-parser.add_argument("--n2", type=int, default = 120, help = "number of neurons in the second layer of the neural network")
-parser.add_argument("--n3", type=int, default = 80, help = "number of neurons in the third layer of the neural network")
+parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
+parser.add_argument("--n1", type=int, default = 135, help = "number of neurons in the first layer of the neural network")
+parser.add_argument("--n2", type=int, default = 146, help = "number of neurons in the second layer of the neural network")
+parser.add_argument("--n3", type=int, default = 131, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 9, help = "specify the number of labels")
@@ -80,23 +80,22 @@ def reset_weights(m):
 ## FOR TRAINING
 
 def objective(trial):
-    opt.n1 = trial.suggest_int('n1',90,190)
-    opt.n2 = trial.suggest_int('n2',100,200)
-    opt.n3 = trial.suggest_int('n3',100,190)
+    opt.n1 = trial.suggest_int('n1',90,500)
+    opt.n2 = trial.suggest_int('n2',100,500)
+    opt.n3 = trial.suggest_int('n3',100,500)
     opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
     opt.nof = trial.suggest_int('nof',8,64)
     opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
     
     # Create the folder where to save results and checkpoints
     save_folder=None
-    if opt.mode == "train":
-        i=0
-        while True:
-            i += 1
-            if os.path.isdir("./result/train_9p_64mask"+str(i)) == False:
-                save_folder = "./result/train_9p_64mask"+str(i)
-                os.mkdir(save_folder)
-                break
+    i=0
+    while True:
+        i += 1
+        if os.path.isdir("./result/cross_9p_augment"+str(i)) == False:
+            save_folder = "./result/cross_9p_augment"+str(i)
+            os.mkdir(save_folder)
+            break
     score_mse_t = []
     score_mse_v = []
     score_train_per_param = []
@@ -105,8 +104,8 @@ def objective(trial):
     index = range(NB_DATA)
     if opt.mode == "cross":
       split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
-      scaler = dataloader.normalization(opt.label_dir,opt.norm_method,split[0])
-    
+      scaler = dataloader.normalization(opt.label_dir,opt.norm_method,range(6000))
+      #print(split[1])
     if opt.mode =="train":
         scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
         test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
