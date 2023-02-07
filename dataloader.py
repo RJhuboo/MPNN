@@ -25,7 +25,7 @@ class Datasets(Dataset):
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.mask_dir = mask_dir
-        #self.transform = transform
+        self.transform = transform
         self.scaler = scaler
         self.mask_use = True
     def __len__(self):
@@ -38,7 +38,7 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         if self.mask_use == True:
             mask = io.imread(mask_name)
-            mask = transform.rescale(mask, 1/8, anti_aliasing=False)
+            #mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
@@ -57,23 +57,23 @@ class Datasets(Dataset):
         labels = labels.astype('float32')
         p = random.random()
         rot = random.randint(-45,45)
-        transform_list = []
-        image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
-        image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
-        if p<0.3:
-            image,mask=TF.vflip(image),TF.vflip(mask)
-        p = random.random()
-        if p<0.3:
-            image,mask=TF.hflip(image),TF.hflip(mask)
-        p = random.random()
-        if p>0.2:
-            image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
-        image,mask=TF.to_tensor(image),TF.to_tensor(mask)
+        #transform_list = []
+        #image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
+        #image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
+        #if p<0.3:
+        #    image,mask=TF.vflip(image),TF.vflip(mask)
+        #p = random.random()
+        #if p<0.3:
+        #    image,mask=TF.hflip(image),TF.hflip(mask)
+        #p = random.random()
+        #if p>0.2:
+        #    image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
+        #image,mask=TF.to_tensor(image),TF.to_tensor(mask)
 
-        #if self.transform:
-        #    image = self.transform(image)
-        #    if self.mask_use == True:
-        #        mask = self.transform(mask)
+        if self.transform:
+            image = self.transform(image)
+            if self.mask_use == True:
+                mask = self.transform(mask)
         return {'image': image, 'mask': mask, 'label': labels, 'ID': lab.iloc[idx,0]}
 
 class Test_Datasets(Dataset):

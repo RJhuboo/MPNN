@@ -61,7 +61,7 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         if self.mask_use == True:
             mask = io.imread(mask_name)
-            mask = transform.rescale(mask, 1/8, anti_aliasing=False)
+            #mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
@@ -95,7 +95,7 @@ class Datasets(Dataset):
 class NeuralNet(nn.Module):
     def __init__(self,activation,n1,n2,n3,out_channels):
         super().__init__()
-        self.fc1 = nn.Linear((64*64*64)+(64*64),n1)
+        self.fc1 = nn.Linear((64*64*64)+(512*512),n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
         self.fc4 = nn.Linear(n3,out_channels)
@@ -157,7 +157,8 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # reshape
         inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
-        masks = masks.reshape(masks.size(0),1,64,64)
+        masks = masks.reshape(masks.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
+        #masks = torch.nn.functional.interpolate(masks,size=(64,64))
         inputs, labels, masks= inputs.to(device), labels.to(device), masks.to(device)
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -211,7 +212,8 @@ def test(model,testloader,epoch,opt):
             # reshape
             inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
             labels = labels.reshape(1,NB_LABEL)
-            masks = masks.reshape(1,1,64,64)
+            masks = masks.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
+            #masks = torch.nn.functional.interpolate(masks,size=(64,64))
             inputs, labels, masks = inputs.to(device),labels.to(device),masks.to(device)
             # loss
             outputs = model(inputs,masks)
@@ -255,7 +257,7 @@ def objective(trial):
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 1,
+           'k_fold' : 3,
            #'n1': 135,
            #'n2':146,
            #'n3':131,
@@ -273,7 +275,7 @@ def objective(trial):
     # defining data
     mse_train = []
     index = range(NB_DATA)
-    split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
+    #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
     #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
     print("start training")
     mse_total = np.zeros(opt['nb_epochs'])
