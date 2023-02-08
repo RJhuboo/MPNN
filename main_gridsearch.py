@@ -61,7 +61,7 @@ class Datasets(Dataset):
         image = io.imread(img_name) # Loading Image
         if self.mask_use == True:
             mask = io.imread(mask_name)
-            #mask = transform.rescale(mask, 1/8, anti_aliasing=False)
+            mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
@@ -95,7 +95,7 @@ class Datasets(Dataset):
 class NeuralNet(nn.Module):
     def __init__(self,activation,n1,n2,n3,out_channels):
         super().__init__()
-        self.fc1 = nn.Linear((64*64*64)+(512*512),n1)
+        self.fc1 = nn.Linear((64*64*64)+(64*64),n1)
         self.fc2 = nn.Linear(n1,n2)
         self.fc3 = nn.Linear(n2,n3)
         self.fc4 = nn.Linear(n3,out_channels)
@@ -157,7 +157,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # reshape
         inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
-        masks = masks.reshape(masks.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
+        masks = masks.reshape(masks.size(0),1,64,64)
         #masks = torch.nn.functional.interpolate(masks,size=(64,64))
         inputs, labels, masks= inputs.to(device), labels.to(device), masks.to(device)
         # zero the parameter gradients
@@ -212,7 +212,7 @@ def test(model,testloader,epoch,opt):
             # reshape
             inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
             labels = labels.reshape(1,NB_LABEL)
-            masks = masks.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
+            masks = masks.reshape(1,1,64,64)
             #masks = torch.nn.functional.interpolate(masks,size=(64,64))
             inputs, labels, masks = inputs.to(device),labels.to(device),masks.to(device)
             # loss
@@ -238,71 +238,89 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_9p_augment"+str(i)) == False:
-            save_folder = "./result/cross_9p_augment"+str(i)
+        if os.path.isdir("./result/cross_9p_augment_last"+str(i)) == False:
+            save_folder = "./result/cross_9p_augment_last"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
     opt = {'label_dir' : "./Train_Label_9p_augment.csv",
            'image_dir' : "./Train_segmented_filtered",
            'mask_dir' : "./Train_trab_mask",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           #'batch_size': 24,
+           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           'batch_size': 24,
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',8,64),
-           #'nof':36,
-           'lr': trial.suggest_loguniform('lr',1e-7,1e-3),
-           #'lr':0.00006,
-           'nb_epochs' : 250,
+           #'nof' : trial.suggest_int('nof',20,64),
+           'nof':36,
+           #'lr': trial.suggest_loguniform('lr',1e-4,1e-3),
+           'lr':0.00006,
+           'nb_epochs' : 200,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 3,
-           #'n1': 135,
-           #'n2':146,
-           #'n3':131,
-           'n1' : trial.suggest_int('n1', 90,190),
-           'n2' : trial.suggest_int('n2',100,200),
-           'n3' : trial.suggest_int('n3',100,190),
+           'n1': 135,
+           'n2':146,
+           'n3':131,
+           #'n1' : trial.suggest_int('n1', 90,190),
+           #'n2' : trial.suggest_int('n2',100,200),
+           #'n3' : trial.suggest_int('n3',100,190),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
            'optimizer' :  trial.suggest_categorical("optimizer",[Adam]),
            #'optimizer': Adam,
-           'activation' : trial.suggest_categorical("activation", [F.relu]),                                         
+           'activation' : trial.suggest_categorical("activation", [F.relu]),                                      
           }
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count())
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    else:
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     
     # defining data
-    mse_train = []
+    mse_train_total = np.zeros(opt['nb_epochs'])
     index = range(NB_DATA)
+    indexes = []
+    [indexes.append(i) for i in index]
+    mse_total = np.zeros(opt['nb_epochs'])
+    for k in range(opt["k_fold"]):
+        train_index = []
+        test_index = indexes[k*1000:(1+k)*1000]
+        [train_index.append(i) for i in index if i not in test_index]
     #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
     #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
-    print("start training")
-    mse_total = np.zeros(opt['nb_epochs'])
-
-    train_index=split[0]
-    test_index=split[1]
-    mse_test = []
-    scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
-    datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
-    trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
-    testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
-    torch.manual_seed(5)
-    model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
-    #model.apply(reset_weights)
-    optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
-    for epoch in range(opt['nb_epochs']):
-        mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-        mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
-    #mse_total = mse_total + np.array(mse_test)
-    #print("mse train size :",len(mse_train))
-    #mse_mean = mse_total / opt['k_fold']
-    print("min mse test :", np.min(mse_test))
-    i_min = np.where(mse_test == np.min(mse_test))
+        print("start training")
+        #train_index=split[0]
+        #test_index=split[1]
+        mse_test = []
+        mse_train = []
+        scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
+        datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
+        trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
+        testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
+        torch.manual_seed(5)
+        model = ConvNet(activation = opt['activation'],features =opt['nof'],out_channels=NB_LABEL,n1=opt['n1'],n2=opt['n2'],n3=opt['n3'],k1 = 3,k2 = 3,k3= 3).to(device)
+        if torch.cuda.device_count() >1:
+            model = nn.DataParallel(model)
+        #model.apply(reset_weights)
+        optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
+        for epoch in range(opt['nb_epochs']):
+            start = time.time()
+            mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
+            end = time.time()
+            print("temps :",start-end)
+            mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
+        mse_total = mse_total + np.array(mse_test)
+        mse_train_total = mse_train_total + np.array(mse_train)
+        #print("mse train size :",len(mse_train))
+    mse_mean = mse_total / opt['k_fold']
+    mse_train_mean = mse_train_total / opt['k_fold']
+    print("min mse test :", np.min(mse_mean))
+    i_min = np.where(mse_mean == np.min(mse_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":mse_train,"val mse":mse_test,"best epoch":i_min[0][0]+1}
+    result_display = {"train mse":mse_train_mean,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
-        pickle.dump(result_display,f)
+            pickle.dump(result_display,f)
     return np.min(mse_test)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
@@ -314,6 +332,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=15)
-with open("./cross_9p_augment.pkl","wb") as f:
+study.optimize(objective,n_trials=10)
+with open("./cross_9p_augment_last_one.pkl","wb") as f:
     pickle.dump(study,f)
