@@ -27,7 +27,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 7100
+NB_DATA = 7500
 NB_LABEL = 9
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -246,24 +246,24 @@ def objective(trial):
     opt = {'label_dir' : "./Train_Label_9p_augment.csv",
            'image_dir' : "./Train_segmented_filtered",
            'mask_dir' : "./Train_trab_mask",
-           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           'batch_size': 24,
+           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           #'batch_size': 24,
            'model' : "ConvNet",
-           #'nof' : trial.suggest_int('nof',20,64),
-           'nof':36,
-           #'lr': trial.suggest_loguniform('lr',1e-4,1e-3),
-           'lr':0.00006,
+           'nof' : trial.suggest_int('nof',10,64),
+           #'nof':36,
+           'lr': trial.suggest_loguniform('lr',1e-4,1e-3),
+           #'lr':0.00006,
            'nb_epochs' : 200,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 3,
-           'n1': 135,
-           'n2':146,
-           'n3':131,
-           #'n1' : trial.suggest_int('n1', 90,190),
-           #'n2' : trial.suggest_int('n2',100,200),
-           #'n3' : trial.suggest_int('n3',100,190),
+           #'n1': 135,
+           #'n2':146,
+           #'n3':131,
+           'n1' : trial.suggest_int('n1', 80,200),
+           'n2' : trial.suggest_int('n2',90,200),
+           'n3' : trial.suggest_int('n3',80,190),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
@@ -321,7 +321,7 @@ def objective(trial):
     result_display = {"train mse":mse_train_mean,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
             pickle.dump(result_display,f)
-    return np.min(mse_test)
+    return np.min(mse_mean)
 
 ''''''''''''''''''''' MAIN '''''''''''''''''''''''
 
@@ -332,6 +332,6 @@ else:
     device = "cpu"
     print("running on cpu")
     
-study.optimize(objective,n_trials=10)
+study.optimize(objective,n_trials=12)
 with open("./cross_9p_augment_last_one.pkl","wb") as f:
     pickle.dump(study,f)

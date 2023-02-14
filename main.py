@@ -37,15 +37,15 @@ parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image c
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
-parser.add_argument("--nof", type=int, default = 36, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.00006, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 200, help = "number of epochs")
+parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
+parser.add_argument("--lr", type=float, default = 0.0002, help = "learning rate")
+parser.add_argument("--nb_epochs", type=int, default = 300, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
-parser.add_argument("--n1", type=int, default = 135, help = "number of neurons in the first layer of the neural network")
-parser.add_argument("--n2", type=int, default = 146, help = "number of neurons in the second layer of the neural network")
-parser.add_argument("--n3", type=int, default = 131, help = "number of neurons in the third layer of the neural network")
+parser.add_argument("--n1", type=int, default = 158, help = "number of neurons in the first layer of the neural network")
+parser.add_argument("--n2", type=int, default = 152, help = "number of neurons in the second layer of the neural network")
+parser.add_argument("--n3", type=int, default = 83, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 9, help = "specify the number of labels")
@@ -57,13 +57,11 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 7100
+NB_DATA = 7500
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
 '''functions'''
-
-study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
 
 ## RESET WEIGHT FOR CROSS VALIDATION
 
@@ -103,16 +101,16 @@ def train():
     # defining data
     index = range(NB_DATA)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
-    #my_transforms=None
-    my_transforms = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.RandomRotation(degrees=45),
-            transforms.RandomHorizontalFlip(p=0.3),
-            transforms.RandomVerticalFlip(p=0.3),
-            transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-            transforms.ToTensor(),
-             ])
+    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_trab", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+    my_transforms=None
+    #my_transforms = transforms.Compose([
+    #        transforms.ToPILImage(),
+    #        transforms.RandomRotation(degrees=45),
+    #        transforms.RandomHorizontalFlip(p=0.3),
+    #        transforms.RandomVerticalFlip(p=0.3),
+    #        transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
+    #        transforms.ToTensor(),
+    #         ])
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
@@ -151,8 +149,7 @@ def train():
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
         history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
         pickle.dump(history,g)
-    return np.min(score_mse_v)
-  
+      
 ''' main '''
 if opt.mode == "train":
     train()

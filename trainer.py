@@ -49,7 +49,7 @@ class Trainer():
             # reshape
             inputs = inputs.reshape(inputs.size(0),self.opt.in_channel,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
-            masks = masks.reshape(masks.size(0),1,512,512)
+            masks = masks.reshape(masks.size(0),1,64,64)
             inputs, labels, masks= inputs.to(self.device), labels.to(self.device), masks.to(self.device)
 
             #torchvision.utils.save_image(inputs,'./save_image/input_'+imname[0])
@@ -77,7 +77,7 @@ class Trainer():
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
-            train_total += 1
+            train_total += 24
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
@@ -119,7 +119,7 @@ class Trainer():
                 # reshape
                 inputs = inputs.reshape(1,self.opt.in_channel,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
-                masks = masks.reshape(1,1,512,512)
+                masks = masks.reshape(1,1,64,64)
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
        
                 # loss
