@@ -34,12 +34,15 @@ class Datasets(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
+        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
-        if self.upsample == True:
+        if self.upsample == True or 'lr' in img_name:
             image = transform.rescale(image,2)
+            image = (image>0.5)*255
+            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace(".tif",".bmp"))
         if self.mask_use == True:
+            mask_name
             mask = io.imread(mask_name)
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
@@ -60,7 +63,7 @@ class Datasets(Dataset):
         labels = labels.astype('float32')
         p = random.random()
         rot = random.randint(-45,45)
-        #transform_list = []
+        transform_list = []
         image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
@@ -73,8 +76,8 @@ class Datasets(Dataset):
             image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
         image,mask=TF.to_tensor(image),TF.to_tensor(mask)
 
-        if self.transform:
-            image = self.transform(image)
-            if self.mask_use == True:
-                mask = self.transform(mask)
+        #if self.transform:
+        #    image = self.transform(image)
+        #    if self.mask_use == True:
+        #        mask = self.transform(mask)
         return {'image': image, 'mask': mask, 'label': labels, 'ID': lab.iloc[idx,0]}

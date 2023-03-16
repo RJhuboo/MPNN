@@ -30,8 +30,8 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Train_Label_9p_augment.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./Train_segmented_filtered", help = "path to image directory")
+parser.add_argument("--label_dir", default = "./Train_Label_7p_lrhr.csv")#"/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv", help = "path to label csv file")
+parser.add_argument("--image_dir", default = "./Train_LR_segmented")#"/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", help = "path to image directory")
 parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
@@ -48,7 +48,7 @@ parser.add_argument("--n2", type=int, default = 152, help = "number of neurons i
 parser.add_argument("--n3", type=int, default = 83, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 9, help = "specify the number of labels")
+parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
 parser.add_argument("--alpha1", type=float, default = 1)
 parser.add_argument("--alpha2", type=float, default = 1)
@@ -57,7 +57,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 7500
+NB_DATA = 400#9800
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/train_9p_augment_new"+str(i)) == False:
-            save_folder = "./result/train_9p_augment_new"+str(i)
+        if os.path.isdir("./result/TransferLearning_7p"+str(i)) == False:
+            save_folder = "./result/TransferLearning_7p"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -100,8 +100,8 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    test_datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_trab", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index[0:300])
+    #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     my_transforms=None
     #my_transforms = transforms.Compose([
     #        transforms.ToPILImage(),
@@ -113,8 +113,8 @@ def train():
     #         ])
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index), num_workers = opt.nb_workers )
-    testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index[0:300]), num_workers = opt.nb_workers )
+    testloader = DataLoader(datasets,batch_size = opt.batch_size, sampler = shuffle(index[300,400]),num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
@@ -131,9 +131,11 @@ def train():
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    # model.apply(reset_weights)
-    torch.manual_seed(5)
-
+    #model.apply(reset_weights)
+    model.load_state_dict(torch.load("./convnet_7p_lrhr1_2/BPNN_checkpoint_249.pth"))
+    for param in model.parameters():
+        print(param)
+        #param.requires_grad = False
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
@@ -165,10 +167,10 @@ else :
     # model #
     index = range(NB_DATA)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    datasets = dataloader.Datasets(csv_file = "./Test_Label_9p.csv", image_dir="./Test_LR_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt, upsample=True)
+    datasets = dataloader.Datasets(csv_file = "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", mask_dir = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    scaler = dataloader.normalization("./Train_Label_9p_augment.csv", opt.norm_method,index)
-    testloader = DataLoader(test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    #scaler = dataloader.normalization("./Train_Label_6p_augment.csv", opt.norm_method,index)
+    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     t = Trainer(opt,model,device,save_folder,scaler)
     t.test(testloader,opt.nb_epochs)
   

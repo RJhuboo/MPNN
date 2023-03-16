@@ -77,7 +77,7 @@ class Trainer():
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
-            train_total += 24
+            train_total += 1
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
@@ -91,7 +91,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 150:
+        if epoch > 200:
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
@@ -151,14 +151,15 @@ class Trainer():
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
+
                 output[i] = outputs
                 label[i] = labels
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            if self.opt.mode=="train":
-                with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                    pickle.dump({"output":output,"label":label,"ID":IDs},f)
+            #if self.opt.mode=="train":
+            with open(os.path.join(self.save_fold,name_out),"wb") as f:
+                pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
         #print(outputs)
