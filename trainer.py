@@ -107,7 +107,7 @@ class Trainer():
         IDs = {}
         # Loading Checkpoint
         if self.opt.mode == "Test":
-            check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
+            check_name = "BPNN_checkpoint_lrhr.pth" #+ str(epoch) + ".pth"
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
         self.model.eval()

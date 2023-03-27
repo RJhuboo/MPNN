@@ -57,7 +57,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 400#9800
+NB_DATA = 400
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TransferLearning_7p"+str(i)) == False:
-            save_folder = "./result/TransferLearning_7p"+str(i)
+        if os.path.isdir("./result/TransferLearning_90_exp2"+str(i)) == False:
+            save_folder = "./result/TransferLearning_90_exp2"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -100,7 +100,8 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index[0:300])
+    index_set=train_test_split(index,test_size=0.90,random_state=42)
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     my_transforms=None
     #my_transforms = transforms.Compose([
@@ -113,8 +114,8 @@ def train():
     #         ])
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index[0:300]), num_workers = opt.nb_workers )
-    testloader = DataLoader(datasets,batch_size = opt.batch_size, sampler = shuffle(index[300,400]),num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
+    testloader = DataLoader(datasets,batch_size = 1, sampler = index_set[1],num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
@@ -131,11 +132,15 @@ def train():
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+    #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("./convnet_7p_lrhr1_2/BPNN_checkpoint_249.pth"))
-    for param in model.parameters():
-        print(param)
-        #param.requires_grad = False
+    model.load_state_dict(torch.load("./convnet_lrhr/BPNN_checkpoint_lrhr.pth"))
+    for name, param in model.named_parameters():
+        if "conv" in name:
+            #print(name, param.data)
+            param.requires_grad = False
+        #if "conv3" in name:
+        #    param.requires_grad = True
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
@@ -159,18 +164,20 @@ else :
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/test"+str(i)) == False:
-            save_folder = "./result/test"+str(i)
+        if os.path.isdir("./result/test_exp_1_"+str(i)) == False:
+            save_folder = "./result/test_exp_1_"+str(i)
             os.mkdir(save_folder)
             break
     
     # model #
-    index = range(NB_DATA)
+    index = list(range(NB_DATA))
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    datasets = dataloader.Datasets(csv_file = "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", mask_dir = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
+    datasets = dataloader.Datasets(csv_file = "../Trab_Human.csv", image_dir="../DATA_HUMAN/IMAGE/", mask_dir = "../DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
+    index_human = range(400)
+    index_set=train_test_split(index_human,test_size=0.90,random_state=42)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #scaler = dataloader.normalization("./Train_Label_6p_augment.csv", opt.norm_method,index)
-    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])
     t = Trainer(opt,model,device,save_folder,scaler)
     t.test(testloader,opt.nb_epochs)
   
