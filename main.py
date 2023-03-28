@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TransferLearning_90_exp2"+str(i)) == False:
-            save_folder = "./result/TransferLearning_90_exp2"+str(i)
+        if os.path.isdir("./result/TransferLearning_90_exp2_asup"+str(i)) == False:
+            save_folder = "./result/TransferLearning_90_exp2_asup"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -100,7 +100,7 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    index_set=train_test_split(index,test_size=0.90,random_state=42)
+    index_set=train_test_split(index,test_size=0.95,random_state=42)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     my_transforms=None
@@ -134,13 +134,13 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("./convnet_lrhr/BPNN_checkpoint_lrhr.pth"))
+    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
     for name, param in model.named_parameters():
         if "conv" in name:
             #print(name, param.data)
             param.requires_grad = False
-        #if "conv3" in name:
-        #    param.requires_grad = True
+        if "conv3" in name:
+            param.requires_grad = True
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
