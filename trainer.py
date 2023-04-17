@@ -5,7 +5,7 @@ import pandas as pd
 import argparse
 import torchvision
 from torch.optim import Adam, SGD
-from torch.nn import MSELoss,L1Loss
+from torch.nn import MSELoss,L1Loss, BCEWithLogitsLoss
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 import pickle
