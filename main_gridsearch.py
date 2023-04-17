@@ -27,8 +27,8 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 7500
-NB_LABEL = 9
+NB_DATA = 9800
+NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -59,6 +59,10 @@ class Datasets(Dataset):
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
+        if 'lr' in img_name:
+            image = transform.rescale(image,2)
+            image = (image<0.5)*255
+            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp"))
         if self.mask_use == True:
             mask = io.imread(mask_name)
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
@@ -100,6 +104,7 @@ class NeuralNet(nn.Module):
         self.fc3 = nn.Linear(n2,n3)
         self.fc4 = nn.Linear(n3,out_channels)
         self.activation = activation
+        self.activ = nn.Tanh()
     def forward(self,x,mask):
         x = torch.flatten(x,1)
         mask = torch.flatten(mask,1)
@@ -108,6 +113,7 @@ class NeuralNet(nn.Module):
         x = self.activation(self.fc2(x))
         x = self.activation(self.fc3(x))
         x = self.fc4(x)
+        x = self.activ(x)
         return x
 class ConvNet(nn.Module):
     def __init__(self,activation, features,out_channels,n1=240,n2=120,n3=60,k1=3,k2=3,k3=3):
@@ -238,20 +244,20 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_9p_augment_last"+str(i)) == False:
-            save_folder = "./result/cross_9p_augment_last"+str(i)
+        if os.path.isdir("./result/cross_7p_augment_lrhr"+str(i)) == False:
+            save_folder = "./result/cross_7p_augment_lrhr"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Train_Label_9p_augment.csv",
-           'image_dir' : "./Train_segmented_filtered",
+    opt = {'label_dir' : "./Train_Label_7p2_lrhr.csv",
+           'image_dir' : "./Train_LR_segmented",
            'mask_dir' : "./Train_trab_mask",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',10,64),
            #'nof':36,
-           'lr': trial.suggest_loguniform('lr',1e-4,1e-3),
+           'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            #'lr':0.00006,
            'nb_epochs' : 200,
            'checkpoint_path' : "./",
@@ -333,5 +339,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=12)
-with open("./cross_9p_augment_last_one.pkl","wb") as f:
+with open("./cross_7p_augment_lrhr.pkl","wb") as f:
     pickle.dump(study,f)

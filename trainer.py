@@ -91,7 +91,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 200:
+        if epoch > 1:
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
@@ -124,6 +124,7 @@ class Trainer():
        
                 # loss
                 outputs = self.model(masks,inputs)
+                #if 1 in outputs.clamp(-1,1) or -1 in outputs.clamp(-1,1):
                 #outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
                     loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
@@ -143,21 +144,20 @@ class Trainer():
                     labels = labels.cpu().detach().numpy()
                 else:
                     labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
+                
                 labels, outputs = np.array(labels), np.array(outputs)
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
-                outputs=outputs.reshape(1,self.NB_LABEL)
-
+                outputs=outputs.reshape(1,self.NB_LABEL) 
+                #print("labels",labels)
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
-
                 output[i] = outputs
                 label[i] = labels
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            #if self.opt.mode=="train":
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
                 pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:

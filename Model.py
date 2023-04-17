@@ -14,6 +14,7 @@ class NeuralNet(nn.Module):
         self.fc3 = nn.Linear(n2,n3)
         #self.fc5 = nn.Linear(n3,20)
         self.fc4 = nn.Linear(n3,out_channels)
+        #self.activ = nn.Tanh()
     def forward(self,mask,x):
         mask = torch.flatten(mask,1)
         x = torch.flatten(x,1)
@@ -22,6 +23,7 @@ class NeuralNet(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
+        #x = self.activ(x)
         return x
 
 class Bottleneck(nn.Module):

@@ -5,6 +5,7 @@ import pandas as pd
 import random
 from torch.utils.data import Dataset, DataLoader
 from skimage import io,transform
+from skimage.color import rgb2gray
 from torchvision import transforms, utils
 import argparse
 from sklearn import preprocessing
@@ -34,19 +35,20 @@ class Datasets(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
+        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
             image = transform.rescale(image,2)
             image = (image>0.5)*255
-            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace(".tif",".bmp"))
+            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp"))
         if self.mask_use == True:
-            mask_name
+            #mask_name
             mask = io.imread(mask_name)
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
+            image = rgb2gray(image)
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32
         else:
