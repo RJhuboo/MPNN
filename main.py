@@ -73,13 +73,7 @@ def reset_weights(m):
 ## FOR TRAINING
 
 def train():
-    #opt.n1 = trial.suggest_int('n1',90,500)
-    #opt.n2 = trial.suggest_int('n2',100,500)
-    #opt.n3 = trial.suggest_int('n3',100,500)
-    #opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
-    #opt.nof = trial.suggest_int('nof',8,64)
-    #opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
-    
+  
     # Create the folder where to save results and checkpoints
     save_folder=None
     i=0
@@ -103,14 +97,6 @@ def train():
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
 
     my_transforms=None
-    #my_transforms = transforms.Compose([
-    #        transforms.ToPILImage(),
-    #        transforms.RandomRotation(degrees=45),
-    #        transforms.RandomHorizontalFlip(p=0.3),
-    #        transforms.RandomVerticalFlip(p=0.3),
-    #        transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-    #        transforms.ToTensor(),
-    #         ])
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
