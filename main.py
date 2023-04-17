@@ -50,11 +50,6 @@ parser.add_argument("--nb_workers", type=int, default = 0, help ="number of work
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
-parser.add_argument("--alpha1", type=float, default = 1)
-parser.add_argument("--alpha2", type=float, default = 1)
-parser.add_argument("--alpha3", type=float, default = 1)
-parser.add_argument("--alpha4", type=float, default = 1)
-parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
 NB_DATA = 6000
@@ -124,6 +119,7 @@ def train():
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
         model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+        Unet = Model.Unet()
     #torch.manual_seed(2)
     #model.apply(reset_weights)
     model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
@@ -134,7 +130,7 @@ def train():
         #if "conv3" in name or "conv2" in name:
         #    param.requires_grad = True
     # Start training
-    t = Trainer(opt,model,device,save_folder,scaler)
+    t = Trainer(opt,model,Unet,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch)
