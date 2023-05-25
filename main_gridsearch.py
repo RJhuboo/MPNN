@@ -1,3 +1,6 @@
+''' This implementation must work with low and high resolution images. And it make use of the complete dataset. The dataset size must be carefully determined'''
+
+
 import torch
 import os
 import numpy as np
@@ -27,7 +30,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 9800
+NB_DATA = 9800 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
