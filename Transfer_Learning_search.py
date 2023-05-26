@@ -285,6 +285,8 @@ def objective(trial):
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',10,64),
+           'layer_nb' : trial.suggest_int('layer_nb',1,3),
+           'net_freeze': trial.suggest_categorical('net_freeze',[True,False]),
            #'nof':36,
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            #'lr':0.00006,
@@ -293,12 +295,12 @@ def objective(trial):
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 4,
-           #'n1': 135,
-           #'n2':146,
-           #'n3':131,
-           'n1' : trial.suggest_int('n1', 80,200),
-           'n2' : trial.suggest_int('n2',90,200),
-           'n3' : trial.suggest_int('n3',80,190),
+           'n1': 135,
+           'n2':146,
+           'n3':131,
+           #'n1' : trial.suggest_int('n1', 80,200),
+           #'n2' : trial.suggest_int('n2',90,200),
+           #'n3' : trial.suggest_int('n3',80,190),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
@@ -355,12 +357,16 @@ def objective(trial):
         # Optimizer initilization
         
         # Freeze the last two layers
-        #for idx, layer in enumerate(model):
-        #    if idx >= (total_layers - 2):
-        #        for param in layer.parameters():
-        #            param.requires_grad = False
+        count = 0
+        for name, param in model.named_parameters():
+            if opt['net_freeze'] and count < opt['layer_nb']:
+                param.requires_grad = False
+            elif opt['net_freeze'] == False and count < opt['layer_nb']+3:
+                param.requires_grad = True
+            count += 1
 
         # Verify the parameters
+        print("Verify that freeze layer are:{}, and {}".format(opt['net_freeze'],opt['layer_nb']),)
         for name, param in model.named_parameters():
             print(f'{name}: requires_grad={param.requires_grad}')
     
