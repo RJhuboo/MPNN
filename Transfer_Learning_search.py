@@ -364,7 +364,7 @@ def objective(trial):
             print(count<opt['layer_nb']*2)
             if opt['net_freeze'] and count <= opt['layer_nb']*2:
                 param.requires_grad = False
-            if opt['net_freeze'] == False and count < (opt['layer_nb']*2)+6:
+            if opt['net_freeze'] == False and count < (opt['layer_nb']*2)+6 == True:
                 param.requires_grad = True
             count += 1
 
