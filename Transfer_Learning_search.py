@@ -32,7 +32,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 9800 # !!! Must be checked before running !!!
+NB_DATA = 400 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -76,7 +76,7 @@ class Datasets(Dataset):
             idx = idx.tolist()
         
         # Find image path
-        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
+        img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         
         # Read image and mask
@@ -272,10 +272,10 @@ def objective(trial):
             break
     
     # Options
-    opt = {'label_dir' : "./Train_Label_7p2_lrhr.csv",
-           'image_dir' : "./Train_LR_segmented",
-           'mask_dir' : "./Train_trab_mask",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+    opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv",
+           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE",
+           'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK",
+           'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
            #'batch_size': 24,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',10,64),
@@ -286,7 +286,7 @@ def objective(trial):
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 3,
+           'k_fold' : 4,
            #'n1': 135,
            #'n2':146,
            #'n3':131,
@@ -315,7 +315,7 @@ def objective(trial):
         
         # Create the fold vectors having full mouse data.
         train_index = []
-        test_index = indexes[k*1000:(1+k)*1000]
+        test_index = indexes[k*100:(1+k)*100]
         [train_index.append(i) for i in index if i not in test_index]
         #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
         #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
