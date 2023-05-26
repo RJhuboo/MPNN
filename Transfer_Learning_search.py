@@ -283,7 +283,7 @@ def objective(trial):
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            #'lr':0.00006,
            'nb_epochs' : 200,
-           'checkpoint_path' : "./",
+           'checkpoint_path' : "./convnet_7p_lrhr/BPNN_checkpoint_449.pth",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 4,
