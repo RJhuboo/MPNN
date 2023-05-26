@@ -37,6 +37,10 @@ NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
+
 study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
 
 # Normalization function for morphometry data
