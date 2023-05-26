@@ -272,8 +272,8 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_7p_augment_lrhr"+str(i)) == False:
-            save_folder = "./result/cross_7p_augment_lrhr"+str(i)
+        if os.path.isdir("./result/cross_7p_transferlearning"+str(i)) == False:
+            save_folder = "./result/cross_7p_transferlearning"+str(i)
             os.mkdir(save_folder)
             break
     
