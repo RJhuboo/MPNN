@@ -359,7 +359,7 @@ def objective(trial):
         # Freeze the last two layers
         count = 0
         for name, param in model.named_parameters():
-            if opt['net_freeze'] and count < opt['layer_nb']:
+            if opt['net_freeze'] and count <= opt['layer_nb']:
                 param.requires_grad = False
             elif opt['net_freeze'] == False and count < opt['layer_nb']+3:
                 param.requires_grad = True
