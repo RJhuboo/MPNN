@@ -359,13 +359,10 @@ def objective(trial):
         # Freeze the last two layers
         count = 0
         for name, param in model.named_parameters():
-            print(opt['net_freeze'])
-            print(count<(opt['layer_nb']*2)+6)
-            print(count<opt['layer_nb']*2)
-            if opt['net_freeze'] and count <= opt['layer_nb']*2:
+            if opt['net_freeze'] and count < opt['layer_nb']*2:
                 param.requires_grad = False
-            if opt['net_freeze'] == False and count < (opt['layer_nb']*2)+6 == True:
-                param.requires_grad = True
+            if opt['net_freeze'] == False and count < (opt['layer_nb']*2)+6:
+                param.requires_grad = False
             count += 1
 
         # Verify the parameters
