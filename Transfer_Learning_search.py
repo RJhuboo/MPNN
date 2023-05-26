@@ -107,9 +107,9 @@ class Datasets(Dataset):
         p = random.random()
         rot = random.randint(-45,45)
         transform_list = []
-        #image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
-        image = torch.from_numpy(np.array(image, np.float32, copy=False))
-        mask = torch.from_numpy(np.array(mask, np.float32, copy=False))
+        image,mask=TF.to_pil_image(np.array(image,copy=False)),TF.to_pil_image(np.array(mask,copy=False))
+        #image = torch.from_numpy(np.array(image, np.float32, copy=False))
+        #mask = torch.from_numpy(np.array(mask, np.float32, copy=False))
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
             image,mask=TF.vflip(image),TF.vflip(mask)
