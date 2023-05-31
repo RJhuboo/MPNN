@@ -282,8 +282,8 @@ def objective(trial):
     opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv",
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE",
            'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK",
-           'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
-           #'batch_size': 24,
+           #'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
+           'batch_size': 1,
            'model' : "ConvNet",
            #'nof' : trial.suggest_int('nof',10,64),
            'layer_nb' : trial.suggest_int('layer_nb',1,3),
@@ -407,7 +407,7 @@ if torch.cuda.device_count() > 1:
 else:
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 # create a study on optuna for hyperparameter tuning
-study.optimize(objective,n_trials=10) # n_trials is the number of experiments to run
+study.optimize(objective,n_trials=20) # n_trials is the number of experiments to run
 # Save the results of the study to a pickle file
-with open("./cross_7p_transferlearning.pkl","wb") as f:
+with open("./cross_7p_transferlearning_2.pkl","wb") as f:
     pickle.dump(study,f)

@@ -23,33 +23,14 @@ M_scaled = scaler2.fit_transform(mouse_df)
 pca_m = PCA(n_components=3)
 pca_h = PCA(n_components=3)
 
-pca_m.fit(M_scaled)
-pca_h.fit(H_scaled)
+pca_m.fit(M_scaled.T)
+pca_h.fit(H_scaled.T)
 
-X_M = pca_m.transform(M_scaled)
-X_H = pca_h.transform(H_scaled)
+X_M = pca_m.transform(M_scaled.T)
+X_H = pca_h.transform(H_scaled.T)
 
-H_m = H_scaled.T @ (X_M @ X_M.T @ X_H @ X_H.T).T
+H_m = H_scaled @ (X_H @ X_H.T @ X_M @ X_M.T)
 
-#a = H_scaled @ X_H.T @ X_H @ X_M.T
-# Create a new figure and a 3D axes
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Scatter plot for dataset1
-ax.scatter(*zip(*X_M.T), c='red', label='mouse')
-
-# Scatter plot for dataset2
-ax.scatter(*zip(*X_H.T), c='blue', label='human')
-
-# Set labels for each axis
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-
-# Set a legend
-ax.legend()
-
-# Show the plot
-plt.show()
-print(np.shape(H_m))
+#pd.DataFrame(H_m)
+H_m_rescale = scaler2.inverse_transform(H_m)
+#.to_csv("/home/rehan/Documents/sainbiose")
