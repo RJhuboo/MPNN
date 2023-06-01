@@ -32,7 +32,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 300 # !!! Must be checked before running !!!
+NB_DATA = 500 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -324,8 +324,9 @@ def objective(trial):
         
         # Create the fold vectors having full mouse data.
         train_index = []
-        test_index = indexes[k*100:(1+k)*100]
-        [train_index.append(i) for i in index if i not in test_index]
+        valid_index = indexes[k*100:(1+k)*100]
+        [train_index.append(i) for i in indexes[:-200] if i not in valid_index]
+        test_index = indexes[:-200]
         #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
         #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
         #train_index=split[0]
@@ -335,13 +336,14 @@ def objective(trial):
         # intilization of metric tracking at each fold
         score_test = []
         score_train = []
+        score_validation = []
         # Scaler creation on the training dataset
         scaler = normalization(opt['label_dir'],opt['norm_method'],train_index)
         # Creation of the datasets  
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
-        testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
-        
+        validloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(valid_index), num_workers = opt['nb_workers'])
+        testloader = DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers =opt['nb_workers'])
         # Weight initilization        
         torch.manual_seed(5)
         # Model initilization
@@ -379,10 +381,13 @@ def objective(trial):
             score_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             end = time.time() # Computational time 
             print("temps :",start-end)
+            # Validation
+            score_validation.append(test(model=model, testloader=validloader, epoch=epoch, opt=opt))
             # Testing
-            score_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
+            score_test.append(test(model=model, testloader=validloader, epoch=epoch, opt=opt))
+            
         # Store all folds scores
-        score_total = score_total + np.array(score_test)
+        score_total = score_total + np.array(score_validation)
         score_train_total = score_train_total + np.array(score_train)
         
     # Compute mean score in function of number of folds
@@ -392,7 +397,7 @@ def objective(trial):
     print("min mse test :", np.min(score_mean))
     i_min = np.where(score_mean == np.min(score_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":score_train_mean,"val mse":score_mean,"best epoch":i_min[0][0]+1}
+    result_display = {"train mse":score_train_mean,"val mse":score_mean,"best epoch":i_min[0][0]+1,"score_test":score_test}
     # Save the results of the study to a pickle file
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
             pickle.dump(result_display,f)
@@ -409,5 +414,5 @@ else:
 # create a study on optuna for hyperparameter tuning
 study.optimize(objective,n_trials=20) # n_trials is the number of experiments to run
 # Save the results of the study to a pickle file
-with open("./cross_7p_transferlearning_2.pkl","wb") as f:
+with open("./cross_7p_transferlearning.pkl","wb") as f:
     pickle.dump(study,f)
