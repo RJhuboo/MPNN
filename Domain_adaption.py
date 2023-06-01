@@ -23,13 +23,13 @@ M_scaled = scaler2.fit_transform(mouse_df)
 pca_m = PCA(n_components=3)
 pca_h = PCA(n_components=3)
 
-pca_m.fit(M_scaled.T)
-pca_h.fit(H_scaled.T)
+pca_m.fit(M_scaled)
+pca_h.fit(H_scaled)
 
-X_M = pca_m.transform(M_scaled.T)
-X_H = pca_h.transform(H_scaled.T)
+X_M = pca_m.transform(M_scaled)
+X_H = pca_h.transform(H_scaled)
 
-H_m = H_scaled @ (X_H @ X_H.T @ X_M @ X_M.T)
+H_m = H_scaled.T @ (X_H @ X_H.T @ X_M @ X_M.T)
 
 #pd.DataFrame(H_m)
 H_m_rescale = scaler2.inverse_transform(H_m)
