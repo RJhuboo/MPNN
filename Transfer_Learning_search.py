@@ -71,6 +71,7 @@ class Datasets(Dataset):
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.labels = self.labels.drop(range(300,400))
+        print(self.labels['File name'])
         self.scaler=scaler
         self.mask_dir = mask_dir
         self.mask_use = True # Tune for use of mask
@@ -325,8 +326,8 @@ def objective(trial):
         # Create the fold vectors having full mouse data.
         train_index = []
         valid_index = indexes[k*100:(1+k)*100]
-        [train_index.append(i) for i in indexes[:-200] if i not in valid_index]
-        test_index = indexes[:-200]
+        [train_index.append(i) for i in indexes[:-100] if i not in valid_index]
+        test_index = indexes[400:]
         #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
         #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
         #train_index=split[0]
@@ -384,7 +385,7 @@ def objective(trial):
             # Validation
             score_validation.append(test(model=model, testloader=validloader, epoch=epoch, opt=opt))
             # Testing
-            score_test.append(test(model=model, testloader=validloader, epoch=epoch, opt=opt))
+            score_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
             
         # Store all folds scores
         score_total = score_total + np.array(score_validation)
