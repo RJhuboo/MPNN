@@ -71,7 +71,9 @@ class Datasets(Dataset):
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.labels = self.labels.drop(range(0,200))
+        df = df.reset_index(drop=True)
         self.labels = self.labels.drop(range(100,200))
+        df = df.reset_index(drop=True)
         self.scaler=scaler
         self.mask_dir = mask_dir
         self.mask_use = True # Tune for use of mask
