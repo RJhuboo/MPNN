@@ -72,6 +72,7 @@ class Datasets(Dataset):
         self.labels = pd.read_csv(csv_file)
         self.labels = self.labels.drop(range(200,400))
         self.labels = self.labels.reset_index(drop=True)
+        print(self.labels["File name"])
         self.scaler=scaler
         self.mask_dir = mask_dir
         self.mask_use = True # Tune for use of mask
