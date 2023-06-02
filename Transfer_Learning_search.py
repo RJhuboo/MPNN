@@ -32,7 +32,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 600 # !!! Must be checked before running !!!
+NB_DATA = 500 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -284,15 +284,15 @@ def objective(trial):
     opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv",
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE",
            'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK",
-           #'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
-           'batch_size': 16,
+           'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
+           #'batch_size': 16,
            'model' : "ConvNet",
            #'nof' : trial.suggest_int('nof',10,64),
            'layer_nb' : trial.suggest_int('layer_nb',1,3),
            'net_freeze': trial.suggest_categorical('net_freeze',[True,False]),
            'nof':64,
-           #'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
-           'lr':0.001,
+           'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
+           #'lr':0.001,
            'nb_epochs' : 200,
            'checkpoint_path' : "./convnet_7p_lrhr/BPNN_checkpoint_449.pth",
            'mode': "Train",
@@ -326,7 +326,7 @@ def objective(trial):
         
         # Create the fold vectors having full mouse data.
         train_index = []
-        test_index = indexes[2*100:(2+1)*100]
+        test_index = indexes[k*100:(k+1)*100] 
         [train_index.append(i) for i in index if i not in test_index]
         #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
         #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
