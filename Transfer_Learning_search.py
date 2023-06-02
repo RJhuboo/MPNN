@@ -32,7 +32,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 300 # !!! Must be checked before running !!!
+NB_DATA = 500 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
