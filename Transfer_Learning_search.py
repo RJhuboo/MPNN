@@ -32,7 +32,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 500 # !!! Must be checked before running !!!
+NB_DATA = 300 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -70,7 +70,8 @@ class Datasets(Dataset):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
-        self.labels = self.labels.drop(range(300,400))
+        self.labels = self.labels.drop(range(0,200))
+        self.labels = self.labels.drop(range(100,200))
         self.scaler=scaler
         self.mask_dir = mask_dir
         self.mask_use = True # Tune for use of mask
