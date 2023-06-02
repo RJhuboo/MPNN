@@ -326,7 +326,7 @@ def objective(trial):
         
         # Create the fold vectors having full mouse data.
         train_index = []
-        test_index = indexes[k*100:(1+k)*100]
+        test_index = indexes[1*100:(1+1)*100]
         [train_index.append(i) for i in index if i not in test_index]
         #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
         #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
