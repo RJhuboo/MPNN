@@ -32,7 +32,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 500 # !!! Must be checked before running !!!
+NB_DATA = 600 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -70,8 +70,8 @@ class Datasets(Dataset):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
-        self.labels = self.labels.drop(range(300,400))
-        self.labels = self.labels.reset_index(drop=True)
+        #self.labels = self.labels.drop(range(300,400))
+        #self.labels = self.labels.reset_index(drop=True)
         print(self.labels["File name"])
         self.scaler=scaler
         self.mask_dir = mask_dir
@@ -343,7 +343,8 @@ def objective(trial):
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
         testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
-        
+        print(len(testloader))
+        print(len(trainloader))
         # Weight initilization        
         torch.manual_seed(5)
         # Model initilization
