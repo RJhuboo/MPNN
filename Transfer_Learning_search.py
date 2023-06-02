@@ -360,7 +360,8 @@ def objective(trial):
         # Optimizer initilization
         
         # Freeze the last two layers
-        count = 0
+        count = 0 
+        # j'avais une erreur ici
         for name, param in model.named_parameters():
             if opt['net_freeze'] and count < opt['layer_nb']*2:
                 param.requires_grad = False
