@@ -240,7 +240,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     return final_loss # Returning the L1 loss
 
 # Testing function: This more an evaluation step than a true testing step
-def test(model,testloader,epoch,opt):
+def test(model,loader,epoch,opt):
     # switch to evaluate mode
     model.eval()
 
@@ -252,7 +252,7 @@ def test(model,testloader,epoch,opt):
     Loss=L1Loss()
     # Disable gradients computation
     with torch.no_grad():
-        for i, data in enumerate(testloader):
+        for i, data in enumerate(loader):
             inputs, labels, masks = data['image'],data['label'], data['mask']
             # reshape
             inputs = inputs.reshape(1,1,RESIZE_IMAGE,RESIZE_IMAGE)
@@ -284,8 +284,7 @@ def objective(trial):
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE",
            'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK",
            #'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
-           'batch_size': 1,Name: File name, Length: 500, dtype: object
-
+           'batch_size': 1,
            'model' : "ConvNet",
            #'nof' : trial.suggest_int('nof',10,64),
            'layer_nb' : trial.suggest_int('layer_nb',1,3),
@@ -326,9 +325,9 @@ def objective(trial):
         
         # Create the fold vectors having full mouse data.
         train_index = []
-        valid_index = indexes[k*100:(1+k)*100]
-        [train_index.append(i) for i in indexes[:-100] if i not in valid_index]
-        test_index = indexes[400:]
+        test_index = indexes[k*100:(1+k)*100]
+        [train_index.append(i) for i in indexes[:-100] if i not in test_index]
+        #test_index = indexes[400:]
         #split = train_test_split(index,train_size=6100,test_size=1000,shuffle=False)
         #kf = KFold(n_splits = opt['k_fold'], shuffle=False)
         #train_index=split[0]
@@ -344,7 +343,7 @@ def objective(trial):
         # Creation of the datasets  
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
-        validloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(valid_index), num_workers = opt['nb_workers'])
+        testloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers = opt['nb_workers'])
         #testloader = DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers =opt['nb_workers'])
         # Weight initilization        
         torch.manual_seed(5)
@@ -382,9 +381,9 @@ def objective(trial):
             # Training
             score_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
             end = time.time() # Computational time 
-            print("temps :",start-end)
+            print("temps :",end-start)
             # Validation
-            score_validation.append(test(model=model, testloader=validloader, epoch=epoch, opt=opt))
+            score_validation.append(test(model= model, loader=testloader, epoch=epoch, opt=opt))
             # Testing
             #score_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
             
