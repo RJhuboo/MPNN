@@ -284,7 +284,8 @@ def objective(trial):
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE",
            'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK",
            #'batch_size' : trial.suggest_int('batch_size',1,16,step=2),
-           'batch_size': 1,
+           'batch_size': 1,Name: File name, Length: 500, dtype: object
+
            'model' : "ConvNet",
            #'nof' : trial.suggest_int('nof',10,64),
            'layer_nb' : trial.suggest_int('layer_nb',1,3),
@@ -344,7 +345,7 @@ def objective(trial):
         datasets = Datasets(csv_file = opt['label_dir'], image_dir = opt['image_dir'], mask_dir = opt['mask_dir'], opt=opt, scaler=scaler)
         trainloader = DataLoader(datasets, batch_size = opt['batch_size'], sampler = shuffle(train_index), num_workers = opt['nb_workers'])
         validloader =DataLoader(datasets, batch_size = 1, sampler = shuffle(valid_index), num_workers = opt['nb_workers'])
-        testloader = DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers =opt['nb_workers'])
+        #testloader = DataLoader(datasets, batch_size = 1, sampler = shuffle(test_index), num_workers =opt['nb_workers'])
         # Weight initilization        
         torch.manual_seed(5)
         # Model initilization
@@ -385,7 +386,7 @@ def objective(trial):
             # Validation
             score_validation.append(test(model=model, testloader=validloader, epoch=epoch, opt=opt))
             # Testing
-            score_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
+            #score_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
             
         # Store all folds scores
         score_total = score_total + np.array(score_validation)
@@ -398,7 +399,7 @@ def objective(trial):
     print("min mse test :", np.min(score_mean))
     i_min = np.where(score_mean == np.min(score_mean))
     print('best epoch :', i_min[0][0]+1)
-    result_display = {"train mse":score_train_mean,"val mse":score_mean,"best epoch":i_min[0][0]+1,"score_test":score_test}
+    result_display = {"train mse":score_train_mean,"val mse":score_mean,"best epoch":i_min[0][0]+1}#,"score_test":score_test}
     # Save the results of the study to a pickle file
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
             pickle.dump(result_display,f)
