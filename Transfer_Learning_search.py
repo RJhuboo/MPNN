@@ -297,7 +297,7 @@ def objective(trial):
            'checkpoint_path' : "./convnet_7p_lrhr/BPNN_checkpoint_449.pth",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 3,
+           'k_fold' : 5,
            'n1': 158,
            'n2':152,
            'n3':83,
