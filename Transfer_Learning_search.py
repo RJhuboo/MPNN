@@ -70,7 +70,7 @@ class Datasets(Dataset):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
-        self.labels = self.labels.drop(range(200,400))
+        self.labels = self.labels.drop(range(300,400))
         self.labels = self.labels.reset_index(drop=True)
         print(self.labels["File name"])
         self.scaler=scaler
