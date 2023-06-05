@@ -20,8 +20,8 @@ H_scaled = scaler.fit_transform(human_df)
 M_scaled = scaler2.fit_transform(mouse_df)
 
 # Perform PCA on both Source and Target (Human and Mouse)
-pca_m = PCA(n_components=3)
-pca_h = PCA(n_components=3)
+pca_m = PCA(n_components=7)
+pca_h = PCA(n_components=7)
 
 pca_m.fit(M_scaled.T)
 pca_h.fit(H_scaled.T)
