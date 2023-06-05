@@ -150,7 +150,7 @@ class Trainer():
                 labels=labels.reshape(1,self.NB_LABEL)
                 outputs=outputs.reshape(1,self.NB_LABEL) 
                 #print("labels",labels)
-                if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
+                if self.scaler is not None:
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
                 output[i] = outputs
