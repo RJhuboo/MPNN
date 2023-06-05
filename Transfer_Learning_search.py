@@ -146,7 +146,7 @@ class NeuralNet(nn.Module):
         x = self.activation(self.fc1(x))
         x = self.activation(self.fc2(x))
         x = self.activation(self.fc3(x))
-        x = self.activation(self.fc4(x))
+        x = self.fc4(x)
         return x
     
 # Convolutional neural network for feature extraction task
@@ -412,5 +412,5 @@ else:
 # create a study on optuna for hyperparameter tuning
 study.optimize(objective,n_trials=20) # n_trials is the number of experiments to run
 # Save the results of the study to a pickle file
-with open("./cross_7p_transferlearning_2.pkl","wb") as f:
+with open("./cross_7p_transferlearning.pkl","wb") as f:
     pickle.dump(study,f)
