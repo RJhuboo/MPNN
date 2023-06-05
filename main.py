@@ -30,12 +30,12 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/Train_Label_7p_lrhr.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
-parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented", help = "path to image directory")  #"./Train_LR_segmented")"
-parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_trab_mask", help = "path to mask")
+parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/Trab_Human.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
+parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE", help = "path to image directory")  #"./Train_LR_segmented")"
+parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
-parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
+parser.add_argument("--batch_size", type=int, default = 8, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.0002, help = "learning rate")
@@ -57,7 +57,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 6000
+NB_DATA = 600
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TF_fsrcnn"+str(i)) == False:
-            save_folder = "./result/TF_fsrcnn"+str(i)
+        if os.path.isdir("./result/TF_human"+str(i)) == False:
+            save_folder = "./result/TF_human"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -100,7 +100,8 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    index_set=train_test_split(index,test_size=0.4,random_state=42)
+    index_set = train_test_split(index,test_size=100,shuffle=False)
+    #index_set=train_test_split(index,test_size=0.4,random_state=42)
     #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
@@ -108,16 +109,10 @@ def train():
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
 
     my_transforms=None
-    #my_transforms = transforms.Compose([
-    #        transforms.ToPILImage(),
-    #        transforms.RandomRotation(degrees=45),
-    #        transforms.RandomHorizontalFlip(p=0.3),
-    #        transforms.RandomVerticalFlip(p=0.3),
-    #        transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-    #        transforms.ToTensor(),
-    #         ])
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
+
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
     print("start training")
+    
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])#, shuffle=True)
     # defining the model

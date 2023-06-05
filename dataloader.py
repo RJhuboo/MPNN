@@ -21,12 +21,11 @@ def normalization(csv_file,mode,indices):
     return scaler
 
 class Datasets(Dataset):
-    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt, upsample = False,transform=None):
+    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt, upsample = False):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.mask_dir = mask_dir
-        self.transform = transform
         self.scaler = scaler
         self.mask_use = True
         self.upsample = upsample
@@ -36,7 +35,7 @@ class Datasets(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
+        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
             image = transform.rescale(image,2)
@@ -60,8 +59,6 @@ class Datasets(Dataset):
         lab.columns = self.labels.columns
         labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) 
-        #print(np.shape(labels))
-        #labels = labels.reshape(-1,1)
         labels = labels.astype('float32')
         p = random.random()
         rot = random.randint(-45,45)
@@ -78,8 +75,4 @@ class Datasets(Dataset):
             image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
         image,mask=TF.to_tensor(image),TF.to_tensor(mask)
 
-        #if self.transform:
-        #    image = self.transform(image)
-        #    if self.mask_use == True:
-        #        mask = self.transform(mask)
         return {'image': image, 'mask': mask, 'label': labels, 'ID': lab.iloc[idx,0]}
