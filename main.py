@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TF_freeze_human"+str(i)) == False:
-            save_folder = "./result/TF_freeze_human"+str(i)
+        if os.path.isdir("./result/TF_human"+str(i)) == False:
+            save_folder = "./result/TF_human"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -134,11 +134,11 @@ def train():
     #torch.manual_seed(2)
     #model.apply(reset_weights)
     model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
-    count = 0
-    for name, param in model.named_parameters():
-        if count < 3:
-            param.requires_grad = False
-        count += 1
+    #count = 0
+    # for name, param in model.named_parameters():
+    #     if count < 3:
+    #         param.requires_grad = False
+    #     count += 1
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler=None)
     for epoch in range(opt.nb_epochs):
