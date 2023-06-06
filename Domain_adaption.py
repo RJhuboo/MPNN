@@ -9,6 +9,8 @@ human_df = pd.read_csv("/home/rehan/Documents/sainbiose/MALBOT MOUSE/Norbert_hum
 mouse_df = pd.read_csv("/home/rehan/Images/LR_HR_2D/Train_Label_7p_lrhr.csv")
 #human_df = human_df.drop(range(100,200))
 #mouse_df = mouse_df.sample(n=300,random_state=42)
+filename = human_df['File name']
+column = human_df.columns
 human_df = human_df.drop(columns=['File name'])
 mouse_df = mouse_df.drop(columns=['File name'])
 
@@ -19,7 +21,8 @@ mouse_df = mouse_df.drop(columns=['File name'])
 scaler = StandardScaler()
 scaler2 = StandardScaler()
 
-H_scaled = scaler.fit_transform(human_df[:-100])
+scaler.fit(human_df[:-100])
+H_scaled = scaler.transform(human_df)
 M_scaled = scaler2.fit_transform(mouse_df)
 
 # Perform PCA on both Source and Target (Human and Mouse)
@@ -39,4 +42,7 @@ print(X_H @ X_H.T)
 H_m = H_scaled @ (X_H @ X_H.T @ X_M @ X_M.T)
 
 H_m_rescale = scaler2.inverse_transform(H_m)
-pd.DataFrame(H_m).to_csv("/home/rehan/Documents/Algorithm/BPNN/H_m.csv")
+H_m = pd.DataFrame(H_m)
+H_m.insert(0,'File name', filename)
+H_m.columns = column
+H_m.to_csv("/home/rehan/Documents/Algorithm/BPNN/H_m.csv",index=False)
