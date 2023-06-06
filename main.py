@@ -30,16 +30,16 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/Trab_Human.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
+parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
 parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE", help = "path to image directory")  #"./Train_LR_segmented")"
 parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
-parser.add_argument("--batch_size", type=int, default = 8, help = "number of batch")
+parser.add_argument("--batch_size", type=int, default = 1, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.0002, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 300, help = "number of epochs")
+parser.add_argument("--lr", type=float, default = 0.000123, help = "learning rate")
+parser.add_argument("--nb_epochs", type=int, default = 1000, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TF_human"+str(i)) == False:
-            save_folder = "./result/TF_human"+str(i)
+        if os.path.isdir("./result/TF_freeze_human"+str(i)) == False:
+            save_folder = "./result/TF_freeze_human"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -103,7 +103,7 @@ def train():
     index_set = train_test_split(index,test_size=100,shuffle=False)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
     #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
-    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
+    #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
     
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
@@ -134,14 +134,13 @@ def train():
     #torch.manual_seed(2)
     #model.apply(reset_weights)
     model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
-    #for name, param in model.named_parameters():
-        #if "conv" in name:
-        #    print(name, param.data)
-        #    param.requires_grad = False
-        #if "conv3" in name or "conv2" in name:
-        #    param.requires_grad = True
+    count = 0
+    for name, param in model.named_parameters():
+        if count < 3:
+            param.requires_grad = False
+        count += 1
     # Start training
-    t = Trainer(opt,model,device,save_folder,scaler)
+    t = Trainer(opt,model,device,save_folder,scaler=None)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch)
