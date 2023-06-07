@@ -141,7 +141,7 @@ def train():
          count += 1
     
     # verify if freeze layer are correct
-    print("Verify that freeze layer are:{}, and {}".format(opt['net_freeze'],opt['layer_nb']),)
+    print("Verify that freeze layer are:{}, and {}".format(False,3))
     for name, param in model.named_parameters():
         print(f'{name}: requires_grad={param.requires_grad}')
             
