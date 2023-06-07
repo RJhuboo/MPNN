@@ -103,35 +103,30 @@ class Trainer():
         # Testing
         with torch.no_grad():
             for i, data in enumerate(testloader):
-                inputs, masks, labels, ID = data['image'],data['mask'],data['label'],data['ID']
+                inputs, masks, labels,  skels, dists, ID  = data['image'],data['mask'],data['label'], data['skel'], data['dist'], data['ID']
                 # reshape
                 inputs = inputs.reshape(1,self.opt.in_channel,512,512)
                 labels = labels.reshape(1,self.NB_LABEL)
+                skels = skels.reshape(skels.size(0),1,512,512)
+                dists = dists.reshape(dists.size(0),1,512,512)
                 masks = masks.reshape(1,1,64,64)
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
        
                 # loss
-                outputs = self.model(masks,inputs)
-                #if 1 in outputs.clamp(-1,1) or -1 in outputs.clamp(-1,1):
-                #outputs = self.model(inputs)
-                if self.opt.model == "MultiNet":
-                    loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[1,1]))
-                    loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[1,1]))
-                    loss3 = self.criterion(outputs[2],torch.reshape(labels[:,2],[1,1]))
-                    loss4 = self.criterion(outputs[3],torch.reshape(labels[:,3],[1,1]))
-                    loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[1,1]))
-                    loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
-                else:
-                    loss = self.criterion(outputs,labels)
-                test_loss += loss.item()
+                outputs_measure, outputs_skel, outputs_dist = self.model(masks,inputs)
+            
+                loss1 = self.criterion1(outputs_measure,labels)
+                loss2 = self.criterion2(outputs_skel,skels)
+                loss3 = self.criterion3(outputs_dist,dists)
+
+                loss = loss1 + loss2 + loss3
+                
+                test_loss += loss1.item()
                 test_total += 1
                 for nb_lab in range(self.NB_LABEL):
-                    L1_loss_test[i,nb_lab] = MSE(labels[0,nb_lab],outputs[0,nb_lab],1)
-                # statistics
-                if self.opt.model == "MultiNet":
-                    labels = labels.cpu().detach().numpy()
-                else:
-                    labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
+                    L1_loss_test[i,nb_lab] = MSE(labels[0,nb_lab],outputs_measure[0,nb_lab],1)
+
+                labels, outputs = labels.cpu().detach().numpy(), outputs_measure.cpu().detach().numpy()
                 
                 labels, outputs = np.array(labels), np.array(outputs)
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
