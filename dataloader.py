@@ -66,7 +66,7 @@ class Datasets(Dataset):
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
         
-        skel,dist = morphology.medial_axis(image,mask=mask,return_distance=True) # Find the medial axis of the image
+        skel,dist = morphology.medial_axis(image,mask=mask>1,return_distance=True) # Find the medial axis of the image
         skel.astype('float32') # Converting images to float32
         dist.astype('float32') # Converting images to float32
         lab = self.scaler.transform(self.labels.iloc[:,1:]) # Apply the normalization to labels
