@@ -102,8 +102,8 @@ def train():
     index = range(NB_DATA)
     index_set = train_test_split(index,test_size=100,shuffle=False)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
-    #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
+    #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
+    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
     
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
