@@ -30,7 +30,7 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/Train_Label_7p_lrhr.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
+parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
 parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented", help = "path to image directory")  #"./Train_LR_segmented")"
 parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_trab_mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
