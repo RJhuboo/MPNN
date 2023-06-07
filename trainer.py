@@ -1,16 +1,10 @@
 import torch
 import os
 import numpy as np
-import pandas as pd
-import argparse
-import torchvision
 from torch.optim import Adam, SGD
-from torch.nn import MSELoss,L1Loss
-from sklearn.model_selection import KFold
+from torch.nn import MSELoss,L1Loss, BCELoss
 from sklearn.metrics import r2_score
 import pickle
-from sklearn.preprocessing import StandardScaler
-from torchvision import transforms
 
 def MSE(y_predicted,y,batch_size):
     squared_error = abs((y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()))
@@ -30,7 +24,9 @@ class Trainer():
             self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
         else:
             self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
-        self.criterion = L1Loss()
+        self.criterion1 = L1Loss()
+        self.criterion2 = MSELoss()
+        self.criterion3 = BCELoss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
         self.model.train()
@@ -39,52 +35,45 @@ class Trainer():
         train_loss = 0.0
         train_total = 0
         running_loss = 0.0
-        mse_score = 0.0
-        save_output=[]
-        save_label=[]
         L1_loss_train=np.zeros((len(trainloader),self.NB_LABEL))
         for i, data in enumerate(trainloader,0):
-            inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']
+            inputs, masks, labels, skels, dists  = data['image'], data['mask'], data['label'], data['skel'], data['dist']
             
             # reshape
             inputs = inputs.reshape(inputs.size(0),self.opt.in_channel,512,512)
+            skels = skels.reshape(skels.size(0),1,512,512)
+            dists = dists.reshape(dists.size(0),1,512,512)
             labels = labels.reshape(labels.size(0),self.NB_LABEL)
             masks = masks.reshape(masks.size(0),1,64,64)
-            inputs, labels, masks= inputs.to(self.device), labels.to(self.device), masks.to(self.device)
-
-            #torchvision.utils.save_image(inputs,'./save_image/input_'+imname[0])
-            #torchvision.utils.save_image(masks,'./save_image/mask_'+imname[0])
+            inputs, labels, masks, skels, dists = inputs.to(self.device), labels.to(self.device), masks.to(self.device), skels.to(self.device), dists.to(self.device)
+            
             # zero the parameter gradients
             self.optimizer.zero_grad()
 
             # forward backward and optimization
-            outputs = self.model(masks,inputs)
-            #outputs = self.model(inputs)
-            if self.opt.model == "MultiNet":
-                loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
-                loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
-                loss3 = self.criterion(outputs[2],torch.reshape(labels[:,2],[len(outputs[2]),1]))
-                loss4 = self.criterion(outputs[3],torch.reshape(labels[:,3],[len(outputs[3]),1]))
-                loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[len(outputs[4]),1]))
-                loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
-            else:
-                loss = self.criterion(outputs,labels)
+            outputs_measure, outputs_skel, outputs_dist = self.model(masks,inputs)
+            
+            loss1 = self.criterion1(outputs_measure,labels)
+            loss2 = self.criterion2(outputs_skel,skels)
+            loss3 = self.criterion3(outputs_dist,dists)
+
+            loss = loss1 + loss2 + loss3
+
             loss.backward()
             self.optimizer.step()
             for nb_lab in range(self.NB_LABEL): 
-                L1_loss_train[i,nb_lab] = MSE(labels[:,nb_lab],outputs[:,nb_lab],24)
+                L1_loss_train[i,nb_lab] = MSE(labels[:,nb_lab],outputs_measure[:,nb_lab],24)
             
             # statistics
-            train_loss += loss.item()
-            running_loss += loss.item()
+            train_loss += loss1.item()
+            running_loss += loss1.item()
             train_total += 1
-            #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
+
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
                       (epoch + 1, i+1, running_loss/self.opt.batch_size))
                 running_loss = 0.0
-                #print("output",outputs[:8])
-                #print("label",labels[:8])
+
         # displaying results
         mse = train_loss / train_total
         print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
@@ -101,7 +90,6 @@ class Trainer():
 
         test_loss = 0
         test_total = 0
-        mse_score = 0.0
         output = {}
         label = {}
         IDs = {}
@@ -109,7 +97,7 @@ class Trainer():
         if self.opt.mode == "Test":
             check_name = "BPNN_checkpoint_lrhr.pth" #+ str(epoch) + ".pth"
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
-        
+            
         self.model.eval()
         L1_loss_test=np.zeros((len(testloader),self.NB_LABEL))
         # Testing

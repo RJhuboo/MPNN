@@ -50,11 +50,6 @@ parser.add_argument("--nb_workers", type=int, default = 0, help ="number of work
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
-parser.add_argument("--alpha1", type=float, default = 1)
-parser.add_argument("--alpha2", type=float, default = 1)
-parser.add_argument("--alpha3", type=float, default = 1)
-parser.add_argument("--alpha4", type=float, default = 1)
-parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
 NB_DATA = 600
@@ -78,13 +73,6 @@ def reset_weights(m):
 ## FOR TRAINING
 
 def train():
-    #opt.n1 = trial.suggest_int('n1',90,500)
-    #opt.n2 = trial.suggest_int('n2',100,500)
-    #opt.n3 = trial.suggest_int('n3',100,500)
-    #opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
-    #opt.nof = trial.suggest_int('nof',8,64)
-    #opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
-    
     # Create the folder where to save results and checkpoints
     save_folder=None
     i=0
@@ -104,42 +92,17 @@ def train():
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
-    #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
-    
-    #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
-
-    my_transforms=None
 
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
     print("start training")
     
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])#, shuffle=True)
-    # defining the model
-    if opt.model == "ConvNet":
-        print("## Choose model : convnet ##")
-        model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    elif opt.model == "resnet50":
-        print("## Choose model : resnet50 ##")
-        model = Model.ResNet50(14,1).to(device)
-    elif opt.model == "restnet101":
-        print("## Choose model : resnet101 ##")
-        model = Model.ResNet101(14,1).to(device)
-    elif opt.model == "Unet":
-        print("## Choose model : Unet ##")
-        model = Model.UNet(in_channels=opt.in_channel,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
-    elif opt.model == "MultiNet":
-        print("## Choose model : MultiNet ##")
-        model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    #torch.manual_seed(2)
+
+    model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+
+    torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
-    #count = 0
-    # for name, param in model.named_parameters():
-    #     if count < 3:
-    #         param.requires_grad = False
-    #     count += 1
-    # Start training
     t = Trainer(opt,model,device,save_folder,scaler=None)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
