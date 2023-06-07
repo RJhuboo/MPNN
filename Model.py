@@ -78,6 +78,8 @@ class ConvNet(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.dropout = nn.Dropout2d(0.25)
         self.neural = NeuralNet(n1,n2,n3,out_channels)
+        self.SkelNet = SkelNet()
+        self.DMNet = DMNet()
     def forward(self, mask,x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.dropout(x)
