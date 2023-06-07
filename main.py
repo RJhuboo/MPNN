@@ -39,7 +39,7 @@ parser.add_argument("--batch_size", type=int, default = 1, help = "number of bat
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.000123, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 1, help = "number of epochs")
+parser.add_argument("--nb_epochs", type=int, default = 500, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TF_human_test"+str(i)) == False:
-            save_folder = "./result/TF_human_test"+str(i)
+        if os.path.isdir("./result/TF_freeze_human_m"+str(i)) == False:
+            save_folder = "./result/TF_freeze_human_m"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -148,11 +148,11 @@ def train():
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler=None)
     for epoch in range(opt.nb_epochs):
-        #mse_train, param_train = t.train(trainloader,epoch)
+        mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch)
-        #score_mse_t.append(mse_train)
+        score_mse_t.append(mse_train)
         score_mse_v.append(mse_test)
-        #score_train_per_param.append(param_train)
+        score_train_per_param.append(param_train)
         score_test_per_param.append(param_test)
     resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
