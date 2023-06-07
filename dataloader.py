@@ -66,7 +66,7 @@ class Datasets(Dataset):
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
         
-        skel,dist = morphology.medial_axis(image) # Find the medial axis of the image
+        skel,dist = morphology.medial_axis(image,mask=mask,return_distance=True) # Find the medial axis of the image
         skel.astype('float32') # Converting images to float32
         dist.astype('float32') # Converting images to float32
         lab = self.scaler.transform(self.labels.iloc[:,1:]) # Apply the normalization to labels
@@ -93,4 +93,4 @@ class Datasets(Dataset):
             image,mask,skel,dist=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(skel,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(dist,angle=0,translate=(0.1,0.1),shear=0,scale=1)
         image,mask,skel,dist=TF.to_tensor(image),TF.to_tensor(mask),TF.to_tensor(skel),TF.to_tensor(dist)
         
-        return {'image': image,'mask':mask, 'label': labels, 'skel':skel, 'dist':dist}
+        return {'image': image,'mask':mask, 'label': labels, 'skel':skel, 'dist':dist, "ID":lab.iloc[idx,0]}
