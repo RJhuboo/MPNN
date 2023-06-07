@@ -294,7 +294,7 @@ def objective(trial):
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            #'lr':0.001,
            'nb_epochs' : 200,
-           'checkpoint_path' : "./convnet_7p_lrhr/BPNN_checkpoint_449.pth",
+           'checkpoint_path' : "../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth",
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 5,
@@ -412,5 +412,5 @@ else:
 # create a study on optuna for hyperparameter tuning
 study.optimize(objective,n_trials=20) # n_trials is the number of experiments to run
 # Save the results of the study to a pickle file
-with open("./cross_7p_transferlearning.pkl","wb") as f:
+with open("./cross_7p_transferlearning_corrected.pkl","wb") as f:
     pickle.dump(study,f)
