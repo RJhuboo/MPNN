@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TF_human"+str(i)) == False:
-            save_folder = "./result/TF_human"+str(i)
+        if os.path.isdir("./result/TF_freeze_human"+str(i)) == False:
+            save_folder = "./result/TF_freeze_human"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
