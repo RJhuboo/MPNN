@@ -133,12 +133,17 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
-    #count = 0
-    # for name, param in model.named_parameters():
-    #     if count < 3:
-    #         param.requires_grad = False
-    #     count += 1
+    model.load_state_dict(torch.load("./convnet_7p_lrhr/BPNN_checkpoint_449.pth"))
+    count = 0
+    for name, param in model.named_parameters():
+         if count < 3:
+             param.requires_grad = False
+         count += 1
+         
+    print("Verify that freeze layer are:{}, and {}".format(opt['net_freeze'],opt['layer_nb']),)
+    for name, param in model.named_parameters():
+        print(f'{name}: requires_grad={param.requires_grad}')
+            
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler=None)
     for epoch in range(opt.nb_epochs):
