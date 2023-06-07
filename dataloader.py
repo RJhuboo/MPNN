@@ -57,6 +57,7 @@ class Datasets(Dataset):
             mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp")) # Find the corresponding mask file
         if self.mask_use == True:
             mask = io.imread(mask_name) # Read the mask
+            mask_morph = mask.copy()
             mask = transform.rescale(mask, 1/8, anti_aliasing=False) # Rescaling the mask
             mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
@@ -66,7 +67,7 @@ class Datasets(Dataset):
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
         
-        skel,dist = morphology.medial_axis(image,mask=mask>1,return_distance=True) # Find the medial axis of the image
+        skel,dist = morphology.medial_axis(image,mask=mask_morph>1,return_distance=True) # Find the medial axis of the image
         skel.astype('float32') # Converting images to float32
         dist.astype('float32') # Converting images to float32
         lab = self.scaler.transform(self.labels.iloc[:,1:]) # Apply the normalization to labels
