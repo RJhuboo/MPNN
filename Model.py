@@ -32,6 +32,8 @@ class DMNet(nn.Module):
         self.dropout = nn.Dropout(p=0.5)
         self.conv_transpose2 = nn.ConvTranspose2d(16, 1, kernel_size=4, stride=2, padding=1)
         self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1)
+        self.conv_transpose3 = nn.ConvTranspose2d(1, 1, kernel_size=4, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
     def forward(self, x):
         x = self.dropout(x)
         x = self.conv1(x)
@@ -41,6 +43,10 @@ class DMNet(nn.Module):
         x= self.conv2(x)
         x = self.relu(x)
         x = self.conv_transpose2(x)
+        x = self.dropout(x)
+        x= self.conv3(x)
+        x = self.relu(x)
+        x = self.conv_transpose3(x)
         x = self.relu(x)
         return x
 
@@ -51,8 +57,10 @@ class SkelNet(nn.Module):
         self.conv1 = nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.5)
-        self.conv_transpose2 = nn.ConvTranspose2d(16, 1, kernel_size=4, stride=2, padding=1)
+        self.conv_transpose2 = nn.ConvTranspose2d(16, 16, kernel_size=4, stride=2, padding=1)
         self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1)
+        self.conv_transpose3 = nn.ConvTranspose2d(1, 1, kernel_size=4, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         self.sigmoid = nn.Sigmoid()
     def forward(self, x):
         x = self.dropout(x)
@@ -63,6 +71,10 @@ class SkelNet(nn.Module):
         x= self.conv2(x)
         x = self.relu(x)
         x = self.conv_transpose2(x)
+        x = self.dropout(x)
+        x= self.conv3(x)
+        x = self.relu(x)
+        x = self.conv_transpose3(x)
         x = self.sigmoid(x)
         return x
 
