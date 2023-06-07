@@ -68,8 +68,8 @@ class Datasets(Dataset):
             image = image.astype('float32') # Converting images to float32 
         
         skel,dist = morphology.medial_axis(image,mask=mask_morph>1,return_distance=True) # Find the medial axis of the image
-        skel.astype('float32') # Converting images to float32
-        dist.astype('float32') # Converting images to float32
+        skel = skel.astype('float32') # Converting images to float32
+        dist = dist.astype('float32') # Converting images to float32
         lab = self.scaler.transform(self.labels.iloc[:,1:]) # Apply the normalization to labels
         lab = pd.DataFrame(lab) # Converting labels to pandas dataframe
         lab.insert(0,"File name", self.labels.iloc[:,0], True) # Inset the name of images
