@@ -30,9 +30,9 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
-parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE", help = "path to image directory")  #"./Train_LR_segmented")"
-parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/MASK", help = "path to mask")
+parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/trab_patches_7param.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
+parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/slice", help = "path to image directory")  #"./Train_LR_segmented")"
+parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 1, help = "number of batch")
@@ -57,7 +57,7 @@ parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
-NB_DATA = 600
+NB_DATA = 34476
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -90,8 +90,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TF_freeze_human_corrected"+str(i)) == False:
-            save_folder = "./result/TF_freeze_human_corrected"+str(i)
+        if os.path.isdir("./result/TF_human_19µm"+str(i)) == False:
+            save_folder = "./result/TF_human_19µm"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -100,7 +100,7 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    index_set = train_test_split(index,test_size=100,shuffle=False)
+    index_set = train_test_split(index,test_size=0.2,shuffle=False)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
@@ -135,10 +135,10 @@ def train():
     #model.apply(reset_weights)
     model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
     count = 0
-    for name, param in model.named_parameters():
-         if count < 4:
-             param.requires_grad = False
-         count += 1
+    #for name, param in model.named_parameters():
+    #     if count < 4:
+    #         param.requires_grad = False
+    #     count += 1
     
     # verify if freeze layer are correct
     print("Verify that freeze layer are:{}, and {}".format(False,3))
