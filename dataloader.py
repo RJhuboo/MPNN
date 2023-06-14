@@ -6,8 +6,6 @@ import random
 from torch.utils.data import Dataset, DataLoader
 from skimage import io,transform
 from skimage.color import rgb2gray
-from torchvision import transforms, utils
-import argparse
 from sklearn import preprocessing
 import torchvision.transforms.functional as TF
 
@@ -46,6 +44,7 @@ class Datasets(Dataset):
             mask = io.imread(mask_name)
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             mask = mask / 255.0 # Normalizing [0;1]
+            print(np.shape(mask))
             mask = mask.astype('float32') # Converting images to float32
             image = rgb2gray(image)
             image = image / 255.0 # Normalizing [0;1]
