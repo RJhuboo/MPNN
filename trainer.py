@@ -136,8 +136,6 @@ class Trainer():
                 else:
                     loss = self.criterion(outputs,labels)
                 test_loss += loss.item()
-                print("test loss",loss.item())
-                print("labels:",labels,"output:",output)
                 test_total += 1
                 for nb_lab in range(self.NB_LABEL):
                     L1_loss_test[i,nb_lab] = MSE(labels[0,nb_lab],outputs[0,nb_lab],1)
