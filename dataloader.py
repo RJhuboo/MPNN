@@ -5,7 +5,7 @@ import pandas as pd
 import random
 from torch.utils.data import Dataset, DataLoader
 from skimage import io,transform
-from skimage.color import rgb2gray
+#from skimage.color import rgb2gray
 from sklearn import preprocessing
 import torchvision.transforms.functional as TF
 
@@ -46,7 +46,7 @@ class Datasets(Dataset):
             mask = mask / 255.0 # Normalizing [0;1]
             print(np.shape(mask))
             mask = mask.astype('float32') # Converting images to float32
-            image = rgb2gray(image)
+            #image = rgb2gray(image)
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32
         else:
