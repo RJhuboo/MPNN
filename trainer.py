@@ -155,7 +155,7 @@ class Trainer():
             size_label = len(label)
             label = np.array(label)
             output = np.array(output)
-            output, label = output.reshape((size_label,nb_label)), label.reshape((size_label,nb_label))
+            output, label = output.reshape((size_label,7)), label.reshape((size_label,7))
             print(np.shape(label))
             for i in range(np.size(label)[1]):
                 fig = plt.scatter(label[:,i],output[:,i], label="slice")
