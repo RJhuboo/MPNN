@@ -144,9 +144,9 @@ class Trainer():
                 outputs=outputs.reshape(1,self.NB_LABEL) 
                 #print("labels",labels)
                 if self.scaler is not None:
+                    print("je suis dedans")
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
-                print(labels)
                 output[i] = outputs
                 label[i] = labels
                 IDs[i] = ID[0]
