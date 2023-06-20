@@ -139,7 +139,7 @@ def train():
         print(f'{name}: requires_grad={param.requires_grad}')
             
     # Start training
-    t = Trainer(opt,model,device,save_folder,scaler=opt.norm_method)
+    t = Trainer(opt,model,device,save_folder,scaler=scaler)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch,writer)
