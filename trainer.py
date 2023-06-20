@@ -95,8 +95,8 @@ class Trainer():
         test_loss = 0
         test_total = 0
         mse_score = 0.0
-        output = {}
-        label = {}
+        output = []
+        label = []
         IDs = {}
         # Loading Checkpoint
         if self.opt.mode == "Test":
@@ -146,14 +146,16 @@ class Trainer():
                 if self.scaler is not None:
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
-                output[i] = outputs
-                label[i] = labels
+                output.append(outputs)
+                label.append(labels)
                 IDs[i] = ID[0]
                 
             #name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            label = np.array(label.values())
-            output = np.array(output.values())
+            size_label = len(label)
+            label = np.array(label)
+            output = np.array(output)
+            output, label = output.reshape((size_label,nb_label)), label.reshape((size_label,nb_label))
             print(np.shape(label))
             for i in range(np.size(label)[1]):
                 fig = plt.scatter(label[:,i],output[:,i], label="slice")
