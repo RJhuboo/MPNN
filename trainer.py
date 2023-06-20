@@ -152,8 +152,8 @@ class Trainer():
                 
             #name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            label = np.array(label)
-            output = np.array(output)
+            label = np.array(label.values())
+            output = np.array(output.values())
             print(label)
             print(np.shape(label))
             for i in range(np.size(label)[1]):
