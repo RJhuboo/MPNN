@@ -1,16 +1,11 @@
 import torch
 import os
 import numpy as np
-import pandas as pd
-import argparse
-import torchvision
 from torch.optim import Adam, SGD
-from torch.nn import MSELoss,L1Loss
-from sklearn.model_selection import KFold
-from sklearn.metrics import r2_score
+from torch.nn import L1Loss
 import pickle
-from sklearn.preprocessing import StandardScaler
-from torchvision import transforms
+from matplotlib import pyplot as plt
+
 
 def MSE(y_predicted,y,batch_size):
     squared_error = abs((y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()))
@@ -39,9 +34,7 @@ class Trainer():
         train_loss = 0.0
         train_total = 0
         running_loss = 0.0
-        mse_score = 0.0
-        save_output=[]
-        save_label=[]
+
         L1_loss_train=np.zeros((len(trainloader),self.NB_LABEL))
         for i, data in enumerate(trainloader,0):
             inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']
@@ -97,7 +90,7 @@ class Trainer():
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse, np.mean(L1_loss_train,axis=0)
 
-    def test(self,testloader,epoch):
+    def test(self,testloader,epoch,writer):
 
         test_loss = 0
         test_total = 0
@@ -153,13 +146,21 @@ class Trainer():
                 if self.scaler is not None:
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
+                print(labels)
                 output[i] = outputs
                 label[i] = labels
                 IDs[i] = ID[0]
-            name_out = "./result" + str(epoch) + ".pkl"
+                
+            #name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump({"output":output,"label":label,"ID":IDs},f)
+            for i in range(np.size(labels)[1]):
+                fig = plt.scatter(labels[:,i],outputs[:,i], label="slice")
+                fig = plt.plot(labels[:,i],labels[:,i])
+                plt.xlabel("label")
+                plt.ylabel("output")
+                writer.add_figure(str(i),fig)
+            #with open(os.path.join(self.save_fold,name_out),"wb") as f:
+            #    pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
         #print(outputs)

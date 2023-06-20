@@ -1,23 +1,14 @@
 import torch
 import os
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 import argparse
-from sklearn.model_selection import KFold
-from torch.utils.data import Dataset, DataLoader
-import random
+from torch.utils.data import DataLoader
 import pickle
-import torchvision.transforms as transforms
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
+from torch.utils.tensorboard import SummaryWriter
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import Model
 from trainer import Trainer
 import dataloader
-import optuna
-import joblib
 
 # GPU or CPU
 if torch.cuda.is_available():  
@@ -63,6 +54,8 @@ SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
 '''functions'''
 
+## Create summary for tensorboard
+writer = SummaryWriter(log_dir='runs/human')
 ## RESET WEIGHT FOR CROSS VALIDATION
 
 def reset_weights(m):
@@ -94,10 +87,10 @@ def train():
             save_folder = "./result/TF_human_19µm"+str(i)
             os.mkdir(save_folder)
             break
-    score_mse_t = []
-    score_mse_v = []
-    score_train_per_param = []
-    score_test_per_param = []
+    #score_mse_t = []
+    #score_mse_v = []
+    #score_train_per_param = []
+    #score_test_per_param = []
     # defining data
     index = range(NB_DATA)
     index_set = train_test_split(index,test_size=0.2,shuffle=False)
@@ -149,14 +142,24 @@ def train():
     t = Trainer(opt,model,device,save_folder,scaler=None)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
-        mse_test, param_test = t.test(testloader,epoch)
-        score_mse_t.append(mse_train)
-        score_mse_v.append(mse_test)
-        score_train_per_param.append(param_train)
-        score_test_per_param.append(param_test)
-    resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
-    with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
-        pickle.dump(resultat, f)
+        mse_test, param_test = t.test(testloader,epoch,writer)
+        writer.add_scalar('Loss',{'train':mse_train,'test':mse_test},epoch)
+        writer.add_scalar('BioParam/euler_number',{'train':param_train[0],'test':param_test[0]},epoch)
+        writer.add_scalar('BioParam/trabecular_thickness',{'train':param_train[1],'test':param_test[1]},epoch)
+        writer.add_scalar('BioParam/trabecular_pattern_factor',{'train':param_train[2],'test':param_test[2]},epoch)
+        writer.add_scalar('BioParam/bone_perimeteter_area_ratio',{'train':param_train[3],'test':param_test[3]},epoch)
+        writer.add_scalar('BioParam/number_object',{'train':param_train[4],'test':param_test[4]},epoch)
+        writer.add_scalar('BioParam/area',{'train':param_train[5],'test':param_test[5]},epoch)
+        writer.add_scalar('BioParam/diameter',{'train':param_train[6],'test':param_test[6]},epoch)
+
+        # score_mse_t.append(mse_train)
+        # score_mse_v.append(mse_test)
+        # score_train_per_param.append(param_train)
+        # score_test_per_param.append(param_test)
+    #resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
+    #with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
+    #    pickle.dump(resultat, f)
+    writer.close()
     with open(os.path.join(save_folder,"history.txt"),'wb') as g:
         history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
         pickle.dump(history,g)
