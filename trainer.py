@@ -153,7 +153,10 @@ class Trainer():
                 
             #name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
-            for i in range(np.size(labels)[1]):
+            labels = np.array(labels)
+            outputs = np.array(outputs)
+            print(np.size(labels))
+            for i in range(len(labels[1])):
                 fig = plt.scatter(labels[:,i],outputs[:,i], label="slice")
                 fig = plt.plot(labels[:,i],labels[:,i])
                 plt.xlabel("label")
