@@ -144,7 +144,6 @@ class Trainer():
                 outputs=outputs.reshape(1,self.NB_LABEL) 
                 #print("labels",labels)
                 if self.scaler is not None:
-                    print("je suis dedans")
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
                 output[i] = outputs
@@ -155,7 +154,8 @@ class Trainer():
             mse = test_loss/test_total
             labels = np.array(labels)
             outputs = np.array(outputs)
-            print(np.size(labels))
+            print(labels)
+            print(np.shape(labels))
             for i in range(len(labels[1])):
                 fig = plt.scatter(labels[:,i],outputs[:,i], label="slice")
                 fig = plt.plot(labels[:,i],labels[:,i])
