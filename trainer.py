@@ -159,9 +159,9 @@ class Trainer():
             print(np.shape(label))
             for i in range(np.shape(label)[0]):
                 fig = plt.scatter(label[:,i],output[:,i], label="slice")
-                fig = plt.plot(label[:,i],label[:,i])
-                plt.xlabel("label")
-                plt.ylabel("output")
+                #fig = plt.plot(label[:,i],label[:,i])
+                #plt.xlabel("label")
+                #plt.ylabel("output")
                 writer.add_figure(str(i),fig)
             #with open(os.path.join(self.save_fold,name_out),"wb") as f:
             #    pickle.dump({"output":output,"label":label,"ID":IDs},f)
