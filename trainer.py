@@ -154,7 +154,6 @@ class Trainer():
             mse = test_loss/test_total
             label = np.array(label.values())
             output = np.array(output.values())
-            print(label)
             print(np.shape(label))
             for i in range(np.size(label)[1]):
                 fig = plt.scatter(label[:,i],output[:,i], label="slice")
