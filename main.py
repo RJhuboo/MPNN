@@ -123,10 +123,10 @@ def train():
     #model.apply(reset_weights)
     model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
     count = 0
-    #for name, param in model.named_parameters():
-    #     if count < 4:
-    #         param.requires_grad = False
-    #     count += 1
+    for name, param in model.named_parameters():
+         if count < 4:
+             param.requires_grad = False
+         count += 1
     
     # verify if freeze layer are correct
     print("Verify that freeze layer are:{}, and {}".format(False,3))
