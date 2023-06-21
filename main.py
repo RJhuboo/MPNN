@@ -143,7 +143,7 @@ def train():
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch,writer)
-        writer.add_scalar('Loss',{'train':mse_train,'test':mse_test},epoch)
+        writer.add_scalar('Loss',{'train':np.array(mse_train),'test':np.array(mse_test)},epoch)
         writer.add_scalar('BioParam/euler_number',{'train':param_train[0],'test':param_test[0]},epoch)
         writer.add_scalar('BioParam/trabecular_thickness',{'train':param_train[1],'test':param_test[1]},epoch)
         writer.add_scalar('BioParam/trabecular_pattern_factor',{'train':param_train[2],'test':param_test[2]},epoch)
