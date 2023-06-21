@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 import Model
 from trainer import Trainer
 import dataloader
+import numpy as np
 
 # GPU or CPU
 if torch.cuda.is_available():  
