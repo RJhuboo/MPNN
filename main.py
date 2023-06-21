@@ -108,6 +108,7 @@ def train():
     print("start training")
     
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
+    print(len(trainloader))
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])#, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
@@ -144,14 +145,14 @@ def train():
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch,writer)
-        writer.add_scalar('Loss',{'train':np.array(mse_train),'test':np.array(mse_test)},epoch)
-        writer.add_scalar('BioParam/euler_number',{'train':param_train[0],'test':param_test[0]},epoch)
-        writer.add_scalar('BioParam/trabecular_thickness',{'train':param_train[1],'test':param_test[1]},epoch)
-        writer.add_scalar('BioParam/trabecular_pattern_factor',{'train':param_train[2],'test':param_test[2]},epoch)
-        writer.add_scalar('BioParam/bone_perimeteter_area_ratio',{'train':param_train[3],'test':param_test[3]},epoch)
-        writer.add_scalar('BioParam/number_object',{'train':param_train[4],'test':param_test[4]},epoch)
-        writer.add_scalar('BioParam/area',{'train':param_train[5],'test':param_test[5]},epoch)
-        writer.add_scalar('BioParam/diameter',{'train':param_train[6],'test':param_test[6]},epoch)
+        writer.add_scalars('Loss',{'train':mse_train,'test':mse_test},epoch)
+        writer.add_scalars('BioParam/euler_number',{'train':param_train[0],'test':param_test[0]},epoch)
+        writer.add_scalars('BioParam/trabecular_thickness',{'train':param_train[1],'test':param_test[1]},epoch)
+        writer.add_scalars('BioParam/trabecular_pattern_factor',{'train':param_train[2],'test':param_test[2]},epoch)
+        writer.add_scalars('BioParam/bone_perimeteter_area_ratio',{'train':param_train[3],'test':param_test[3]},epoch)
+        writer.add_scalars('BioParam/number_object',{'train':param_train[4],'test':param_test[4]},epoch)
+        writer.add_scalars('BioParam/area',{'train':param_train[5],'test':param_test[5]},epoch)
+        writer.add_scalars('BioParam/diameter',{'train':param_train[6],'test':param_test[6]},epoch)
 
         # score_mse_t.append(mse_train)
         # score_mse_v.append(mse_test)
