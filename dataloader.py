@@ -9,12 +9,9 @@ from skimage import io,transform
 from sklearn import preprocessing
 import torchvision.transforms.functional as TF
 
-def normalization(csv_file,mode,indices):
+def normalization(csv_file,indices):
     Data = pd.read_csv(csv_file)
-    if mode == "standardization":
-        scaler = preprocessing.StandardScaler()
-    elif mode == "minmax":
-        scaler = preprocessing.MinMaxScaler()
+    scaler = preprocessing.StandardScaler()
     scaler.fit(Data.iloc[indices,1:])
     return scaler
 

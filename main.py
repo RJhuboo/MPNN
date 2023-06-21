@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/trab_patches_7param.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
 parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/slice", help = "path to image directory")  #"./Train_LR_segmented")"
 parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/mask", help = "path to mask")
+parser.add_argument("--tensorboard_name", default = "human", help = "give the name of your experiment for tensorboard")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 1, help = "number of batch")
@@ -39,14 +40,8 @@ parser.add_argument("--n1", type=int, default = 158, help = "number of neurons i
 parser.add_argument("--n2", type=int, default = 152, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", type=int, default = 83, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
-parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
-parser.add_argument("--alpha1", type=float, default = 1)
-parser.add_argument("--alpha2", type=float, default = 1)
-parser.add_argument("--alpha3", type=float, default = 1)
-parser.add_argument("--alpha4", type=float, default = 1)
-parser.add_argument("--alpha5", type=float, default = 1)
 
 opt = parser.parse_args()
 NB_DATA = 34476
@@ -56,9 +51,9 @@ NB_LABEL = opt.NB_LABEL
 '''functions'''
 
 ## Create summary for tensorboard
-writer = SummaryWriter(log_dir='runs/human')
-## RESET WEIGHT FOR CROSS VALIDATION
+writer = SummaryWriter(log_dir='runs/'+opt.tensorboard_name)
 
+## RESET WEIGHT FOR CROSS VALIDATION
 def reset_weights(m):
   '''
     Try resetting model weights to avoid
@@ -96,7 +91,7 @@ def train():
     index = range(NB_DATA)
     index_set = train_test_split(index,test_size=0.2,shuffle=False)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
+    scaler = dataloader.normalization(opt.label_dir,index_set[0])
     #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
     
