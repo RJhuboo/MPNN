@@ -82,12 +82,12 @@ def train():
     # Create the folder where to save results and checkpoints
     save_folder=None
     i=0
-    while True:
-        i += 1
-        if os.path.isdir("./result/TF_human_19µm"+str(i)) == False:
-            save_folder = "./result/TF_human_19µm"+str(i)
-            os.mkdir(save_folder)
-            break
+    #while True:
+    #    i += 1
+        #if os.path.isdir("./result/TF_human_19µm"+str(i)) == False:
+        #    save_folder = "./result/TF_human_19µm"+str(i)
+        #    os.mkdir(save_folder)
+        #    break
     #score_mse_t = []
     #score_mse_v = []
     #score_train_per_param = []
@@ -101,8 +101,6 @@ def train():
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
     
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
-
-    my_transforms=None
 
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
     print("start training")
@@ -162,9 +160,9 @@ def train():
     #with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
     #    pickle.dump(resultat, f)
     writer.close()
-    with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
-        pickle.dump(history,g)
+    #with open(os.path.join(save_folder,"history.txt"),'wb') as g:
+    #    history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
+    #    pickle.dump(history,g)
       
 ''' main '''
 if opt.mode == "train":
