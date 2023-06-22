@@ -70,7 +70,7 @@ class Datasets(Dataset):
         
         # Find image path
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
+        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         
         # Read image and mask
         image = io.imread(img_name)
