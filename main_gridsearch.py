@@ -1,6 +1,5 @@
 ''' This implementation must work with low and high resolution images. And it make use of the complete dataset. The dataset size must be carefully determined'''
 
-
 import torch
 import os
 import numpy as np
@@ -89,9 +88,9 @@ class Datasets(Dataset):
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
         
-        skel,dist = morphology.medial_axis(image) # Find the medial axis of the image
-        skel.astype('float32') # Converting images to float32
-        dist.astype('float32') # Converting images to float32
+        #skel,dist = morphology.medial_axis(image) # Find the medial axis of the image
+        #skel.astype('float32') # Converting images to float32
+        #dist.astype('float32') # Converting images to float32
         lab = self.scaler.transform(self.labels.iloc[:,1:]) # Apply the normalization to labels
         lab = pd.DataFrame(lab) # Converting labels to pandas dataframe
         lab.insert(0,"File name", self.labels.iloc[:,0], True) # Inset the name of images
@@ -104,19 +103,19 @@ class Datasets(Dataset):
         p = random.random()
         rot = random.randint(-45,45)
         transform_list = []
-        image,mask,skel,dist=TF.to_pil_image(image),TF.to_pil_image(mask),TF.to_pil_image(skel),TF.to_pil_image(dist)
-        image,mask,skel,dist=TF.rotate(image,rot),TF.rotate(mask,rot),TF.rotate(skel,rot),TF.rotate(dist,rot)
+        image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
+        image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
-            image,mask,skel,dist=TF.vflip(image),TF.vflip(mask),TF.vflip(skel),TF.vflip(dist)
+            image,mask=TF.vflip(image),TF.vflip(mask)
         p = random.random()
         if p<0.3:
-            image,mask,skel,dist=TF.hflip(image),TF.hflip(mask),TF.hflip(skel),TF.hflip(dist)
+            image,mask=TF.hflip(image),TF.hflip(mask)
         p = random.random()
         if p>0.2:
-            image,mask,skel,dist=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(skel,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(dist,angle=0,translate=(0.1,0.1),shear=0,scale=1)
-        image,mask,skel,dist=TF.to_tensor(image),TF.to_tensor(mask),TF.to_tensor(skel),TF.to_tensor(dist)
+            image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
+        image,mask=TF.to_tensor(image),TF.to_tensor(mask)
         
-        return {'image': image,'mask':mask, 'label': labels, 'skel':skel, 'dist':dist}
+        return {'image': image,'mask':mask, 'label': labels}
     
 # Dense neural network for regression task
 class NeuralNet(nn.Module):
@@ -190,7 +189,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     # Training loop into all the datasets
     for i, data in enumerate(trainloader,0):
         # open data
-        inputs, masks, labels, skel, dist = data['image'],data['mask'], data['label'], data['skel'], data['dist']
+        inputs, masks, labels = data['image'],data['mask'], data['label']
         # reshape the data to correct tensor shape
         inputs = inputs.reshape(inputs.size(0),1,RESIZE_IMAGE,RESIZE_IMAGE)
         labels = labels.reshape(labels.size(0),NB_LABEL)
