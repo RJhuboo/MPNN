@@ -98,7 +98,7 @@ class Datasets(Dataset):
         labels = lab.iloc[idx,1:] # Takes all corresponding labels
         labels = np.array([labels]) # Converting labels to numpy array
         labels = labels.astype('float32') # Converting labels to float32
-        
+        print(np.unique(mask))
         # Image transformation for data augmentation
         p = random.random()
         rot = random.randint(-45,45)
