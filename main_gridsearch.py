@@ -72,7 +72,7 @@ class Datasets(Dataset):
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         
         # Read image and mask
-        image = np.array(Image.open(img_name))
+        image = Image.open(img_name)
         if 'lr' in img_name: # If image is a low resolution image
             image = transform.rescale(image,2) # Rescaling the image to match size of high resolution image
             image = (image<0.5)*255 # Binarized the Image between 0 and 255
@@ -80,11 +80,11 @@ class Datasets(Dataset):
         if self.mask_use == True:
             mask = Image.open(mask_name) # Read the mask
             mask = mask.resize((64,64), Image.BICUBIC)
-            mask = np.array(mask) # Rescaling the mask
-            mask = (mask > 0) *1. # Normalizing [0;1]
-            mask = mask.astype('float32') # Converting images to float32
-            image = image / 255.0 # Normalizing [0;1]
-            image = image.astype('float32') # Converting images to float32
+            #mask = np.array(mask) # Rescaling the mask
+            #mask = (mask > 0) *1. # Normalizing [0;1]
+            #mask = mask.astype('float32') # Converting images to float32
+            #image = image / 255.0 # Normalizing [0;1]
+            #image = image.astype('float32') # Converting images to float32
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
@@ -103,7 +103,7 @@ class Datasets(Dataset):
         p = random.random()
         rot = random.randint(-45,45)
         transform_list = transforms.Compose([transforms.ToTensor()])
-        image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
+        #image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
             image,mask=TF.vflip(image),TF.vflip(mask)
