@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn import MSELoss,L1Loss
 from torch.optim import Adam
 import torchvision.transforms.functional as TF
+import trochvsion.transforms as transforms
 import random
 from sklearn.metrics import r2_score
 from skimage import io,transform
@@ -101,7 +102,7 @@ class Datasets(Dataset):
         # Image transformation for data augmentation
         p = random.random()
         rot = random.randint(-45,45)
-        transform_list = []
+        transform_list = transforms.Compose([transforms.PILToTensor()])
         image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
@@ -112,7 +113,7 @@ class Datasets(Dataset):
         p = random.random()
         if p>0.2:
             image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
-        image,mask=TF.to_tensor(image),TF.to_tensor(mask)
+        image,mask=transform_list(image),transform_list(mask)
         
         return {'image': image,'mask':mask, 'label': labels}
     
