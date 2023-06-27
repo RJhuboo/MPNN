@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn import MSELoss,L1Loss
 from torch.optim import Adam
 import torchvision.transforms.functional as TF
-import trochvsion.transforms as transforms
+import torchvision.transforms as transforms
 import random
 from sklearn.metrics import r2_score
 from skimage import io,transform
