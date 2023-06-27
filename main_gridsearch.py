@@ -77,8 +77,9 @@ class Datasets(Dataset):
             image = (image<0.5)*255 # Binarized the Image between 0 and 255
             mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp")) # Find the corresponding mask file
         if self.mask_use == True:
-            mask = np.array(Image.open(mask_name)) # Read the mask
-            mask = mask.resize((64,64), Image.BICUBIC) # Rescaling the mask
+            mask = Image.open(mask_name) # Read the mask
+            mask = mask.resize((64,64), Image.BICUBIC)
+            mask = np.array(mask) # Rescaling the mask
             mask = (mask > 0) *1. # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
