@@ -7,7 +7,7 @@ import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import MSELoss,L1Loss
-from torch.optim import Adam, SGD
+from torch.optim import Adam
 import torchvision.transforms.functional as TF
 import random
 from sklearn.metrics import r2_score
@@ -18,7 +18,6 @@ import pickle
 from sklearn.model_selection import train_test_split
 import torch.nn as nn
 import torch.nn.functional as F
-from skimage import morphology
 import optuna
 from math import isnan
 import time
@@ -72,14 +71,14 @@ class Datasets(Dataset):
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         
         # Read image and mask
-        image = io.imread(img_name)
+        image = np.array(Image.open(img_name))
         if 'lr' in img_name: # If image is a low resolution image
             image = transform.rescale(image,2) # Rescaling the image to match size of high resolution image
             image = (image<0.5)*255 # Binarized the Image between 0 and 255
             mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp")) # Find the corresponding mask file
         if self.mask_use == True:
-            mask = io.imread(mask_name) # Read the mask
-            mask = transform.rescale(mask, 1/8, anti_aliasing=False) # Rescaling the mask
+            mask = np.array(Image.open(mask_name)) # Read the mask
+            mask = mask((64,64), Image.BICUBIC) # Rescaling the mask
             mask = (mask > 0) *1. # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = image / 255.0 # Normalizing [0;1]
