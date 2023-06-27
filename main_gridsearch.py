@@ -116,7 +116,7 @@ class Datasets(Dataset):
         image,mask=transform_list(image),transform_list(mask)
         image,mask=image/255,(mask>0)*1.
         image,mask = image.float(),mask.float()
-        print(image.dtype)        
+        print(torch.unique(mask),torch.unique(image))        
         return {'image': image,'mask':mask, 'label': labels}
     
 # Dense neural network for regression task
