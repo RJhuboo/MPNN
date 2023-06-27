@@ -103,7 +103,7 @@ class Datasets(Dataset):
         p = random.random()
         rot = random.randint(-45,45)
         transform_list = transforms.Compose([transforms.PILToTensor()])
-        image,mask=Image.to_pil_image(torch.tensor(image)),TF.to_pil_image(torch.tensor(mask))
+        image,mask=TF.to_pil_image(torch.tensor(image)),TF.to_pil_image(torch.tensor(mask))
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
             image,mask=TF.vflip(image),TF.vflip(mask)
