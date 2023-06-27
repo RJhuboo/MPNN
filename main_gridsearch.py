@@ -102,8 +102,8 @@ class Datasets(Dataset):
         # Image transformation for data augmentation
         p = random.random()
         rot = random.randint(-45,45)
-        transform_list = transforms.Compose([transforms.PILToTensor()])
-        image,mask=TF.to_pil_image(torch.tensor(image)),TF.to_pil_image(torch.tensor(mask))
+        transform_list = transforms.Compose([transforms.ToTensor()])
+        image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
             image,mask=TF.vflip(image),TF.vflip(mask)
