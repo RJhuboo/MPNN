@@ -114,9 +114,8 @@ class Datasets(Dataset):
         if p>0.2:
             image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
         image,mask=transform_list(image),transform_list(mask)
-        image,mask=image/255,(mask>0)*1.
+        image,mask=(image>0)*1.,(mask>0)*1.
         image,mask = image.float(),mask.float()
-        print(torch.unique(mask),torch.unique(image))        
         return {'image': image,'mask':mask, 'label': labels}
     
 # Dense neural network for regression task
