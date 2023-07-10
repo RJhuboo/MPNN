@@ -277,11 +277,11 @@ def objective(trial):
     opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/trab_patches_7param.csv",
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/slice",
            'mask_dir' : "/gpfswork/rech/tvs/uki75tv/mask",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           #'batch_size': 24,
+           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           'batch_size': 16,
            'model' : "ConvNet",
-           'nof' : trial.suggest_int('nof',10,64),
-           #'nof':36,
+           #'nof' : trial.suggest_int('nof',10,64),
+           'nof':59,
            'lr': trial.suggest_loguniform('lr',1e-4,1e-2),
            #'lr':0.00006,
            'nb_epochs' : 100,
@@ -289,12 +289,12 @@ def objective(trial):
            'mode': "Train",
            'cross_val' : False,
            'k_fold' : 1,
-           #'n1': 135,
-           #'n2':146,
-           #'n3':131,
-           'n1' : trial.suggest_int('n1', 80,200),
-           'n2' : trial.suggest_int('n2',90,200),
-           'n3' : trial.suggest_int('n3',80,190),
+           'n1': 136,
+           'n2':165,
+           'n3':114,
+           #'n1' : trial.suggest_int('n1', 80,200),
+           #'n2' : trial.suggest_int('n2',90,200),
+           #'n3' : trial.suggest_int('n3',80,190),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
@@ -381,7 +381,7 @@ if torch.cuda.device_count() > 1:
 else:
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 # create a study on optuna for hyperparameter tuning
-study.optimize(objective,n_trials=12) # n_trials is the number of experiments to run
+study.optimize(objective,n_trials=1) # n_trials is the number of experiments to run
 # Save the results of the study to a pickle file
-with open("./cross_7p_human.pkl","wb") as f:
+with open("./cross_7p_human_v2.pkl","wb") as f:
     pickle.dump(study,f)
