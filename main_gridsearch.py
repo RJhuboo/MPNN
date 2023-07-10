@@ -312,6 +312,7 @@ def objective(trial):
     index = range(NB_DATA)
     indexes = []
     [indexes.append(i) for i in index]
+    writer = SummaryWriter(log_dir='runs/'+'evaluation')
 
     for k in range(opt["k_fold"]): # k-fold cross 
         
@@ -350,11 +351,14 @@ def objective(trial):
         for epoch in range(opt['nb_epochs']):
             start = time.time() # Computational time 
             # Training
-            score_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
+            train_epoch = train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt)
+            score_train.append(train_epoch)
             end = time.time() # Computational time 
-            print("temps :",start-end)
+            print("temps :",end-start)
             # Testing
-            score_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
+            test_epoch = test(model=model, testloader=testloader, epoch=epoch, opt=opt)
+            score_test.append(test_epoch)
+            writer.add_scalars('Loss',{'train':train_epoch,'test':test_epoch},epoch)
         # Store all folds scores
         score_total = score_total + np.array(score_test)
         score_train_total = score_train_total + np.array(score_train)
