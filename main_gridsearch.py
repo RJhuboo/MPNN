@@ -363,7 +363,7 @@ def objective(trial):
         # Store all folds scores
         score_total = score_total + np.array(score_test)
         score_train_total = score_train_total + np.array(score_train)
-        
+    writer.close()
     # Compute mean score in function of number of folds
     score_mean = score_total / opt['k_fold']
     score_train_mean = score_train_total / opt['k_fold']
