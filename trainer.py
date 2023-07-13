@@ -11,6 +11,7 @@ from sklearn.metrics import r2_score
 import pickle
 from sklearn.preprocessing import StandardScaler
 from torchvision import transforms
+import matplotlib.pyplot as plt
 
 def MSE(y_predicted,y,batch_size):
     squared_error = abs((y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()))
@@ -97,7 +98,7 @@ class Trainer():
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse, np.mean(L1_loss_train,axis=0)
 
-    def test(self,testloader,epoch):
+    def test(self,testloader,epoch,writer):
 
         test_loss = 0
         test_total = 0
@@ -158,6 +159,14 @@ class Trainer():
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
+            output, label = np.array(output), np.array(label)
+            output, label = output.reshape((output.shape[0],output.shape[2])), label.reshape((label.shape[0],label.shape[2]))
+            for b in range(7):
+                figure = plt.figure()
+                plt.plot(output[:,b],label[:,b],'yo')
+                plt.plot(label[:,b],label[:,b])
+                plt.show()
+                writer.add_figure(str(epoch)+'/Parameter_'+str(b),figure)
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
                 pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
