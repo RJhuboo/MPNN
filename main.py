@@ -127,8 +127,10 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_TFfsrcnn.pth"))
+    #model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_TFfsrcnn.pth"))
+    model.load_state_dict(torch.load('./BPNN_checkpoint_17.pth'))
     for name, param in model.named_parameters():
+        print(param)
         if "conv" in name:
             param.requires_grad = False
         #if "conv3" in name or "conv2" in name:
