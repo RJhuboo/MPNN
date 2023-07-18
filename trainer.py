@@ -103,9 +103,9 @@ class Trainer():
         test_loss = 0
         test_total = 0
         mse_score = 0.0
-        output = {}
-        label = {}
-        IDs = {}
+        output = []
+        label = []
+        IDs = []
         # Loading Checkpoint
         if self.opt.mode == "Test":
             check_name = "BPNN_checkpoint_lrhr.pth" #+ str(epoch) + ".pth"
@@ -154,12 +154,14 @@ class Trainer():
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
-                output[i] = outputs
-                label[i] = labels
-                IDs[i] = ID[0]
+                output.append(outputs)
+                label.append(labels)
+                IDs.append(ID[0])
+            print(output)
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
             output, label = np.array(output), np.array(label)
+            print(output.shape)
             output, label = output.reshape((output.shape[0],output.shape[2])), label.reshape((label.shape[0],label.shape[2]))
             for b in range(7):
                 figure = plt.figure()
