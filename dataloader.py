@@ -24,7 +24,7 @@ class Datasets(Dataset):
     def __init__(self, csv_file, image_dir, mask_dir, scaler, opt, upsample = False,transform=None):
         self.opt = opt
         self.image_dir = image_dir
-        self.labels = pd.read_csv(csv_file,index_col=0)
+        self.labels = pd.read_csv(csv_file)
         self.mask_dir = mask_dir
         self.transform = transform
         self.scaler = scaler
@@ -36,7 +36,7 @@ class Datasets(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.mask_dir, "mask_"+str(self.labels.iloc[idx,0][:-4] + ".png.png"))
+        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
             image = transform.rescale(image,2)
@@ -44,9 +44,11 @@ class Datasets(Dataset):
             mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp"))
         if self.mask_use == True:
             #mask_name
-            mask = rgb2gray(io.imread(mask_name))
+            mask = io.imread(mask_name)
+            #mask = rgb2gray(io.imread(mask_name))
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
-            mask = (mask / 255.0) # Normalizing [0;1]
+            mask = (mask / 255.0)>1. # Normalizing [0;1]
+            print(np.unique(mask))
             mask = mask.astype('float32') # Converting images to float32
             image = rgb2gray(image)
             image = ((image / 255.0)>0)*1. # Normalizing [0;1]
