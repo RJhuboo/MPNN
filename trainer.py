@@ -148,6 +148,7 @@ class Trainer():
                 
                 labels, outputs = np.array(labels), np.array(outputs)
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
+                
                 labels=labels.reshape(1,self.NB_LABEL)
                 outputs=outputs.reshape(1,self.NB_LABEL) 
                 #print("labels",labels)

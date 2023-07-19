@@ -127,8 +127,8 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    #model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_TFfsrcnn.pth"))
-    model.load_state_dict(torch.load('./BPNN_checkpoint_17.pth'))
+    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_TFfsrcnn.pth"))
+    #model.load_state_dict(torch.load('./BPNN_checkpoint_22.pth'))
     for name, param in model.named_parameters():
         print(param)
         if "conv" in name:
@@ -166,14 +166,27 @@ else :
     
     # model #
     index = list(range(NB_DATA))
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-    datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
+    #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
+    index = range(NB_DATA)
+    index_set=train_test_split(index,test_size=0.95,random_state=42)
+    #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
+    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Label_trab_FSRCNN.csv",opt.norm_method,range(6000))
+
+    #datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
+    my_transforms=None
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
+    print("start training")
+    #trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = range(50), num_workers = opt.nb_workers )
+    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=range(50,1100))
+
     #datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt, upsample=False)
     #index_human = range(400)
     #index_set=train_test_split(index_human,test_size=0.90,random_state=42)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #scaler = dataloader.normalization("./Train_Label_6p_augment.csv", opt.norm_method,index)
-    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers)
+    model.load_state_dict(torch.load('./BPNN_checkpoint_17.pth'))
+    #testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers)
     t = Trainer(opt,model,device,save_folder,scaler)
-    t.test(testloader,opt.nb_epochs)
-  
+    writer = SummaryWriter(log_dir='runs/evaluation_mpnn')
+    t.test(testloader,opt.nb_epochs,writer)
+    writer.close()
