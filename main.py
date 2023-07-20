@@ -106,7 +106,7 @@ def train():
     my_transforms=None
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = range(5600), num_workers = opt.nb_workers )
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(range(5600)), num_workers = opt.nb_workers )
     
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=range(5600,6000))
     # defining the model
@@ -145,6 +145,8 @@ def train():
         score_mse_v.append(mse_test)
         score_train_per_param.append(param_train)
         score_test_per_param.append(param_test)
+
+        writer.add_scalars("./",{'train':mse_train,'test':mse_test},epoch)
     resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(resultat, f)
