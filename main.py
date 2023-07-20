@@ -127,7 +127,7 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_TFfsrcnn.pth"))
+    model.load_state_dict(torch.load("./convnet_fsrcnn_transferlearning_2/BPNN_checkpoint_200.pth"))
     #model.load_state_dict(torch.load('./BPNN_checkpoint_22.pth'))
     for name, param in model.named_parameters():
         print(param)
@@ -136,7 +136,7 @@ def train():
         #if "conv3" in name or "conv2" in name:
         #    param.requires_grad = True
     # Start training
-    writer = SummaryWriter(log_dir='runs/evaluation_lrhr')
+    writer = SummaryWriter(log_dir='runs/evaluation_adapted')
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
@@ -145,6 +145,7 @@ def train():
         score_mse_v.append(mse_test)
         score_train_per_param.append(param_train)
         score_test_per_param.append(param_test)
+        writer.add_scalars("Loss",{"train":mse_train,"test":mse_test},epoch)
     resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
     with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
         pickle.dump(resultat, f)
