@@ -158,12 +158,15 @@ class Trainer():
                 output.append(outputs)
                 label.append(labels)
                 IDs.append(ID[0])
-            print(output)
+                torchvision.utils.save_image(inputs, "./save_image" + '/labels_bin_'+ID[0])
+                torchvision.utils.save_image(masks, "./save_image" + "/mask_"+ID[0])
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
+            
             output, label = np.array(output), np.array(label)
             print(output.shape)
             output, label = output.reshape((output.shape[0],output.shape[2])), label.reshape((label.shape[0],label.shape[2]))
+            
             for b in range(7):
                 figure = plt.figure()
                 plt.plot(output[:,b],label[:,b],'yo')

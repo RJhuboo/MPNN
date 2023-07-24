@@ -27,8 +27,8 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/Trab2D_eval.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
-parser.add_argument("--image_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/save_image/epochs0", help = "path to image directory")  #"./Train_LR_segmented")"
-parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/mask", help = "path to mask")
+parser.add_argument("--image_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/save_image/test/epochs0", help = "path to image directory")  #"./Train_LR_segmented")"
+parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/save_image/test/mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
@@ -98,7 +98,7 @@ def train():
     index = range(NB_DATA)
     index_set=train_test_split(index,test_size=0.95,random_state=42)
     #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
-    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Label_trab_FSRCNN.csv",opt.norm_method,range(6000))
+    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Label_trab_FSRCNN.csv",opt.norm_method,range(5800))
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
     
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
@@ -171,7 +171,7 @@ else :
     index = range(NB_DATA)
     index_set=train_test_split(index,test_size=0.95,random_state=42)
     #scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
-    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Label_trab_FSRCNN.csv",opt.norm_method,range(6000))
+    scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Label_trab_FSRCNN.csv",opt.norm_method,range(5800))
 
     #datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
     my_transforms=None
@@ -185,7 +185,7 @@ else :
     #index_set=train_test_split(index_human,test_size=0.90,random_state=42)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #scaler = dataloader.normalization("./Train_Label_6p_augment.csv", opt.norm_method,index)
-    model.load_state_dict(torch.load('./BPNN_checkpoint_17.pth'))
+    model.load_state_dict(torch.load('./BPNN_checkpoint_39.pth'))
     #testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers)
     t = Trainer(opt,model,device,save_folder,scaler)
     writer = SummaryWriter(log_dir='runs/evaluation_mpnn')

@@ -36,7 +36,7 @@ class Datasets(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.mask_dir, "mask_"+str(self.labels.iloc[idx,0][:-4] + ".png.png"))
+        mask_name = os.path.join(self.mask_dir, "mask_"+str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
             image = transform.rescale(image,2)
@@ -46,7 +46,8 @@ class Datasets(Dataset):
             #mask_name
             mask = rgb2gray(io.imread(mask_name))
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
-            mask = (mask / 255.0) # Normalizing [0;1]
+            
+            #mask = (mask / 255.0) # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             image = rgb2gray(image)
             image = ((image / 255.0)>0)*1. # Normalizing [0;1]
