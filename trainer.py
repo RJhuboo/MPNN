@@ -137,8 +137,8 @@ class Trainer():
                     labels = labels.cpu().detach().numpy()
                 else:
                     labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
-                torchvision.utils.save_image(inputs, "./save_image/"+ ID[0])
-                torchvision.utils.save_image(masks, "./save_image/mask_"+ ID[0])
+                #torchvision.utils.save_image(inputs, "./save_image/"+ ID[0])
+                #torchvision.utils.save_image(masks, "./save_image/mask_"+ ID[0])
                 labels, outputs = np.array(labels), np.array(outputs)
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
@@ -161,7 +161,7 @@ class Trainer():
             for i in range(np.shape(label)[1]):
                 fig, ax = plt.subplots()
                 ax.scatter(label[:,i],output[:,i], label="slice")
-                #fig = plt.plot(label[:,i],label[:,i])
+                ax.plot(label[:,i],label[:,i])
                 #plt.xlabel("label")
                 #plt.ylabel("output")
                 writer.add_figure(str(i),fig)

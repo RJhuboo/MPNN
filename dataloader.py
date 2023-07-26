@@ -41,7 +41,6 @@ class Datasets(Dataset):
             mask = io.imread(mask_name)
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             #mask = mask
-            print(np.unique(mask))
             #mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             #image = rgb2gray(image)
