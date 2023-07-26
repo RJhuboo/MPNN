@@ -27,8 +27,8 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/Trab2D_eval.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
-parser.add_argument("--image_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/save_image/test/epochs0", help = "path to image directory")  #"./Train_LR_segmented")"
-parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/save_image/test/mask", help = "path to mask")
+parser.add_argument("--image_dir", default = "/gpfswork/rech/tvs/uki75tv/FSRCNN/save_image/epochs0", help = "path to image directory")  #"./Train_LR_segmented")"
+parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/BPNN/mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
@@ -127,7 +127,7 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("./convnet_fsrcnn_transferlearning_2/BPNN_checkpoint_200.pth"))
+    model.load_state_dict(torch.load("./convnet_fsrcnn_transferlearning_2/BPNN_checkpoint_250.pth"))
     #model.load_state_dict(torch.load('./BPNN_checkpoint_22.pth'))
     for name, param in model.named_parameters():
         print(param)
@@ -185,7 +185,7 @@ else :
     #index_set=train_test_split(index_human,test_size=0.90,random_state=42)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #scaler = dataloader.normalization("./Train_Label_6p_augment.csv", opt.norm_method,index)
-    model.load_state_dict(torch.load('./BPNN_checkpoint_39.pth'))
+    model.load_state_dict(torch.load('./convnet_fsrcnn_transferlearning_2/BPNN_checkpoint_250.pth'))
     #testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers)
     t = Trainer(opt,model,device,save_folder,scaler)
     writer = SummaryWriter(log_dir='runs/evaluation_mpnn')
