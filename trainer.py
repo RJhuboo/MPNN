@@ -5,7 +5,7 @@ from torch.optim import Adam, SGD
 from torch.nn import L1Loss
 import pickle
 from matplotlib import pyplot as plt
-
+import torchvision
 
 def MSE(y_predicted,y,batch_size):
     squared_error = abs((y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()))
@@ -137,7 +137,8 @@ class Trainer():
                     labels = labels.cpu().detach().numpy()
                 else:
                     labels, outputs = labels.cpu().detach().numpy(), outputs.cpu().detach().numpy()
-                
+                torchvision.utils.save_image(inputs, "./save_image/"+ ID[0])
+                torchvision.utils.save_image(masks, "./save_image/mask_"+ ID[0])
                 labels, outputs = np.array(labels), np.array(outputs)
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
