@@ -28,7 +28,7 @@ parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/mask", h
 parser.add_argument("--tensorboard_name", default = "human", help = "give the name of your experiment for tensorboard")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
-parser.add_argument("--batch_size", type=int, default = 1, help = "number of batch")
+parser.add_argument("--batch_size", type=int, default = 32, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.000123, help = "learning rate")
@@ -124,7 +124,7 @@ def train():
     model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
     count = 0
     for name, param in model.named_parameters():
-         if count < 4:
+         if count < 2:
              param.requires_grad = False
          count += 1
     
