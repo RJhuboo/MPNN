@@ -32,7 +32,7 @@ parser.add_argument("--batch_size", type=int, default = 1, help = "number of bat
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.000123, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 1, help = "number of epochs")
+parser.add_argument("--nb_epochs", type=int, default = 150, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
