@@ -31,7 +31,7 @@ parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "fil
 parser.add_argument("--batch_size", type=int, default = 1, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.000123, help = "learning rate")
+parser.add_argument("--lr", type=float, default = 0.00001, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 1, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
@@ -89,7 +89,7 @@ def train():
     #score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    index_set = train_test_split(index,test_size=0.2,shuffle=False)
+    index_set = train_test_split(index,test_size=0.2,shuffle=True)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
     scaler = dataloader.normalization(opt.label_dir,index_set[0])
     #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
