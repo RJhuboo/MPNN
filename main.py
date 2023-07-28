@@ -89,7 +89,7 @@ def train():
     #score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    index_set = train_test_split(index,test_size=0.2,shuffle=True)
+    index_set = train_test_split(index,test_size=0.2,shuffle=False)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
     scaler = dataloader.normalization(opt.label_dir,index_set[0])
     #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
@@ -121,12 +121,12 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
+    #model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
     count = 0
-    for name, param in model.named_parameters():
-         if count < 2:
-             param.requires_grad = False
-         count += 1
+    #for name, param in model.named_parameters():
+    #     if count < 2:
+   #          param.requires_grad = False
+   #      count += 1
     
     # verify if freeze layer are correct
     print("Verify that freeze layer are:{}, and {}".format(False,3))
