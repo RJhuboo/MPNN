@@ -1,23 +1,17 @@
 import torch
 import os
-import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 import argparse
 from sklearn.model_selection import KFold
 from torch.utils.data import Dataset, DataLoader
-import random
 import pickle
-import torchvision.transforms as transforms
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import Model
 from trainer import Trainer
 import dataloader
-import optuna
-import joblib
+from torch.utils.tensorboard import SummaryWriter
+
 
 # GPU or CPU
 if torch.cuda.is_available():  
@@ -30,9 +24,9 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "./Train_Label_7p_lrhr.csv")#"/gpfsstore/rech/tvs/uki75tv/Trab_Human.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "./Train_LR_segmented")#"/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", help = "path to image directory")
-parser.add_argument("--mask_dir", default = "./Train_trab_mask", help = "path to mask")
+parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv", help = "path to label csv file")
+parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented")#"/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", help = "path to image directory")
+parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/renamed_mask_hr_png", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
@@ -40,7 +34,7 @@ parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.0002, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 300, help = "number of epochs")
-parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
+parser.add_argument("--checkpoint_path", default = "./pixel_size_checkpoints", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
 parser.add_argument("--n1", type=int, default = 158, help = "number of neurons in the first layer of the neural network")
@@ -55,14 +49,17 @@ parser.add_argument("--alpha2", type=float, default = 1)
 parser.add_argument("--alpha3", type=float, default = 1)
 parser.add_argument("--alpha4", type=float, default = 1)
 parser.add_argument("--alpha5", type=float, default = 1)
+parser.add_argument("--tensorboard_name", default = "Pixel", help = "give the name of your experiment for tensorboard")
+
 
 opt = parser.parse_args()
-NB_DATA = 400
+NB_DATA = 14700
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
 '''functions'''
 
+writer = SummaryWriter(writer,log_dir='runs/'+opt.tensorboard_name)
 ## RESET WEIGHT FOR CROSS VALIDATION
 
 def reset_weights(m):
@@ -90,8 +87,8 @@ def train():
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/TransferLearning_90_exp2_asup"+str(i)) == False:
-            save_folder = "./result/TransferLearning_90_exp2_asup"+str(i)
+        if os.path.isdir("./result/Train_pixel_size"+str(i)) == False:
+            save_folder = "./result/Train_pixel_size"+str(i)
             os.mkdir(save_folder)
             break
     score_mse_t = []
@@ -100,7 +97,7 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-    index_set=train_test_split(index,test_size=0.95,random_state=42)
+    index_set=train_test_split(index,test_size=0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     my_transforms=None
@@ -132,31 +129,31 @@ def train():
     elif opt.model == "MultiNet":
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    #torch.manual_seed(2)
+    torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
-    for name, param in model.named_parameters():
-        if "conv" in name:
-            #print(name, param.data)
-            param.requires_grad = False
-        if "conv3" in name:
-            param.requires_grad = True
+    #model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
+    #for name, param in model.named_parameters():
+    #    if "conv" in name:
+    #        #print(name, param.data)
+    #        param.requires_grad = False
+    #    if "conv3" in name:
+    #        param.requires_grad = True
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
-        mse_test, param_test = t.test(testloader,epoch)
-        score_mse_t.append(mse_train)
-        score_mse_v.append(mse_test)
-        score_train_per_param.append(param_train)
-        score_test_per_param.append(param_test)
-    resultat = {"mse_train":score_mse_t, "mse_test":score_mse_v,"train_per_param":score_train_per_param,"test_per_param":score_test_per_param}
-    with open(os.path.join(save_folder,opt.train_cross),'wb') as f:
-        pickle.dump(resultat, f)
-    with open(os.path.join(save_folder,"history.txt"),'wb') as g:
-        history = "nof: " + str(opt.nof) + " model:" +str(opt.model) + " lr:" + str(opt.lr) + " neurons: " + str(opt.n1) + " " + str(opt.n2) + " " + str(opt.n3) + " kernel:" + str(3) + " norm data: " + str(opt.norm_method)
-        pickle.dump(history,g)
-      
+        mse_test, param_test = t.test(testloader,writer,epoch)
+        writer.add_scalars('Loss',{'train':mse_train, 'test':mse_test},epoch)    
+        writer.add_scalars('Loss',{'train':mse_train,'test':mse_test},epoch)
+        writer.add_scalars('BioParam/euler_number',{'train':param_train[0],'test':param_test[0]},epoch)
+        writer.add_scalars('BioParam/trabecular_thickness',{'train':param_train[1],'test':param_test[1]},epoch)
+        writer.add_scalars('BioParam/trabecular_pattern_factor',{'train':param_train[2],'test':param_test[2]},epoch)
+        writer.add_scalars('BioParam/bone_perimeteter_area_ratio',{'train':param_train[3],'test':param_test[3]},epoch)
+        writer.add_scalars('BioParam/number_object',{'train':param_train[4],'test':param_test[4]},epoch)
+        writer.add_scalars('BioParam/area',{'train':param_train[5],'test':param_test[5]},epoch)
+        writer.add_scalars('BioParam/diameter',{'train':param_train[6],'test':param_test[6]},epoch)
+    writer.close()
+
 ''' main '''
 if opt.mode == "train":
     train()

@@ -1,16 +1,12 @@
 import torch
 import os
 import numpy as np
-import pandas as pd
-import argparse
-import torchvision
 from torch.optim import Adam, SGD
 from torch.nn import MSELoss,L1Loss
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 import pickle
-from sklearn.preprocessing import StandardScaler
-from torchvision import transforms
+import matplotlib.pyplot as plt
 
 def MSE(y_predicted,y,batch_size):
     squared_error = abs((y_predicted.cpu().detach().numpy() - y.cpu().detach().numpy()))
@@ -91,13 +87,13 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 200:
+        if epoch > 100:
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse, np.mean(L1_loss_train,axis=0)
 
-    def test(self,testloader,epoch):
+    def test(self,testloader,writer,epoch):
 
         test_loss = 0
         test_total = 0
@@ -157,6 +153,17 @@ class Trainer():
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
+            size_label = len(label)
+            label = np.array(label)
+            output = np.array(output)
+            output, label = output.reshape((size_label,7)), label.reshape((size_label,7))
+            print(np.shape(label))
+            for i in range(np.shape(label)[1]):
+                fig, ax = plt.subplots()
+                ax.scatter(label[:,i],output[:,i], label="slice")
+                ax.plot(label[:,i],label[:,i])
+                writer.add_figure(str(i),fig)
+
             #if self.opt.mode=="train":
             with open(os.path.join(self.save_fold,name_out),"wb") as f:
                 pickle.dump({"output":output,"label":label,"ID":IDs},f)
@@ -167,38 +174,4 @@ class Trainer():
         print(' Test_loss: {}'.format(test_loss/test_total))
         return mse, np.mean(L1_loss_test,axis=0)
     
-    def inference(infloader,epoch):
-       
-        output = {}
-        IDs = {}
-        # Loading Checkpoint
-        check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-        self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
-        self.model.eval()
 
-        # Testing
-        with torch.no_grad():
-            for i, data in enumerate(testloader):
-                inputs, ID = data['image'],data['ID']
-                # reshape
-                inputs = inputs.reshape(1,1,self.size_image,self.size_image)
-                inputs = inputs.to(self.device)
-                outputs = self.model(inputs)
-                outputs = outputs.cpu().detach().numpy()
-                outputs = np.array(outputs)
-                outputs=outputs.reshape(1,self.NB_LABEL)
-                
-                if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
-                    outputs = self.scaler.inverse_transform(outputs)
-                print("output :",outputs)
-                output[i] = outputs
-                label[i] = labels
-                IDs[i] = ID[0]
-            name_out = "./result" + str(epoch) + ".pkl"
-            mse = test_loss/test_total
-            with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump({"output":output,"label":label,"ID":IDs},f)
-            #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
-                #pickle.dump(label,f)
-           
-        print(' Test_loss: {}'.format(test_loss/test_total))
