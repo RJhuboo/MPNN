@@ -26,7 +26,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv", help = "path to label csv file")
 parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented")#"/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", help = "path to image directory")
-parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/renamed_mask_hr_png", help = "path to mask")
+parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
