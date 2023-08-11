@@ -14,21 +14,24 @@ def MSE(y_predicted,y,batch_size):
     return mse
 
 class Trainer():
-    def __init__(self,opt,my_model,device,save_fold,scaler):
+    def __init__(self,opt,my_model,model_TF,device,save_fold,scaler):
         self.scaler = scaler
         self.save_fold = save_fold
         self.device = device
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
+        self.model_TF = model_TF
         if opt.optim == "Adam":
-            self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
+            self.optimizer = Adam(self.model_TF.parameters(), lr=self.opt.lr)
         else:
-            self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
+            self.optimizer = SGD(self.model_TF.parameters(), lr=self.opt.lr)
         self.criterion = L1Loss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
-        self.model.train()
+        #self.model.train()
+        self.model_TF.train()
+        self.model.eval()
         print("starting training")
         print("----------------")
         train_loss = 0.0
@@ -52,6 +55,7 @@ class Trainer():
 
             # forward backward and optimization
             outputs = self.model(masks,inputs)
+            outputs = self.model_TF(outputs)
             #outputs = self.model(inputs)
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
@@ -84,10 +88,10 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 1:
-            print("---- saving model ----")
-            check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-            torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        #if epoch > 1:
+        #    print("---- saving model ----")
+        #    check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
+        #    torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch,writer):
@@ -104,6 +108,7 @@ class Trainer():
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
         self.model.eval()
+        self.model_TF.eval()
         L1_loss_test=np.zeros((len(testloader),self.NB_LABEL))
         # Testing
         with torch.no_grad():
@@ -117,6 +122,7 @@ class Trainer():
        
                 # loss
                 outputs = self.model(masks,inputs)
+                outputs = self.model_TF(outputs)
                 #if 1 in outputs.clamp(-1,1) or -1 in outputs.clamp(-1,1):
                 #outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":

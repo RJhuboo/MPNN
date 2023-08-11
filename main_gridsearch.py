@@ -73,19 +73,19 @@ class Datasets(Dataset):
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         
         # Read image and mask
-        image = Image.open(img_name)
+        image = io.imread(img_name)
         if 'lr' in img_name: # If image is a low resolution image
             image = transform.rescale(image,2) # Rescaling the image to match size of high resolution image
             image = (image<0.5)*255 # Binarized the Image between 0 and 255
             mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp")) # Find the corresponding mask file
         if self.mask_use == True:
-            mask = Image.open(mask_name) # Read the mask
-            mask = mask.resize((64,64), Image.BICUBIC)
+            mask = io.imread(mask_name) # Read the mask
+            mask = transform.rescale(mask, 1/8, anti_aliasing=False)
             #mask = np.array(mask) # Rescaling the mask
             #mask = (mask > 0) *1. # Normalizing [0;1]
-            #mask = mask.astype('float32') # Converting images to float32
-            #image = image / 255.0 # Normalizing [0;1]
-            #image = image.astype('float32') # Converting images to float32
+            mask = mask.astype('float32') # Converting images to float32
+            image = image / 255.0 # Normalizing [0;1]
+            image = image.astype('float32') # Converting images to float32
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
@@ -104,7 +104,7 @@ class Datasets(Dataset):
         p = random.random()
         rot = random.randint(-45,45)
         transform_list = transforms.Compose([transforms.ToTensor()])
-        #image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
+        image,mask=TF.to_pil_image(image),TF.to_pil_image(mask)
         image,mask=TF.rotate(image,rot),TF.rotate(mask,rot)
         if p<0.3:
             image,mask=TF.vflip(image),TF.vflip(mask)
@@ -114,9 +114,10 @@ class Datasets(Dataset):
         p = random.random()
         if p>0.2:
             image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
-        image,mask=transform_list(image),transform_list(mask)
-        image,mask=(image>0)*1.,(mask>0)*1.
-        image,mask = image.float(),mask.float()
+        #image,mask=transform_list(image),transform_list(mask)
+        #image,mask=(image>0)*1.,(mask>0)*1.
+        #image,mask = image.float(),mask.float()
+        image,mask = TF.to_tensor(image), TF.to_tensor(mask)
         return {'image': image,'mask':mask, 'label': labels}
     
 # Dense neural network for regression task
@@ -278,14 +279,14 @@ def objective(trial):
     opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/trab_patches_7param.csv",
            'image_dir' : "/gpfsstore/rech/tvs/uki75tv/slice",
            'mask_dir' : "/gpfswork/rech/tvs/uki75tv/mask",
-           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           #'batch_size': 16,
+           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           'batch_size': 32,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',10,64),
            #'nof':59,
-           'lr': trial.suggest_loguniform('lr',1e-7,1e-5),
-           #'lr':0.00001,
-           'nb_epochs' : 100,
+           #'lr': trial.suggest_loguniform('lr',1e-7,1e-5),
+           'lr':1e-5,
+           'nb_epochs' : 150,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
@@ -294,8 +295,8 @@ def objective(trial):
            #'n2':165,
            #'n3':114,
            'n1' : trial.suggest_int('n1', 80,200),
-           'n2' : trial.suggest_int('n2',90,200),
-           'n3' : trial.suggest_int('n3',80,190),
+           'n2' : trial.suggest_int('n2',30,200),
+           'n3' : trial.suggest_int('n3',20,200),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",

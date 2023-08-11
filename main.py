@@ -31,7 +31,7 @@ parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "fil
 parser.add_argument("--batch_size", type=int, default = 32, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.000123, help = "learning rate")
+parser.add_argument("--lr", type=float, default = 0.00001, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 150, help = "number of epochs")
 parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
@@ -121,20 +121,18 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    #model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
+    model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
     count = 0
-    #for name, param in model.named_parameters():
-    #     if count < 2:
-   #          param.requires_grad = False
-   #      count += 1
-    
+    for name, param in model.named_parameters():
+        param.requires_grad = False
+    TF_model = Model.Add_TL(n1=80,n2=40,out_channels=7).to(device)
     # verify if freeze layer are correct
     print("Verify that freeze layer are:{}, and {}".format(False,3))
     for name, param in model.named_parameters():
         print(f'{name}: requires_grad={param.requires_grad}')
             
     # Start training
-    t = Trainer(opt,model,device,save_folder,scaler=scaler)
+    t = Trainer(opt,model,TF_model,device,save_folder,scaler=scaler)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch,writer)
