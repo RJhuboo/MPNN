@@ -28,7 +28,7 @@ class Datasets(Dataset):
         self.transform = transform
         self.scaler = scaler
         self.mask_use = True
-        self.upsample = True
+        self.upsample = False
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
