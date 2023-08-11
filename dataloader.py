@@ -8,6 +8,7 @@ from torchvision import transforms, utils
 import argparse
 from sklearn import preprocessing
 import torchvision.transforms.functional as TF
+import random
 
 def normalization(csv_file,mode,indices):
     Data = pd.read_csv(csv_file)
@@ -27,6 +28,7 @@ class Datasets(Dataset):
         self.transform = transform
         self.scaler = scaler
         self.mask_use = True
+        self.umpsample = True
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
