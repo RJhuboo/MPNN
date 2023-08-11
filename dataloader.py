@@ -39,6 +39,7 @@ class Datasets(Dataset):
         print(self.labels.iloc[idx,0])
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
+            print(np.shape(image))
             image = transform.rescale(image,2)
             image = (image>0.5)*1
             mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr_","im"))
