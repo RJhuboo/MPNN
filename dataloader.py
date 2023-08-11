@@ -40,14 +40,13 @@ class Datasets(Dataset):
         if self.upsample == True or 'lr' in img_name:
             image = transform.rescale(image,2)
             image = (image>0.5)*1
-            print("image unique",np.unique(image))
             mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr_","im"))
 
         if self.mask_use == True:
-            mask_name
             mask = io.imread(mask_name)
             print("before rescaling",np.unique(mask))
             mask = (transform.rescale(mask, 1/8, anti_aliasing=False)>0.1)*1.
+            print("mask unique",np.unique(mask))
             #mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
             #image = image / 255.0 # Normalizing [0;1]
@@ -56,7 +55,7 @@ class Datasets(Dataset):
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
         print("image unique",np.unique(image))
-        print("mask unique",np.unique(mask))
+
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
