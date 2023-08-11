@@ -59,7 +59,7 @@ SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
 '''functions'''
 
-writer = SummaryWriter(writer,log_dir='runs/'+opt.tensorboard_name)
+writer = SummaryWriter(log_dir='runs/'+opt.tensorboard_name)
 ## RESET WEIGHT FOR CROSS VALIDATION
 
 def reset_weights(m):
