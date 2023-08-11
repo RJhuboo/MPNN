@@ -41,7 +41,7 @@ class Datasets(Dataset):
             image = transform.rescale(image,2)
             #image = (image>0.5)
             print("image unique",np.unique(image))
-            mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr","im"))
+            mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr_","im"))
 
         if self.mask_use == True:
             mask_name
