@@ -160,7 +160,7 @@ class Trainer():
                 fig, ax = plt.subplots()
                 ax.scatter(label[:,i],output[:,i], label="slice")
                 ax.plot(label[:,i],label[:,i])
-                writer.add_figure(str(i),fig)
+                writer.add_figure(str(epoch)+"/"+str(i),fig)
 
             #if self.opt.mode=="train":
             #with open(os.path.join(self.save_fold,name_out),"wb") as f:
