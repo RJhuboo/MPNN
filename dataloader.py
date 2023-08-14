@@ -36,11 +36,9 @@ class Datasets(Dataset):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        print(self.labels.iloc[idx,0])
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
             #image = transform.rescale(image,2)
-            print("unique image",np.unique(image))
             image = (image>0.5)*1
             mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr_","im"))
 
