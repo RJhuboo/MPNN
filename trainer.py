@@ -87,7 +87,7 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        if epoch > 100:
+        if epoch > 50:
             print("---- saving model ----")
             check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
             torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
