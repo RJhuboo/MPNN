@@ -98,8 +98,8 @@ class Trainer():
         test_loss = 0
         test_total = 0
         mse_score = 0.0
-        output = {}
-        label = {}
+        output = []
+        label = []
         IDs = {}
         # Loading Checkpoint
         if self.opt.mode == "Test":
@@ -147,12 +147,13 @@ class Trainer():
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
 
-                output[i] = outputs
-                label[i] = labels
+                output.append(outputs)
+                label.append(labels)
                 IDs[i] = ID[0]
             name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
             size_label = len(label)
+            print(len(label))
             label = np.array(label)
             output = np.array(output)
             output, label = output.reshape((size_label,7)), label.reshape((size_label,7))
@@ -164,8 +165,8 @@ class Trainer():
                 writer.add_figure(str(i),fig)
 
             #if self.opt.mode=="train":
-            with open(os.path.join(self.save_fold,name_out),"wb") as f:
-                pickle.dump({"output":output,"label":label,"ID":IDs},f)
+            #with open(os.path.join(self.save_fold,name_out),"wb") as f:
+                #pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:
                 #pickle.dump(label,f)
         print(' Test_loss: {}'.format(test_loss/test_total))
