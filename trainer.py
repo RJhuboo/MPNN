@@ -35,9 +35,6 @@ class Trainer():
         train_loss = 0.0
         train_total = 0
         running_loss = 0.0
-        mse_score = 0.0
-        save_output=[]
-        save_label=[]
         L1_loss_train=np.zeros((len(trainloader),self.NB_LABEL))
         for i, data in enumerate(trainloader,0):
             inputs, masks, labels, imname = data['image'], data['mask'], data['label'], data['ID']

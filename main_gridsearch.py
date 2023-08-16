@@ -27,8 +27,8 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 7500
-NB_LABEL = 9
+NB_DATA = 14700
+NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
 
@@ -57,18 +57,24 @@ class Datasets(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".bmp"))
+        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
+        if self.upsample == True or 'lr' in img_name:
+            #image = transform.rescale(image,2)
+            image = (image>0.5)*1
+            mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr_","im"))
+
         if self.mask_use == True:
             mask = io.imread(mask_name)
-            mask = transform.rescale(mask, 1/8, anti_aliasing=False)
-            mask = mask / 255.0 # Normalizing [0;1]
+            mask = (transform.rescale(mask, 1/8, anti_aliasing=False)>0.1)*1.
+            #mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
-            image = image / 255.0 # Normalizing [0;1]
+            #image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
+
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
@@ -149,8 +155,6 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     train_loss = 0.0
     train_total = 0
     running_loss = 0.0
-    r2_s = 0
-    mse_score = 0.0
     Loss= L1Loss()
     for i, data in enumerate(trainloader,0):
         inputs, masks, labels = data['image'],data['mask'], data['label']
@@ -196,10 +200,6 @@ def test(model,testloader,epoch,opt):
 
     test_loss = 0
     test_total = 0
-    r2_s = 0
-    mse_score = 0.0
-    output = {}
-    label = {}
     # Loading Checkpoint
     if opt['mode'] == "Test":
         check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
@@ -238,14 +238,14 @@ def objective(trial):
     i=0
     while True:
         i += 1
-        if os.path.isdir("./result/cross_9p_augment_last"+str(i)) == False:
-            save_folder = "./result/cross_9p_augment_last"+str(i)
+        if os.path.isdir("./result/cross_7p_pixel"+str(i)) == False:
+            save_folder = "./result/cross_7p_pixel"+str(i)
             os.mkdir(save_folder)
             break
     # Create the folder where to save results and checkpoints
-    opt = {'label_dir' : "./Train_Label_9p_augment.csv",
-           'image_dir' : "./Train_segmented_filtered",
-           'mask_dir' : "./Train_trab_mask",
+    opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv",
+           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented",
+           'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/mask",
            'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
            #'batch_size': 24,
            'model' : "ConvNet",
@@ -263,7 +263,7 @@ def objective(trial):
            #'n3':131,
            'n1' : trial.suggest_int('n1', 80,200),
            'n2' : trial.suggest_int('n2',90,200),
-           'n3' : trial.suggest_int('n3',80,190),
+           'n3' : trial.suggest_int('n3',80,200),
            'nb_workers' : 6,
            #'norm_method': trial.suggest_categorical('norm_method',["standardization","minmax"]),
            'norm_method': "standardization",
@@ -333,5 +333,5 @@ else:
     print("running on cpu")
     
 study.optimize(objective,n_trials=12)
-with open("./cross_9p_augment_last_one.pkl","wb") as f:
+with open("./cross_7p_pixelsearch.pkl","wb") as f:
     pickle.dump(study,f)
