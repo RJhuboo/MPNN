@@ -51,6 +51,7 @@ class Datasets(Dataset):
         self.scaler=scaler
         self.mask_dir = mask_dir
         self.mask_use = True
+        self.upsample = False
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
