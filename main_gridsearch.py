@@ -151,8 +151,8 @@ def reset_weights(m):
 
 def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     model.train()
-    print("starting training")
-    print("----------------")
+    #print("starting training")
+    #print("----------------")
     train_loss = 0.0
     train_total = 0
     running_loss = 0.0
@@ -184,15 +184,15 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         #labels, outputs = np.array(labels), np.array(outputs)
         #labels, outputs = labels.reshape(NB_LABEL,len(inputs)), outputs.reshape(NB_LABEL,len(inputs))
         #Loss = MSELoss()
-        if i % opt['batch_size'] == opt['batch_size']-1:
-            print('[%d %5d], loss: %.3f' %
-                  (epoch + 1, i+1, running_loss/opt['batch_size']))
-            running_loss = 0.0
+        #if i % opt['batch_size'] == opt['batch_size']-1:
+        #    print('[%d %5d], loss: %.3f' %
+        #          (epoch + 1, i+1, running_loss/opt['batch_size']))
+        #    running_loss = 0.0
         
     # displaying results
     mse = train_loss/train_total   
-    print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
-    print('Finished Training')
+    #print('Epoch [{}], Loss: {}'.format(epoch+1, train_loss/train_total), end='')
+    #print('Finished Training')
 
     return mse
 
@@ -231,7 +231,7 @@ def test(model,testloader,epoch,opt):
 
 
 
-    print(' Test_loss: {}'.format(test_loss/test_total))
+    #print(' Test_loss: {}'.format(test_loss/test_total))
     return (test_loss/test_total)
 
 
@@ -258,7 +258,7 @@ def objective(trial):
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
-           'k_fold' : 3,
+           'k_fold' : 1,
            #'n1': 135,
            #'n2':146,
            #'n3':131,
@@ -306,19 +306,15 @@ def objective(trial):
         #model.apply(reset_weights)
         optimizer = opt['optimizer'](model.parameters(), lr=opt['lr'])
         for epoch in range(opt['nb_epochs']):
-            start = time.time()
             mse_train.append(train(model = model, trainloader = trainloader,optimizer = optimizer,epoch = epoch,opt=opt))
-            end = time.time()
-            print("temps :",start-end)
             mse_test.append(test(model=model, testloader=testloader, epoch=epoch, opt=opt))
         mse_total = mse_total + np.array(mse_test)
         mse_train_total = mse_train_total + np.array(mse_train)
         #print("mse train size :",len(mse_train))
     mse_mean = mse_total / opt['k_fold']
     mse_train_mean = mse_train_total / opt['k_fold']
-    print("min mse test :", np.min(mse_mean))
     i_min = np.where(mse_mean == np.min(mse_mean))
-    print('best epoch :', i_min[0][0]+1)
+    print("Trial {}: Best loss = {} at epoch {}.".format(trial,np.min(mse_mean),i_min[0][0]+1))
     result_display = {"train mse":mse_train_mean,"val mse":mse_mean,"best epoch":i_min[0][0]+1}
     with open(os.path.join(save_folder,"training_info.pkl"),"wb") as f:
             pickle.dump(result_display,f)
