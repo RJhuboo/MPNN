@@ -12,6 +12,7 @@ import random
 
 def normalization(csv_file,mode,indices):
     Data = pd.read_csv(csv_file)
+    #Data = Data.drop(["Number of objects"],axis=1)
     if mode == "standardization":
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
@@ -52,7 +53,8 @@ class Datasets(Dataset):
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
-
+        #print(self.labels.iloc[:,2])
+        #self.labels = self.labels.drop(["Number of objects"],axis=1)
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)

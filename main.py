@@ -98,9 +98,14 @@ def train():
     score_test_per_param = []
     # defining data
     index = range(NB_DATA)
-
-    index_set=train_test_split(index,test_size=0.2,shuffle=False)
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index_set[0])
+    indexes= []
+    [indexes.append(i) for i in index]
+    train_index = []
+    test_index = indexes[1*1000:(1+1)*1000]
+    [train_index.append(i) for i in index if i not in test_index]
+    
+    #index_set=train_test_split(index,test_size=0.2,shuffle=False)
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
     my_transforms=None
     #my_transforms = transforms.Compose([
@@ -113,8 +118,8 @@ def train():
     #         ])
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
     print("start training")
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
-    testloader = DataLoader(datasets,batch_size = 1, sampler = index_set[1],num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(train_index), num_workers = opt.nb_workers )
+    testloader = DataLoader(datasets,batch_size = 1, sampler = test_index,num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")

@@ -139,11 +139,11 @@ class Trainer():
                 #labels, outputs = labels.reshape(self.NB_LABEL,1), outputs.reshape(self.NB_LABEL,1)
                 labels=labels.reshape(1,self.NB_LABEL)
                 outputs=outputs.reshape(1,self.NB_LABEL)
-
+                
                 if self.opt.norm_method == "standardization" or self.opt.norm_method == "minmax":
                     outputs = self.scaler.inverse_transform(outputs)
                     labels = self.scaler.inverse_transform(labels)
-
+                print( outputs,labels)
                 output.append(outputs)
                 label.append(labels)
                 IDs[i] = ID[0]
