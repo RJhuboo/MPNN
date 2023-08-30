@@ -22,9 +22,9 @@ class Trainer():
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
         if opt.optim == "Adam":
-            self.optimizer = Adam(self.model_TF.parameters(), lr=self.opt.lr)
+            self.optimizer = Adam(self.my_model.parameters(), lr=self.opt.lr)
         else:
-            self.optimizer = SGD(self.model_TF.parameters(), lr=self.opt.lr)
+            self.optimizer = SGD(self.my_model.parameters(), lr=self.opt.lr)
         self.criterion = L1Loss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
