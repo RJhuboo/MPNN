@@ -14,14 +14,13 @@ def MSE(y_predicted,y,batch_size):
     return mse
 
 class Trainer():
-    def __init__(self,opt,my_model,model_TF,device,save_fold,scaler):
+    def __init__(self,opt,my_model,device,save_fold,scaler):
         self.scaler = scaler
         self.save_fold = save_fold
         self.device = device
         self.opt = opt
         self.model = my_model
         self.NB_LABEL = opt.NB_LABEL
-        self.model_TF = model_TF
         if opt.optim == "Adam":
             self.optimizer = Adam(self.model_TF.parameters(), lr=self.opt.lr)
         else:
@@ -55,7 +54,6 @@ class Trainer():
 
             # forward backward and optimization
             outputs = self.model(masks,inputs)
-            outputs = self.model_TF(outputs)
             #outputs = self.model(inputs)
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
@@ -122,7 +120,6 @@ class Trainer():
        
                 # loss
                 outputs = self.model(masks,inputs)
-                outputs = self.model_TF(outputs)
                 #if 1 in outputs.clamp(-1,1) or -1 in outputs.clamp(-1,1):
                 #outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
@@ -170,7 +167,7 @@ class Trainer():
                 ax.plot(label[:,i],label[:,i])
                 #plt.xlabel("label")
                 #plt.ylabel("output")
-                writer.add_figure(str(i),fig)
+                writer.add_figure(str(epoch) + '/' + str(i),fig)
             #with open(os.path.join(self.save_fold,name_out),"wb") as f:
             #    pickle.dump({"output":output,"label":label,"ID":IDs},f)
             #with open(os.path.join(self.save_fold,name_lab),"wb") as f:

@@ -124,15 +124,19 @@ def train():
     model.load_state_dict(torch.load("./convnet_pixel/BPNN_checkpoint_199.pth"))
     count = 0
     for name, param in model.named_parameters():
-        param.requires_grad = False
-    TF_model = Model.Add_TL(n1=80,n2=40,out_channels=7).to(device)
+        if "conv" in name:
+            param.requires_grad = False
+        else:
+            param.requires_grad = True
+        count += 1
+    #TF_model = Model.Add_TL(n1=80,n2=40,out_channels=7).to(device)
     # verify if freeze layer are correct
     print("Verify that freeze layer are:{}, and {}".format(False,3))
     for name, param in model.named_parameters():
         print(f'{name}: requires_grad={param.requires_grad}')
             
     # Start training
-    t = Trainer(opt,model,TF_model,device,save_folder,scaler=scaler)
+    t = Trainer(opt,model,device,save_folder,scaler=scaler)
     for epoch in range(opt.nb_epochs):
         mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch,writer)

@@ -49,6 +49,7 @@ class Datasets(Dataset):
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
+        np.unique("Is image correct : {}, {}".format(np.unique(image),np.unique(mask)))
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)
