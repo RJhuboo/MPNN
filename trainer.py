@@ -29,8 +29,8 @@ class Trainer():
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
         #self.model.train()
-        self.model_TF.train()
-        self.model.eval()
+        self.model.train()
+        
         print("starting training")
         print("----------------")
         train_loss = 0.0
@@ -106,7 +106,7 @@ class Trainer():
             self.model.load_state_dict(torch.load(os.path.join(self.opt.checkpoint_path,check_name)))
         
         self.model.eval()
-        self.model_TF.eval()
+        #self.model_TF.eval()
         L1_loss_test=np.zeros((len(testloader),self.NB_LABEL))
         # Testing
         with torch.no_grad():
