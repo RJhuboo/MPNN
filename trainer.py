@@ -2,7 +2,7 @@ import torch
 import os
 import numpy as np
 from torch.optim import Adam, SGD
-from torch.nn import L1Loss
+from torch.nn import L1Loss, MSELoss
 import pickle
 from matplotlib import pyplot as plt
 import torchvision
@@ -25,7 +25,7 @@ class Trainer():
             self.optimizer = Adam(self.model.parameters(), lr=self.opt.lr)
         else:
             self.optimizer = SGD(self.model.parameters(), lr=self.opt.lr)
-        self.criterion = L1Loss()
+        self.criterion = MSELoss()
         
     def train(self, trainloader, epoch ,steps_per_epochs=20):
         #self.model.train()
@@ -55,6 +55,13 @@ class Trainer():
             # forward backward and optimization
             outputs = self.model(masks,inputs)
             #outputs = self.model(inputs)
+            #l1_lambda = 0.00001
+            #l1_regularization = 0. #torch.tensor(0., requires_grad=True)
+            #for name, param in self.model.named_parameters():
+            #    if 'bias' not in name:
+            #        l1_regularization += torch.norm(param, p=1)
+            #l1_regularization = l1_lambda * l1_regularization
+
             if self.opt.model == "MultiNet":
                 loss1 = self.criterion(outputs[0],torch.reshape(labels[:,0],[len(outputs[0]),1]))
                 loss2 = self.criterion(outputs[1],torch.reshape(labels[:,1],[len(outputs[1]),1]))
@@ -63,16 +70,18 @@ class Trainer():
                 loss5 = self.criterion(outputs[4],torch.reshape(labels[:,4],[len(outputs[4]),1]))
                 loss = (self.opt.alpha1*loss1) + (self.opt.alpha2*loss2) + (self.opt.alpha3*loss3) + (self.opt.alpha4*loss4) + (self.opt.alpha5*loss5)
             else:
-                loss = self.criterion(outputs,labels)
+                loss_reg = self.criterion(outputs,labels)
+            loss = loss_reg #+ l1_regularization
             loss.backward()
             self.optimizer.step()
             for nb_lab in range(self.NB_LABEL): 
-                L1_loss_train[i,nb_lab] = MSE(labels[:,nb_lab],outputs[:,nb_lab],24)
+                L1_loss_train[i,nb_lab] = MSE(labels[:,nb_lab],outputs[:,nb_lab],self.opt.batch_size)
             
             # statistics
             train_loss += loss.item()
             running_loss += loss.item()
             train_total += 1
+        
             #labels, outputs = labels.reshape(self.NB_LABEL,len(inputs)), outputs.reshape(self.NB_LABEL,len(inputs))
             if i % self.opt.batch_size == self.opt.batch_size-1:
                 print('[%d %5d], loss: %.3f' %
@@ -86,10 +95,10 @@ class Trainer():
         print('Finished Training')
         
         # saving trained model
-        #if epoch > 1:
-        #    print("---- saving model ----")
-        #    check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
-        #    torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
+        if epoch > 150:
+            print("---- saving model ----")
+            check_name = "BPNN_checkpoint_" + str(epoch) + ".pth"
+            torch.save(self.model.state_dict(),os.path.join(self.opt.checkpoint_path,check_name))
         return mse, np.mean(L1_loss_train,axis=0)
 
     def test(self,testloader,epoch,writer):
@@ -119,7 +128,7 @@ class Trainer():
                 inputs, labels, masks= inputs.to(self.device),labels.to(self.device), masks.to(self.device)
        
                 # loss
-                outputs = self.model(masks,inputs)
+                outputs, feature_map = self.model(masks,inputs)
                 #if 1 in outputs.clamp(-1,1) or -1 in outputs.clamp(-1,1):
                 #outputs = self.model(inputs)
                 if self.opt.model == "MultiNet":
@@ -153,6 +162,11 @@ class Trainer():
                 output.append(outputs)
                 label.append(labels)
                 IDs[i] = ID[0]
+                if "im001960" in ID[0]:
+                    writer.add_image("input",inputs[0,0,:,:],0,dataformats='HW')
+                    for i in range(64):
+                        writer.add_image("features_map"+str(i),feature_map[0,i,:,:],0,dataformats='HW')
+
                 
             #name_out = "./result" + str(epoch) + ".pkl"
             mse = test_loss/test_total
@@ -160,7 +174,8 @@ class Trainer():
             label = np.array(label)
             output = np.array(output)
             output, label = output.reshape((size_label,7)), label.reshape((size_label,7))
-            print(np.shape(label))
+            #print(np.shape(label))
+            #print(feature_map.size())
             for i in range(np.shape(label)[1]):
                 fig, ax = plt.subplots()
                 ax.scatter(label[:,i],output[:,i], label="slice")

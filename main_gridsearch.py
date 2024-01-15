@@ -7,7 +7,7 @@ import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import MSELoss,L1Loss
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 from torch.optim import Adam
 import torchvision.transforms.functional as TF
 import torchvision.transforms as transforms
@@ -25,7 +25,7 @@ from math import isnan
 import time
 from sklearn.utils import shuffle
 
-NB_DATA = 34476 # !!! Must be checked before running !!!
+NB_DATA = 14700 # !!! Must be checked before running !!!
 NB_LABEL = 7
 PERCENTAGE_TEST = 20
 RESIZE_IMAGE = 512
@@ -75,9 +75,9 @@ class Datasets(Dataset):
         # Read image and mask
         image = io.imread(img_name)
         if 'lr' in img_name: # If image is a low resolution image
-            image = transform.rescale(image,2) # Rescaling the image to match size of high resolution image
+            #image = transform.rescale(image,2) # Rescaling the image to match size of high resolution image
             image = (image<0.5)*255 # Binarized the Image between 0 and 255
-            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp")) # Find the corresponding mask file
+            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("im_lr_","im").replace(".tif",".png"))#self.labels.iloc[idx,0]).replace("_lr.tif",".bmp")) # Find the corresponding mask file
         if self.mask_use == True:
             mask = io.imread(mask_name) # Read the mask
             mask = transform.rescale(mask, 1/8, anti_aliasing=False)
@@ -129,14 +129,15 @@ class NeuralNet(nn.Module):
         self.fc3 = nn.Linear(n2,n3)
         self.fc4 = nn.Linear(n3,out_channels)
         self.activation = activation
+        self.dropout = nn.Dropout(p=0.2)
     def forward(self,x,mask):
         x = torch.flatten(x,1)
         mask = torch.flatten(mask,1)
         x = torch.cat((x,mask),1)
-        x = self.activation(self.fc1(x))
-        x = self.activation(self.fc2(x))
-        x = self.activation(self.fc3(x))
-        x = self.activation(self.fc4(x))
+        x = self.dropout(self.activation(self.fc1(x)))
+        x = self.dropout(self.activation(self.fc2(x)))
+        x = self.dropout(self.activation(self.fc3(x)))
+        x = self.fc4(x)
         return x
     
 # Convolutional neural network for feature extraction task
@@ -156,9 +157,7 @@ class ConvNet(nn.Module):
 
     def forward(self, x, mask):
         x = self.pool(self.activation(self.conv1(x)))
-        x = self.dropout(x)
         x = self.pool(self.activation(self.conv2(x)))
-        x = self.dropout(x)
         x = self.pool(self.activation(self.conv3(x)))
         x = self.neural(x,mask) # Mask is used for the dense neural network
         return x
@@ -187,7 +186,7 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
     running_loss = 0.0
 
     # Loss initilization
-    Loss= L1Loss() # Choose L1Loss or L2Loss
+    Loss= MSELoss() # Choose L1Loss or L2Loss
     
     # Training loop into all the datasets
     for i, data in enumerate(trainloader,0):
@@ -245,7 +244,7 @@ def test(model,testloader,epoch,opt):
         model.load_state_dict(torch.load(os.path.join(opt['checkpoint_path'],check_name)))
         
     # Loss initilization
-    Loss=L1Loss()
+    Loss=MSELoss()
     # Disable gradients computation
     with torch.no_grad():
         for i, data in enumerate(testloader):
@@ -276,17 +275,17 @@ def objective(trial):
             break
     
     # Options
-    opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/trab_patches_7param.csv",
-           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/slice",
-           'mask_dir' : "/gpfswork/rech/tvs/uki75tv/mask",
-           #'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
-           'batch_size': 32,
+    opt = {'label_dir' : "/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv",
+           'image_dir' : "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented",
+           'mask_dir' : "/gpfsstore/rech/tvs/uki75tv/mask",
+           'batch_size' : trial.suggest_int('batch_size',8,24,step=8),
+           #'batch_size': 32,
            'model' : "ConvNet",
            'nof' : trial.suggest_int('nof',10,64),
            #'nof':59,
-           #'lr': trial.suggest_loguniform('lr',1e-7,1e-5),
-           'lr':1e-5,
-           'nb_epochs' : 150,
+           'lr': trial.suggest_loguniform('lr',1e-5,1e-3),
+           #'lr':1e-5,
+           'nb_epochs' : 250,
            'checkpoint_path' : "./",
            'mode': "Train",
            'cross_val' : False,
@@ -314,7 +313,7 @@ def objective(trial):
     index = range(NB_DATA)
     indexes = []
     [indexes.append(i) for i in index]
-    writer = SummaryWriter(log_dir='runs/'+'evaluation')
+    #writer = SummaryWriter(log_dir='runs/'+'evaluation')
 
     for k in range(opt["k_fold"]): # k-fold cross 
         
@@ -360,11 +359,11 @@ def objective(trial):
             # Testing
             test_epoch = test(model=model, testloader=testloader, epoch=epoch, opt=opt)
             score_test.append(test_epoch)
-            writer.add_scalars('Loss',{'train':train_epoch,'test':test_epoch},epoch)
+            #writer.add_scalars('Loss',{'train':train_epoch,'test':test_epoch},epoch)
         # Store all folds scores
         score_total = score_total + np.array(score_test)
         score_train_total = score_train_total + np.array(score_train)
-    writer.close()
+    #writer.close()
     # Compute mean score in function of number of folds
     score_mean = score_total / opt['k_fold']
     score_train_mean = score_train_total / opt['k_fold']
@@ -389,5 +388,5 @@ else:
 # create a study on optuna for hyperparameter tuning
 study.optimize(objective,n_trials=12) # n_trials is the number of experiments to run
 # Save the results of the study to a pickle file
-with open("./cross_7p_human.pkl","wb") as f:
+with open("./cross_7p_pixel_last.pkl","wb") as f:
     pickle.dump(study,f)

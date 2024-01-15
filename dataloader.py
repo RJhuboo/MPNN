@@ -20,6 +20,7 @@ class Datasets(Dataset):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
+        #print(len(self.labels))
         self.mask_dir = mask_dir
         self.scaler = scaler
         self.mask_use = True
@@ -33,9 +34,10 @@ class Datasets(Dataset):
         mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
         image = io.imread(img_name) # Loading Image
         if self.upsample == True or 'lr' in img_name:
-            image = transform.rescale(image,2)
-            image = (image>0.5)*255
-            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("_lr.tif",".bmp"))
+            #image = transform.rescale(image,2)
+            #print(np.unique(image))
+            image = (image>126)*255
+            mask_name = os.path.join(self.mask_dir,str(self.labels.iloc[idx,0]).replace("im_lr_","im").replace(".tif",".png"))
         if self.mask_use == True:
             #mask_name
             mask = io.imread(mask_name)
@@ -49,7 +51,6 @@ class Datasets(Dataset):
         else:
             image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32 
-        np.unique("Is image correct : {}, {}".format(np.unique(image),np.unique(mask)))
         lab = self.scaler.transform(self.labels.iloc[:,1:])
         lab = pd.DataFrame(lab)
         lab.insert(0,"File name", self.labels.iloc[:,0], True)

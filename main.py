@@ -10,6 +10,7 @@ import Model
 from trainer import Trainer
 import dataloader
 import numpy as np
+import random
 
 # GPU or CPU
 if torch.cuda.is_available():  
@@ -22,29 +23,29 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/trab_patches_7param.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
-parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/slice", help = "path to image directory")  #"./Train_LR_segmented")"
-parser.add_argument("--mask_dir", default = "/gpfswork/rech/tvs/uki75tv/mask", help = "path to mask")
-parser.add_argument("--tensorboard_name", default = "human", help = "give the name of your experiment for tensorboard")
+parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv")# trab_patches_7param.csv", help = "path to label csv file")  #"./Train_Label_7p_lrhr.csv")
+parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented")#slice", help = "path to image directory")  #"./Train_LR_segmented")"
+parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/mask")#mask", help = "path to mask")
+parser.add_argument("--tensorboard_name",default="feature_map")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
-parser.add_argument("--batch_size", type=int, default = 8, help = "number of batch")
+parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
 parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
-parser.add_argument("--nof", type=int, default = 61, help = "number of filter")
-parser.add_argument("--lr", type=float, default = 0.0001, help = "learning rate")
-parser.add_argument("--nb_epochs", type=int, default = 150, help = "number of epochs")
-parser.add_argument("--checkpoint_path", default = "./", help = "path to save or load checkpoint")
+parser.add_argument("--nof", type=int, default = 61, help = "number of filter") #61
+parser.add_argument("--lr", type=float, default = 0.00001, help = "learning rate")
+parser.add_argument("--nb_epochs", type=int, default = 300, help = "number of epochs")
+parser.add_argument("--checkpoint_path", default = "./feature_map", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
 parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
-parser.add_argument("--n1", type=int, default = 141, help = "number of neurons in the first layer of the neural network")
-parser.add_argument("--n2", type=int, default = 126, help = "number of neurons in the second layer of the neural network")
-parser.add_argument("--n3", type=int, default = 80, help = "number of neurons in the third layer of the neural network")
+parser.add_argument("--n1", type=int, default = 141, help = "number of neurons in the first layer of the neural network") #141
+parser.add_argument("--n2", type=int, default = 126, help = "number of neurons in the second layer of the neural network") #126
+parser.add_argument("--n3", type=int, default = 80, help = "number of neurons in the third layer of the neural network") # 80
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
 parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
 
 opt = parser.parse_args()
-NB_DATA = 34476
+NB_DATA = 14700#34476#14700
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
@@ -92,7 +93,7 @@ def train():
     index_set = train_test_split(index,test_size=0.2,shuffle=False)
     #index_set=train_test_split(index,test_size=0.4,random_state=42)
     scaler = dataloader.normalization(opt.label_dir,index_set[0])
-    #scaler = dataloader.normalization("/gpfswork/rech/tvs/uki75tv/BPNN/csv_files/Train_Label_7p_lrhr.csv",opt.norm_method,range(10500))
+    #scaler = dataloader.normalization("/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv",range(11760))
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="/gpfsstore/rech/tvs/uki75tv/Test_segmented_filtered", mask_dir = "/gpfsstore/rech/tvs/uki75tv/Test_trab_mask", scaler=scaler,opt=opt)
     
     #test_datasets = dataloader.Datasets(csv_file = "./Label_trab_FSRCNN.csv", image_dir="./TRAB_FSRCNN", mask_dir = "./MASK_FSRCNN", scaler=scaler,opt=opt, upsample=False)
@@ -100,9 +101,9 @@ def train():
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
     print("start training")
     
-    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(index_set[0]), num_workers = opt.nb_workers )
+    trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(random.sample(index_set[0],5000)), num_workers = opt.nb_workers )
     print(len(trainloader))
-    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])#, shuffle=True)
+    testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=shuffle(index_set[1]))#, shuffle=True)
     # defining the model
     if opt.model == "ConvNet":
         print("## Choose model : convnet ##")
@@ -121,14 +122,14 @@ def train():
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     #torch.manual_seed(2)
     #model.apply(reset_weights)
-    model.load_state_dict(torch.load("./convnet_pixel/BPNN_checkpoint_199.pth"))
-    count = 0
-    for name, param in model.named_parameters():
-        if "conv" in name:
-            param.requires_grad = False
-        else:
-            param.requires_grad = True
-        count += 1
+    model.load_state_dict(torch.load("./convnet_pixel/BPNN_checkpoint_299.pth"))
+    #count = 0
+    #for name, param in model.named_parameters():
+    #    if "conv" in name:
+    #        param.requires_grad = False
+    #    else:
+    #       param.requires_grad = True
+    #    count += 1
     #TF_model = Model.Add_TL(n1=80,n2=40,out_channels=7).to(device)
     # verify if freeze layer are correct
     print("Verify that freeze layer are:{}, and {}".format(False,3))
@@ -138,7 +139,7 @@ def train():
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler=scaler)
     for epoch in range(opt.nb_epochs):
-        mse_train, param_train = t.train(trainloader,epoch)
+        #mse_train, param_train = t.train(trainloader,epoch)
         mse_test, param_test = t.test(testloader,epoch,writer)
         writer.add_scalars('Loss',{'train':mse_train,'test':mse_test},epoch)
         writer.add_scalars('BioParam/euler_number',{'train':param_train[0],'test':param_test[0]},epoch)
