@@ -1,3 +1,4 @@
+''' Code for cross validation. Here we search for the optimial hyperparameters. Use it only if you require a cross-validation experiment '''
 import torch
 import os
 import numpy as np
@@ -24,7 +25,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import optuna
 import joblib
-from math import isnan
 import time
 from sklearn.utils import shuffle
 
@@ -69,9 +69,7 @@ class Datasets(Dataset):
         if self.mask_use == True:
             mask = io.imread(mask_name)
             mask = (transform.rescale(mask, 1/8, anti_aliasing=False)>0.1)*1.
-            #mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
-            #image = image / 255.0 # Normalizing [0;1]
             image = image.astype('float32') # Converting images to float32
         else:
             image = image / 255.0 # Normalizing [0;1]
@@ -171,9 +169,6 @@ def train(model,trainloader, optimizer, epoch , opt, steps_per_epochs=20):
         # forward backward and optimization
         outputs = model(inputs,masks)
         loss = Loss(outputs,labels)
-        if isnan(loss) == True:
-            print(outputs)
-            print(labels)
 
         loss.backward()
         optimizer.step()
