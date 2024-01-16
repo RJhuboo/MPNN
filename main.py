@@ -24,9 +24,9 @@ else:
 ''' Options '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--label_dir", default = "/gpfsstore/rech/tvs/uki75tv/Trab2D_lrhr_7p.csv", help = "path to label csv file")
-parser.add_argument("--image_dir", default = "/gpfsstore/rech/tvs/uki75tv/Train_LR_segmented")#"/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", help = "path to image directory")
-parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/mask", help = "path to mask")
+parser.add_argument("--label_dir", default = "./Trab2D_lrhr_7p.csv", help = "path to label csv file")
+parser.add_argument("--image_dir", default = "./Train_LR_segmented")#"/gpfsstore/rech/tvs/uki75tv/DATA_HUMAN/IMAGE/", help = "path to image directory")
+parser.add_argument("--mask_dir", default = "./mask", help = "path to mask")
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
@@ -110,7 +110,7 @@ def test():
     index = list(range(NB_DATA))
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
   
-    datasets = dataloader.Datasets(csv_file = "../Trab_Human.csv", image_dir="../DATA_HUMAN/IMAGE/", mask_dir = "../DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
+    datasets = dataloader.Datasets(csv_file = "./Trab_Human.csv", image_dir="./DATA_HUMAN/IMAGE/", mask_dir = "../DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
     index_human = range(400)
     index_set=train_test_split(index_human,test_size=0.90,random_state=42)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=opt.NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
