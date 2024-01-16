@@ -5,11 +5,6 @@ import argparse
 from sklearn.model_selection import KFold
 from torch.utils.data import Dataset, DataLoader
 import pickle
-<<<<<<< HEAD
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
-=======
->>>>>>> NEW_BPNN
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import Model
@@ -49,12 +44,6 @@ parser.add_argument("--nb_workers", type=int, default = 0, help ="number of work
 parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
 parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
 parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
-
-parser.add_argument("--alpha1", type=float, default = 1)
-parser.add_argument("--alpha2", type=float, default = 1)
-parser.add_argument("--alpha3", type=float, default = 1)
-parser.add_argument("--alpha4", type=float, default = 1)
-parser.add_argument("--alpha5", type=float, default = 1)
 parser.add_argument("--tensorboard_name", default = "Pixel", help = "give the name of your experiment for tensorboard")
 
 
@@ -64,31 +53,13 @@ NB_DATA = 14700
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
 NB_LABEL = opt.NB_LABEL
-'''functions'''
 
 writer = SummaryWriter(log_dir='runs/'+opt.tensorboard_name)
-## RESET WEIGHT FOR CROSS VALIDATION
-
-#def reset_weights(m):
-#  '''
-#    Try resetting model weights to avoid
-#    weight leakage.
-#  '''
-#  for layer in m.children():
-#    if hasattr(layer, 'reset_parameters'):
-#        print(f'Reset trainable parameters of layer = {layer}')
-#        layer.reset_parameters()
 
 ## FOR TRAINING
 
 def train():
-    #opt.n1 = trial.suggest_int('n1',90,500)
-    #opt.n2 = trial.suggest_int('n2',100,500)
-    #opt.n3 = trial.suggest_int('n3',100,500)
-    #opt.lr = trial.suggest_loguniform('lr',1e-7,1e-3)
-    #opt.nof = trial.suggest_int('nof',8,64)
-    #opt.batch_size = trial.suggest_int('batch_size',8,24,step=8)
-    
+  
     # Create the folder where to save results and checkpoints
     save_folder=None
     i=0
@@ -110,20 +81,10 @@ def train():
     train_index = []
     test_index = indexes[1*1000:(1+1)*1000]
     [train_index.append(i) for i in index if i not in test_index]
-    
-    #index_set=train_test_split(index,test_size=0.2,shuffle=False)
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
     #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
-    my_transforms=None
-    #my_transforms = transforms.Compose([
-    #        transforms.ToPILImage(),
-    #        transforms.RandomRotation(degrees=45),
-    #        transforms.RandomHorizontalFlip(p=0.3),
-    #        transforms.RandomVerticalFlip(p=0.3),
-    #        transforms.RandomAffine(degrees=(0,1),translate=(0.1,0.1)),
-    #        transforms.ToTensor(),
-    #         ])
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt,transform=my_transforms) # Create dataset
+
+    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(train_index), num_workers = opt.nb_workers )
     testloader = DataLoader(datasets,batch_size = 1, sampler = test_index,num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
@@ -144,14 +105,7 @@ def train():
         print("## Choose model : MultiNet ##")
         model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     torch.manual_seed(2)
-    #model.apply(reset_weights)
-    #model.load_state_dict(torch.load("../FSRCNN/checkpoints_bpnn/BPNN_checkpoint_lrhr.pth"))
-    #for name, param in model.named_parameters():
-    #    if "conv" in name:
-    #        #print(name, param.data)
-    #        param.requires_grad = False
-    #    if "conv3" in name:
-    #        param.requires_grad = True
+
     # Start training
     t = Trainer(opt,model,device,save_folder,scaler)
     for epoch in range(opt.nb_epochs):
@@ -180,7 +134,7 @@ else :
             os.mkdir(save_folder)
             break
    
-    # model #
+    # model
     index = list(range(NB_DATA))
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
 
@@ -188,7 +142,6 @@ else :
     index_human = range(400)
     index_set=train_test_split(index_human,test_size=0.90,random_state=42)
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    #scaler = dataloader.normalization("./Train_Label_6p_augment.csv", opt.norm_method,index)
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])
     t = Trainer(opt,model,device,save_folder,scaler)
     t.test(testloader,opt.nb_epochs)
