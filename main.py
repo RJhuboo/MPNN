@@ -30,80 +30,58 @@ parser.add_argument("--mask_dir", default = "/gpfsstore/rech/tvs/uki75tv/mask", 
 parser.add_argument("--in_channel", type=int, default = 1, help = "nb of image channel")
 parser.add_argument("--train_cross", default = "./cross_output.pkl", help = "filename of the output of the cross validation")
 parser.add_argument("--batch_size", type=int, default = 24, help = "number of batch")
-parser.add_argument("--model", default = "ConvNet", help="Choose model : Unet or ConvNet") 
 parser.add_argument("--nof", type=int, default = 64, help = "number of filter")
 parser.add_argument("--lr", type=float, default = 0.0002, help = "learning rate")
 parser.add_argument("--nb_epochs", type=int, default = 300, help = "number of epochs")
-parser.add_argument("--checkpoint_path", default = "./pixel_size_checkpoints", help = "path to save or load checkpoint")
+parser.add_argument("--checkpoint_path", default = "./result", help = "path to save or load checkpoint")
 parser.add_argument("--mode", default = "train", help = "Mode used : Train, Using or Test")
-parser.add_argument("--k_fold", type=int, default = 1, help = "Number of splitting for k cross-validation")
 parser.add_argument("--n1", type=int, default = 158, help = "number of neurons in the first layer of the neural network")
 parser.add_argument("--n2", type=int, default = 152, help = "number of neurons in the second layer of the neural network")
 parser.add_argument("--n3", type=int, default = 83, help = "number of neurons in the third layer of the neural network")
 parser.add_argument("--nb_workers", type=int, default = 0, help ="number of workers for datasets")
-parser.add_argument("--norm_method", type=str, default = "standardization", help = "choose how to normalize bio parameters")
-parser.add_argument("--NB_LABEL", type=int, default = 7, help = "specify the number of labels")
-parser.add_argument("--optim", type=str, default = "Adam", help= "specify the optimizer")
-parser.add_argument("--tensorboard_name", default = "Pixel", help = "give the name of your experiment for tensorboard")
-
+parser.add_argument("--norm_method", type=str, default = "standardization", help = "Choose how to normalize bio parameters")
+parser.add_argument("--NB_LABEL", type=int, default = 7, help = "Specify the number of labels")
+parser.add_argument("--optim", type=str, default = "Adam", help= "Specify the optimizer")
+parser.add_argument("--tensorboard_name", default = "Pixel", help = "Name to your experiment on tensorboard")
 
 opt = parser.parse_args()
 
 NB_DATA = 14700
 PERCENTAGE_TEST = 20
 SIZE_IMAGE = 512
-NB_LABEL = opt.NB_LABEL
 
+# Open writer of tensorboard using pytorch
 writer = SummaryWriter(log_dir='runs/'+opt.tensorboard_name)
 
-## FOR TRAINING
+''' TRAINING '''
 
 def train():
   
     # Create the folder where to save results and checkpoints
-    save_folder=None
-    i=0
-    while True:
-        i += 1
-        if os.path.isdir("./result/Train_pixel_size"+str(i)) == False:
-            save_folder = "./result/Train_pixel_size"+str(i)
-            os.mkdir(save_folder)
-            break
+    save_folder = opt.checkpoint_path
+    if os.path.isdir(save_folder) == False:
+        os.mkdir(save_folder)
+      
     score_mse_t = []
     score_mse_v = []
     score_train_per_param = []
     score_test_per_param = []
-    index = range(NB_DATA)
-    split = train_test_split(index,test_size = 0.2,random_state=41)
-    datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, opt=opt, indices = split[0]) # Create dataset
-    indexes= []
-    [indexes.append(i) for i in index]
-    train_index = []
-    test_index = indexes[1*1000:(1+1)*1000]
-    [train_index.append(i) for i in index if i not in test_index]
-    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
-    #test_datasets = dataloader.Datasets(csv_file = "./Test_Label_6p.csv", image_dir="./Test_segmented_filtered", mask_dir = "./Test_trab_mask", scaler=scaler,opt=opt)
 
+    # Split data into 2 parts
+    index = range(NB_DATA)
+    split = train_test_split(index,test_size = 0.2,shuffle=False)
+    train_index = split[0]
+    test_index = split[1]
+
+    # Normalize the dataset
+    scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
     print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(train_index), num_workers = opt.nb_workers )
     testloader = DataLoader(datasets,batch_size = 1, sampler = test_index,num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
     # defining the model
-    if opt.model == "ConvNet":
-        print("## Choose model : convnet ##")
-        model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
-    elif opt.model == "resnet50":
-        print("## Choose model : resnet50 ##")
-        model = Model.ResNet50(14,1).to(device)
-    elif opt.model == "restnet101":
-        print("## Choose model : resnet101 ##")
-        model = Model.ResNet101(14,1).to(device)
-    elif opt.model == "Unet":
-        print("## Choose model : Unet ##")
-        model = Model.UNet(in_channels=opt.in_channel,out_channels=1,nb_label=NB_LABEL, n1=opt.n1, n2=opt.n2, n3=opt.n3, init_features=opt.nof).to(device)
-    elif opt.model == "MultiNet":
-        print("## Choose model : MultiNet ##")
-        model = Model.MultiNet(features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+    print("## Load MPNN ##")
+    model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=opt.NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     torch.manual_seed(2)
 
     # Start training
@@ -141,7 +119,7 @@ else :
     datasets = dataloader.Datasets(csv_file = "../Trab_Human.csv", image_dir="../DATA_HUMAN/IMAGE/", mask_dir = "../DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
     index_human = range(400)
     index_set=train_test_split(index_human,test_size=0.90,random_state=42)
-    model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
+    model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=opt.NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     testloader = DataLoader(datasets, batch_size = 1, num_workers = opt.nb_workers,sampler=index_set[1])
     t = Trainer(opt,model,device,save_folder,scaler)
     t.test(testloader,opt.nb_epochs)
