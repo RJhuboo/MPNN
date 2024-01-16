@@ -10,9 +10,9 @@ from sklearn import preprocessing
 import torchvision.transforms.functional as TF
 import random
 
+# Normalization function
 def normalization(csv_file,mode,indices):
     Data = pd.read_csv(csv_file)
-    #Data = Data.drop(["Number of objects"],axis=1)
     if mode == "standardization":
         scaler = preprocessing.StandardScaler()
     elif mode == "minmax":
@@ -34,37 +34,33 @@ class Datasets(Dataset):
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
+        
         if torch.is_tensor(idx):
             idx = idx.tolist()
+            
+        # Image loading
         img_name = os.path.join(self.image_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
-        image = io.imread(img_name) # Loading Image
+        image = io.imread(img_name) 
+        image = image.astype('float32') # Converting images to float32
+
+        # If data is Low Resolution then upsample the image
         if self.upsample == True or 'lr' in img_name:
-            #image = transform.rescale(image,2)
             image = (image>0.5)*1
             mask_name = os.path.join(self.mask_dir,(str(self.labels.iloc[idx,0]).replace(".tif",".png")).replace("im_lr_","im"))
 
+        # Mask loading
         if self.mask_use == True:
+            mask_name = os.path.join(self.mask_dir, str(self.labels.iloc[idx,0][:-4] + ".png"))
             mask = io.imread(mask_name)
             mask = (transform.rescale(mask, 1/8, anti_aliasing=False)>0.1)*1.
-            #mask = mask / 255.0 # Normalizing [0;1]
             mask = mask.astype('float32') # Converting images to float32
-            #image = image / 255.0 # Normalizing [0;1]
-            image = image.astype('float32') # Converting images to float32
-        else:
-            image = image / 255.0 # Normalizing [0;1]
-            image = image.astype('float32') # Converting images to float32 
-        #print(self.labels.iloc[:,2])
-        #self.labels = self.labels.drop(["Number of objects"],axis=1)
+
+        # Normalize the biological parameters
         lab = self.scaler.transform(self.labels.iloc[:,1:])
-        lab = pd.DataFrame(lab)
-        lab.insert(0,"File name", self.labels.iloc[:,0], True)
-        lab.columns = self.labels.columns
-        labels = lab.iloc[idx,1:] # Takes all corresponding labels
-        labels = np.array([labels]) 
-        #print(np.shape(labels))
-        #labels = labels.reshape(-1,1)
-        labels = labels.astype('float32') 
+        labels = np.array([lab]) 
+        labels = labels.astype('float32')
+
+        # Data augmentation (Applied on both mask and image)
         p = random.random()
         rot = random.randint(-45,45)
         transform_list = []
@@ -79,12 +75,8 @@ class Datasets(Dataset):
         if p>0.2:
             image,mask=TF.affine(image,angle=0,translate=(0.1,0.1),shear=0,scale=1),TF.affine(mask,angle=0,translate=(0.1,0.1),shear=0,scale=1)
         image,mask=TF.to_tensor(image),TF.to_tensor(mask)
-
-        #if self.transform:
-        #    image = self.transform(image)
-        #    if self.mask_use == True:
-        #        mask = self.transform(mask)
-        return {'image': image, 'mask': mask, 'label': labels, 'ID': lab.iloc[idx,0]}
+        
+        return {'image': image, 'mask': mask, 'label': labels, 'ID':  self.labels.iloc[idx,0]}
 
 class Test_Datasets(Dataset):
     def __init__(self, csv_file, image_dir, opt, scaler, transform=None):
