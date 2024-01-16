@@ -73,13 +73,13 @@ def train():
     train_index = split[0]
     test_index = split[1]
 
-    # Normalize the dataset
+    # Create Train and Test loader
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,train_index)
     datasets = dataloader.Datasets(csv_file = opt.label_dir, image_dir = opt.image_dir, mask_dir = opt.mask_dir, scaler=scaler, opt=opt) # Create dataset
-    print("start training")
     trainloader = DataLoader(datasets, batch_size = opt.batch_size, sampler = shuffle(train_index), num_workers = opt.nb_workers )
     testloader = DataLoader(datasets,batch_size = 1, sampler = test_index,num_workers = opt.nb_workers)#test_datasets, batch_size = 1, num_workers = opt.nb_workers, shuffle=True)
-    # defining the model
+    
+    # Defining the model
     print("## Load MPNN ##")
     model = Model.ConvNet(in_channel=opt.in_channel,features =opt.nof,out_channels=opt.NB_LABEL,n1=opt.n1,n2=opt.n2,n3=opt.n3,k1 = 3,k2 = 3,k3= 3).to(device)
     torch.manual_seed(2)
@@ -100,22 +100,16 @@ def train():
         writer.add_scalars('BioParam/diameter',{'train':param_train[6],'test':param_test[6]},epoch)
     writer.close()
 
-''' main '''
-if opt.mode == "train":
-    train()
-else :
-    i=0
-    while True:
-        i += 1
-        if os.path.isdir("./result/test_exp_1_"+str(i)) == False:
-            save_folder = "./result/test_exp_1_"+str(i)
-            os.mkdir(save_folder)
-            break
-   
-    # model
+def test():
+    ''' Must be modified in function of the inference set '''
+    if os.path.isdir("./result/test") == False:
+        save_folder = "./result/test"
+        os.mkdir(save_folder)
+      
+    # Model
     index = list(range(NB_DATA))
     scaler = dataloader.normalization(opt.label_dir,opt.norm_method,index)
-
+  
     datasets = dataloader.Datasets(csv_file = "../Trab_Human.csv", image_dir="../DATA_HUMAN/IMAGE/", mask_dir = "../DATA_HUMAN/MASK/", scaler=scaler,opt=opt, upsample=False)
     index_human = range(400)
     index_set=train_test_split(index_human,test_size=0.90,random_state=42)
@@ -124,3 +118,9 @@ else :
     t = Trainer(opt,model,device,save_folder,scaler)
     t.test(testloader,opt.nb_epochs)
   
+''' main '''
+if opt.mode == "train":
+    train()
+else:
+    test()
+    
