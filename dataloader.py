@@ -22,12 +22,11 @@ def normalization(csv_file,mode,indices):
     return scaler
 
 class Datasets(Dataset):
-    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt,transform=None):
+    def __init__(self, csv_file, image_dir, mask_dir, scaler, opt):
         self.opt = opt
         self.image_dir = image_dir
         self.labels = pd.read_csv(csv_file)
         self.mask_dir = mask_dir
-        self.transform = transform
         self.scaler = scaler
         self.mask_use = True
         self.upsample = False
